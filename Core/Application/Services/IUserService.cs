@@ -10,4 +10,5 @@ public interface IUserService
     public Task<bool> RateOrder();
     public Task<bool> AddToTheBasket();
     public Task<bool> RemoveFromBasket();
+    public Task<bool> ReportOrder(); 
 }
