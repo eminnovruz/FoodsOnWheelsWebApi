@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -13,8 +13,17 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<User>().HasNoKey();
         modelBuilder.Entity<User>().ToContainer("Users");
+        modelBuilder.Entity<Order>().ToContainer("Orders");
+        modelBuilder.Entity<Courier>().ToContainer("Couriers");
+        modelBuilder.Entity<Restaurant>().ToContainer("Restaurants");
+        modelBuilder.Entity<Category>().ToContainer("Categories");
         base.OnModelCreating(modelBuilder);
     }
+
+    public DbSet<User> Users { get; set; }
+    public DbSet<Order> Orders { get; set; }
+    public DbSet<Courier> Couriers { get; set; }
+    public DbSet<Restaurant> Restaurants { get; set; }
+    public DbSet<Category> Categories { get; set; }
 }
