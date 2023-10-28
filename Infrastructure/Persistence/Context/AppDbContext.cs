@@ -1,11 +1,20 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Azure.Cosmos;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace Persistence.Context;
 
 public class AppDbContext : DbContext
 {
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    public AppDbContext(DbContextOptions options) : base(options)
     {
-        base.OnConfiguring(optionsBuilder);
+
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<User>().HasNoKey();
+        modelBuilder.Entity<User>().ToContainer("Users");
+        base.OnModelCreating(modelBuilder);
     }
 }

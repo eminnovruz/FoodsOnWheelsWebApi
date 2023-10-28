@@ -7,6 +7,6 @@ public class Restaurant : BaseEntity
     public string Name { get; set; }
     public string Description { get; set; }
     public int Rating { get; set; }
-
+    public virtual IEnumerable<Food> Foods { get; set; }
 
 }
