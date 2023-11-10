@@ -5,5 +5,5 @@ namespace Domain.Models;
 public class Category : BaseEntity
 {
     public string CategoryName { get; set; }
-    public IEnumerable<Food> Foods { get; set; }
+    public List<string> FoodIds { get; set; }
 }

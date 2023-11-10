@@ -8,5 +8,5 @@ public class User : BaseEntity
     public string Email { get; set; }
     public string PhoneNumber { get; set; }
     public DateTime BirthDate { get; set; }
-    public IEnumerable<Order> Orders { get; set; }
+    public List<string> OrderIds { get; set; }
 }

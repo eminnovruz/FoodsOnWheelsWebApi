@@ -4,11 +4,11 @@ namespace Domain.Models;
 
 public class Order : BaseEntity
 {
-    public virtual Courier Courier { get; set; }
-    public virtual User User { get; set; }
+    public  string CourierId { get; set; }
+    public  string UserId { get; set; }
     public DateTime OrderDate { get; set; }
     public DateTime OrderFinishTime { get; set; }
-    public virtual IEnumerable<Food> OrderedFoods { get; set; }
+    public  List<string> OrderedFoodIds { get; set; }
     public uint Amount { get; set; }
-    public virtual Restaurant Restoraunt { get; set; }
+    public  string RestorauntId { get; set; }
 }
