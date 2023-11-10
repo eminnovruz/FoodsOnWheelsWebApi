@@ -18,6 +18,8 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Courier>().ToContainer("Couriers");
         modelBuilder.Entity<Restaurant>().ToContainer("Restaurants");
         modelBuilder.Entity<Category>().ToContainer("Categories");
+
+
         base.OnModelCreating(modelBuilder);
     }
 

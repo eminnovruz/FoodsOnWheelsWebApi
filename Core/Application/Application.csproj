@@ -7,7 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Models\DTOs\" />
+    <Compile Include="Models\DTOs\.Courier\GetProfileInfoDto.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\DTOs\.Requests\" />
     <Folder Include="Repositories\" />
   </ItemGroup>
 

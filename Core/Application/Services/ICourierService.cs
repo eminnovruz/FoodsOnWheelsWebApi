@@ -2,11 +2,11 @@
 
 public interface ICourierService
 {
-    public Task<bool> AcceptOrder();
-    public Task<bool> RejectOrder();
-    public Task<bool> GetProfileInfo();
-    public Task<bool> GetOrderHistory();
-    public Task<bool> GetActiveOrderInfo();
-    public Task<bool> GetAllComments();
-    public Task<bool> GetPastOrderInfoById();
+    public Task<bool> AcceptOrder(string OrderId);
+    public Task<bool> RejectOrder(string OrderId);
+    public Task<bool> GetProfileInfo(string CourierId);
+    public Task<bool> GetOrderHistory(string CourierId);
+    public Task<bool> GetActiveOrderInfo(string OrderId);
+    public Task<bool> GetAllComments(string CourierId);
+    public Task<bool> GetPastOrderInfoById(string PastOrderId);
 }
