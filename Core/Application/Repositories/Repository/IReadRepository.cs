@@ -1,6 +1,7 @@
 ﻿using Domain.Models.Common;
 using System.Linq.Expressions;
 
+
 namespace Application.Repositories.Repository;
 
 public interface IReadRepository<T> where T : BaseEntity

@@ -11,5 +11,6 @@ public interface IWriteRepository<T> where T : BaseEntity
     bool Remove(T entity);
 
     Task<bool> RemoveAsync(string id);
+
     Task<int> SaveChangesAsync();
 }
