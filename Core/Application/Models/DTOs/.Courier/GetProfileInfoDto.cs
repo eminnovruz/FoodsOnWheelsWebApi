@@ -1,5 +1,4 @@
-﻿
-namespace Application.Models.DTOs.Courier;
+﻿namespace Application.Models.DTOs.Courier;
 
 public class GetProfileInfoDto
 {

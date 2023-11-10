@@ -1,12 +1,14 @@
-﻿namespace Application.Services;
+﻿using Application.Models.DTOs.Courier;
+
+namespace Application.Services;
 
 public interface ICourierService
 {
     public Task<bool> AcceptOrder(string OrderId);
     public Task<bool> RejectOrder(string OrderId);
-    public Task<bool> GetProfileInfo(string CourierId);
-    public Task<bool> GetOrderHistory(string CourierId);
-    public Task<bool> GetActiveOrderInfo(string OrderId);
-    public Task<bool> GetAllComments(string CourierId);
-    public Task<bool> GetPastOrderInfoById(string PastOrderId);
+    public GetProfileInfoDto GetProfileInfo(string CourierId);
+    public IEnumerable<GetOrderHistoryDto> GetOrderHistory(string CourierId);
+    public OrderDto GetActiveOrderInfo(string OrderId);
+    public IEnumerable<CommentDto> GetAllComments(string CourierId);
+    public GetOrderHistoryDto GetPastOrderInfoById(string PastOrderId);
 }

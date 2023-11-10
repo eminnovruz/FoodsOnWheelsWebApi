@@ -10,5 +10,6 @@ public class Courier : BaseEntity
     public string PhoneNumber { get; set; }
     public DateTime BirthDate { get; set; }
     public List<string> OrderIds { get; set; }
+    public List<string> CourierCommentIds { get; set; }
     public int Rating { get; set; }
 }

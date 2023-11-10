@@ -7,7 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Models\DTOs\.Courier\CommentDto.cs" />
+    <Compile Include="Models\DTOs\.Courier\GetOrderHistoryDto.cs" />
     <Compile Include="Models\DTOs\.Courier\GetProfileInfoDto.cs" />
+    <Compile Include="Models\DTOs\.Courier\OrderDto.cs" />
   </ItemGroup>
 
   <ItemGroup>
