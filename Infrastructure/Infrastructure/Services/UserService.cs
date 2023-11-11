@@ -1,50 +1,45 @@
-﻿using Application.Services;
+﻿using Application.Models.DTOs.Category;
+using Application.Models.DTOs.Courier;
+using Application.Models.DTOs.Food;
+using Application.Models.DTOs.Order;
+using Application.Models.DTOs.Restaurant;
+using Application.Services;
 
 namespace Infrastructure.Services;
 
 public class UserService : IUserService
 {
-    public Task<bool> AddToTheBasket()
+    public Task<IEnumerable<CategoryInfoDto>> GetAllFoodCategories()
     {
         throw new NotImplementedException();
     }
 
-    public Task<bool> GetAllFoodCategories()
+    public Task<IEnumerable<RestaurantInfoDto>> GetAllRestaurants()
     {
         throw new NotImplementedException();
     }
 
-    public Task<bool> GetAllRestaurants()
+    public Task<IEnumerable<FoodInfoDto>> GetFoodsByCategory(string categoryId)
     {
         throw new NotImplementedException();
     }
 
-    public Task<bool> GetFoodsByCategory()
+    public Task<IEnumerable<FoodInfoDto>> GetFoodsByRestaurant(string restaurantId)
     {
         throw new NotImplementedException();
     }
 
-    public Task<bool> GetFoodsByRestaurant()
+    public Task<GetProfileInfoDto> GetProfileInfo(string userId)
     {
         throw new NotImplementedException();
     }
 
-    public Task<bool> GetProfileInfo()
+    public Task<bool> RateOrder(string orderId, byte rate)
     {
         throw new NotImplementedException();
     }
 
-    public Task<bool> RateOrder()
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<bool> RemoveFromBasket()
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<bool> ReportOrder()
+    public Task<bool> ReportOrder(ReportOrderDto request)
     {
         throw new NotImplementedException();
     }
