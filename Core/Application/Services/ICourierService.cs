@@ -4,11 +4,11 @@ namespace Application.Services;
 
 public interface ICourierService
 {
-    public Task<bool> AcceptOrder(string OrderId);
-    public Task<bool> RejectOrder(string OrderId);
-    public GetProfileInfoDto GetProfileInfo(string CourierId);
-    public IEnumerable<GetOrderHistoryDto> GetOrderHistory(string CourierId);
-    public OrderDto GetActiveOrderInfo(string OrderId);
-    public IEnumerable<CommentDto> GetAllComments(string CourierId);
-    public GetOrderHistoryDto GetPastOrderInfoById(string PastOrderId);
+    Task<bool> AcceptOrder(string OrderId);
+    Task<bool> RejectOrder(string OrderId);
+    Task<GetProfileInfoDto> GetProfileInfo(string CourierId);
+    Task<IEnumerable<GetOrderHistoryDto>> GetOrderHistory(string CourierId);
+    Task<OrderDto> GetActiveOrderInfo(string OrderId);
+    Task<IEnumerable<CommentDto>> GetAllComments(string CourierId);
+    Task<GetOrderHistoryDto> GetPastOrderInfoById(string PastOrderId);
 }

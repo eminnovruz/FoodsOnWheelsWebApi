@@ -28,4 +28,6 @@ public class ReadRepository<T> : IReadRepository<T> where T : BaseEntity
 
         return Table.AsNoTracking().ToList();
     }
+
+
 }

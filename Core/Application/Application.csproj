@@ -7,14 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Models\DTOs\.Requests\**" />
+    <EmbeddedResource Remove="Models\DTOs\.Requests\**" />
+    <None Remove="Models\DTOs\.Requests\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="Models\DTOs\.Courier\CommentDto.cs" />
     <Compile Include="Models\DTOs\.Courier\GetOrderHistoryDto.cs" />
     <Compile Include="Models\DTOs\.Courier\GetProfileInfoDto.cs" />
     <Compile Include="Models\DTOs\.Courier\OrderDto.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Models\DTOs\.Requests\" />
+    <Compile Include="Models\DTOs\.Courier\SummaryCourierDto.cs" />
+    <Compile Include="Models\DTOs\.Worker\AddCourierDto.cs" />
   </ItemGroup>
 
   <ItemGroup>
