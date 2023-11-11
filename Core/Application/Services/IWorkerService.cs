@@ -9,7 +9,7 @@ public interface IWorkerService
     Task<bool> AddCourier(AddCourierDto dto);
     Task<bool> GetAllRestaurants();
     Task<bool> RemoveRestaurant();
-    Task<bool> RemoveCourier();
+    Task<bool> RemoveCourier(string courierId);
     Task<bool> SeeAllFoods();
     Task<IEnumerable<SummaryCourierDto>> GetAllCouriers();
 }

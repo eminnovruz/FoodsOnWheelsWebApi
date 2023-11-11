@@ -15,7 +15,8 @@ builder.Services.AddSwaggerGen();
 var cosmos = new CosmosConfiguration();
 builder.Configuration.GetSection("Cosmos").Bind(cosmos);
 builder.Services.AddDbContext<AppDbContext>(op => op.UseCosmos(cosmos.Uri, cosmos.Key, cosmos.DatabaseName));
-
+builder.Services.AddServices();
+builder.Services.AddRepositories();
 var app = builder.Build();
 
 

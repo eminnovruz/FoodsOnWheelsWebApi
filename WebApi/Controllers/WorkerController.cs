@@ -1,4 +1,5 @@
 ﻿using Application.Models.DTOs.Courier;
+using Application.Models.DTOs.Worker;
 using Application.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,10 +19,19 @@ namespace WebApi.Controllers
         [HttpGet("getAllCouriers")]
         public Task<IEnumerable<SummaryCourierDto>> GetAllCouriers()
         {
-
-
+            return _workerService.GetAllCouriers();
         }
 
+        [HttpPost("addNewCourier")]
+        public ActionResult<bool> AddNewCourier(AddCourierDto request)
+        {
+            return Ok(_workerService.AddCourier(request));
+        }
 
+        [HttpPost("removeCourier")]
+        public ActionResult<bool> AddNewCourier(string courierId)
+        {
+            return Ok(_workerService.RemoveCourier(courierId));
+        }
     }
 }

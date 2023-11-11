@@ -1,14 +1,19 @@
-﻿namespace Application.Services;
+﻿using Application.Models.DTOs.Category;
+using Application.Models.DTOs.Courier;
+using Application.Models.DTOs.Food;
+using Application.Models.DTOs.Restaurant;
+
+namespace Application.Services;
 
 public interface IUserService
 {
-    public Task<bool> GetAllRestaurants();
-    public Task<bool> GetAllFoodCategories();
-    public Task<bool> GetFoodsByRestaurant();
-    public Task<bool> GetFoodsByCategory();
-    public Task<bool> GetProfileInfo();
-    public Task<bool> RateOrder();
-    public Task<bool> AddToTheBasket();
-    public Task<bool> RemoveFromBasket();
-    public Task<bool> ReportOrder(); 
+    Task<IEnumerable<RestaurantInfoDto>> GetAllRestaurants();
+    Task<IEnumerable<CategoryInfoDto>> GetAllFoodCategories();
+    Task<IEnumerable<FoodInfoDto>> GetFoodsByRestaurant(string restaurantId);
+    Task<IEnumerable<FoodInfoDto>> GetFoodsByCategory(string categoryId);
+    Task<GetProfileInfoDto> GetProfileInfo(string userId);
+    Task<bool> RateOrder();
+    Task<bool> AddToTheBasket();
+    Task<bool> RemoveFromBasket();
+    Task<bool> ReportOrder(); 
 }
