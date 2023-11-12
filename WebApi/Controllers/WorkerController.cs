@@ -1,4 +1,5 @@
 ﻿using Application.Models.DTOs.Courier;
+using Application.Models.DTOs.Restaurant;
 using Application.Models.DTOs.Worker;
 using Application.Services;
 using Microsoft.AspNetCore.Http;
@@ -15,6 +16,8 @@ namespace WebApi.Controllers
         {
             _workerService = service;            
         }
+
+        // Courier Funcs
 
         [HttpGet("getAllCouriers")]
         public Task<IEnumerable<SummaryCourierDto>> GetAllCouriers()
@@ -33,5 +36,8 @@ namespace WebApi.Controllers
         {
             return Ok(_workerService.RemoveCourier(courierId));
         }
+
+        // Restaurant Funcs
+
     }
 }
