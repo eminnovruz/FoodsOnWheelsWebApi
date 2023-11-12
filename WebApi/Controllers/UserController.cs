@@ -1,4 +1,6 @@
-﻿using Domain.Models;
+﻿using Application.Models.DTOs.Restaurant;
+using Application.Services;
+using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 using Persistence.Context;
 
@@ -8,5 +10,17 @@ namespace WebApi.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
+        private readonly IUserService _userService;
+
+        public UserController(IUserService userService)
+        {
+            this._userService = userService;
+        }
+
+        [HttpGet("getAllRestaurants")]
+        public Task<IEnumerable<RestaurantInfoDto>> GetAllRestaurants()
+        {
+            return _userService.GetAllRestaurants();
+        }
     }
 }

@@ -20,9 +20,10 @@
     <Compile Include="Models\DTOs\.Courier\OrderDto.cs" />
     <Compile Include="Models\DTOs\.Courier\SummaryCourierDto.cs" />
     <Compile Include="Models\DTOs\.Food\FoodInfoDto.cs" />
+    <Compile Include="Models\DTOs\.Order\RateOrderDto.cs" />
     <Compile Include="Models\DTOs\.Order\ReportOrderDto.cs" />
     <Compile Include="Models\DTOs\.Restaurant\RestaurantInfoDto.cs" />
-    <Compile Include="Models\DTOs\.User\GetProfileInfoDto.cs" />
+    <Compile Include="Models\DTOs\.User\GetUserProfileInfoDto.cs" />
     <Compile Include="Models\DTOs\.Worker\AddCourierDto.cs" />
   </ItemGroup>
 

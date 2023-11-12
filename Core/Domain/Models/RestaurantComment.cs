@@ -7,4 +7,5 @@ public class RestaurantComment : BaseEntity
     public string OrderId { get; set; }
     public uint Rating { get; set; }
     public bool ContactWithMe { get; set; }
+    public DateTime CommentDate { get; set; }
 }

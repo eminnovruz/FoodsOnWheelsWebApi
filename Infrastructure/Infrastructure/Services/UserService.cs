@@ -3,6 +3,7 @@ using Application.Models.DTOs.Courier;
 using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Order;
 using Application.Models.DTOs.Restaurant;
+using Application.Models.DTOs.User;
 using Application.Repositories;
 using Application.Services;
 using Domain.Models;
@@ -131,18 +132,79 @@ public class UserService : IUserService
         }
     }
 
-    public Task<GetProfileInfoDto> GetProfileInfo(string userId)
+    public async Task<GetUserProfileInfoDto> GetProfileInfo(string userId)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var user = await _unitOfWork.ReadUserRepository.GetAsync(userId);
+
+            var dto = new GetUserProfileInfoDto()
+            {
+                Name = user.Name,
+                Surname = user.Surname,
+                BirthDate = user.BirthDate,
+                Email = user.Email,
+                OrderIds = user.OrderIds,
+                PhoneNumber = user.PhoneNumber,
+            };
+
+            return dto;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
     }
 
-    public Task<bool> RateOrder(string orderId, byte rate)
+    public async Task<bool> RateOrder(RateOrderDto request)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var order = await _unitOfWork.ReadOrderRepository.GetAsync(request.OrderId);
+            var orderRating = new OrderRating()
+            {
+                Id = Guid.NewGuid().ToString(),
+                Content = request.Content,
+                Rate = request.Rate,
+            };
+
+            order.OrderRatingId = orderRating.Id;
+            
+            bool result = _unitOfWork.WriteOrderRepository.Update(order);
+
+            return result;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 
-    public Task<bool> ReportOrder(ReportOrderDto request)
+    public async Task<bool> ReportOrder(ReportOrderDto request)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(request.RestaurantId);
+
+            var comment = new RestaurantComment()
+            {
+                CommentDate = DateTime.Now,
+                ContactWithMe = request.ContactWithMe,
+                Content = request.Content,
+                Id = Guid.NewGuid().ToString(),
+                OrderId = request.OrderId,
+                Rating = request.Rate,
+                RestaurantId = request.RestaurantId
+            };
+
+            restaurant.CommentIds.Add(comment.Id);
+            var result = _unitOfWork.WriteRestaurantRepository.Update(restaurant);
+            _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
+            return result;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 }

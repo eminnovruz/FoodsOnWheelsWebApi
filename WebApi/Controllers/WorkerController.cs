@@ -29,7 +29,7 @@ namespace WebApi.Controllers
         }
 
         [HttpPost("removeCourier")]
-        public ActionResult<bool> AddNewCourier(string courierId)
+        public ActionResult<bool> RemoveCourier(string courierId)
         {
             return Ok(_workerService.RemoveCourier(courierId));
         }

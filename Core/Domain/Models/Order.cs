@@ -11,5 +11,6 @@ public class Order : BaseEntity
     public List<string> OrderedFoodIds { get; set; }
     public uint Amount { get; set; }
     public string RestorauntId { get; set; }
-    public bool IsActivated { get; set; }
+    public bool IsActivated { get; set; } 
+    public string OrderRatingId { get; set; }
 }

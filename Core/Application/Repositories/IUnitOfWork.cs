@@ -1,7 +1,9 @@
 ﻿using Application.Repositories.CategoryRepository;
 using Application.Repositories.CourierRepository;
 using Application.Repositories.FoodRepository;
+using Application.Repositories.OrderRepository;
 using Application.Repositories.RestaurantRepository;
+using Application.Repositories.UserRepository;
 
 namespace Application.Repositories;
 
@@ -15,4 +17,8 @@ public interface IUnitOfWork
     IReadFoodRepository ReadFoodRepository { get; }
     IReadRestaurantRepository ReadRestaurantRepository { get; }
     IWriteRestaurantRepository WriteRestaurantRepository { get; }
+    IWriteUserRepository WriteUserRepository { get; }
+    IReadUserRepository ReadUserRepository { get; }
+    IReadOrderRepository ReadOrderRepository { get; }
+    IWriteOrderRepository WriteOrderRepository { get; }
 }
