@@ -45,6 +45,11 @@ public class CourierService : ICourierService
         {
             Courier courier = await _unitOfWork.ReadCourierRepository.GetAsync(CourierId);
 
+            if(courier == null)
+            {
+                return null;
+            }
+
             GetProfileInfoDto dto = new GetProfileInfoDto()
             {
                 Name = courier.Name,

@@ -16,9 +16,16 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("viewCourierProfile")]
-        public async Task<GetProfileInfoDto> ViewCourierProfile(string courierId)
+        public async Task<ActionResult<GetProfileInfoDto>> ViewCourierProfile(string courierId)
         {
-            return await _courierService.GetProfileInfo(courierId);
+            var user = await _courierService.GetProfileInfo(courierId);
+
+            if(user == null)
+            {
+                return BadRequest($"Cannot find user - {courierId}. Maybe deleted or missing");
+            }
+
+            return user;
         }
     }
 }
