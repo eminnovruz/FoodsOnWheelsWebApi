@@ -2,6 +2,6 @@
 
 public class SummaryCourierDto
 {
-    public string CourierId { get; set;}
-    public string CourierName { get; set;}
+    public string CourierId { get; set; }
+    public string CourierName { get; set; }
 }

@@ -63,6 +63,20 @@ namespace WebApi.Controllers
             }
         }
 
+        [HttpPost("addNewRestaurant")]
+        public async Task<ActionResult<bool>> AddNewRestaurant(AddRestaurantDto request)
+        {
+            try
+            {
+                return Ok(await _workerService.AddRestaurant(request));
+            }
+            catch (Exception exception)
+            {
+                Log.Error("error occured with [POST] AddNewRestaurant");
+                return BadRequest(exception.Message);   
+            }
+        } 
+
         // Restaurant Funcs
 
     }

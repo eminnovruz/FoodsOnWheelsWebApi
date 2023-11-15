@@ -3,16 +3,19 @@ using Application.Models.DTOs.Worker;
 using Application.Repositories;
 using Application.Services;
 using Domain.Models;
+using FluentValidation;
 
 namespace Infrastructure.Services;
 
 public class WorkerService : IWorkerService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IValidator<AddRestaurantDto> _restarurantValidator;
 
-    public WorkerService(IUnitOfWork unitOfWork)
+    public WorkerService(IUnitOfWork unitOfWork, IValidator<AddRestaurantDto> restarurantValidator)
     {
         _unitOfWork = unitOfWork;
+        _restarurantValidator = restarurantValidator;
     }
 
     public async Task<bool> AddCourier(AddCourierDto dto)
@@ -30,6 +33,7 @@ public class WorkerService : IWorkerService
             Rating = 0,
         };
 
+
         var result = await _unitOfWork.WriteCourierRepository.AddAsync(newCourier);
         _unitOfWork.WriteCourierRepository.SaveChangesAsync();
         return result;
@@ -37,17 +41,27 @@ public class WorkerService : IWorkerService
 
     public async Task<bool> AddRestaurant(AddRestaurantDto request)
     {
-        var newRestaurant = new Restaurant()
+        var isValid = _restarurantValidator.Validate(request);
+
+        if(isValid.IsValid)
         {
-            Name = request.Name,
-            Description = request.Description,
-            CommentIds = new List<string>(),
-            FoodIds = new List<string>(),
-            Id = Guid.NewGuid().ToString(),
-            Rating = 0
-        };
-        return await _unitOfWork.WriteRestaurantRepository.AddAsync(newRestaurant);
+            var newRestaurant = new Restaurant()
+            {
+                Name = request.Name,
+                Description = request.Description,
+                CommentIds = new List<string>(),
+                FoodIds = new List<string>(),
+                Id = Guid.NewGuid().ToString(),
+                Rating = 0
+            };
+            var result = await _unitOfWork.WriteRestaurantRepository.AddAsync(newRestaurant);
+            await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
+            return result;
+        }
+
+        return false;
     }
+
 
     public async Task<IEnumerable<SummaryCourierDto>> GetAllCouriers()
     {

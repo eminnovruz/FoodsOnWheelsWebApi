@@ -5,7 +5,7 @@ namespace Application.Services;
 
 public interface IWorkerService
 {
-    Task<bool> AddRestaurant();
+    Task<bool> AddRestaurant(AddRestaurantDto dto);
     Task<bool> AddCourier(AddCourierDto dto);
     Task<bool> GetAllRestaurants();
     Task<bool> RemoveRestaurant();

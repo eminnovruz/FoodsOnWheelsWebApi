@@ -1,4 +1,5 @@
-﻿using Application.Repositories;
+﻿using Application.Models.DTOs.Worker;
+using Application.Repositories;
 using Application.Repositories.CategoryRepository;
 using Application.Repositories.CourierRepository;
 using Application.Repositories.FoodRepository;
@@ -6,6 +7,8 @@ using Application.Repositories.OrderRepository;
 using Application.Repositories.RestaurantRepository;
 using Application.Repositories.UserRepository;
 using Application.Services;
+using Domain.Models;
+using FluentValidation;
 using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Persistence.Context;
@@ -17,6 +20,7 @@ using Persistence.Repositories.OrderRepository;
 using Persistence.Repositories.RestaurantRepository;
 using Persistence.Repositories.UserRepository;
 using Persistence.Services;
+using WebApi.Validators;
 
 public static class Extension
 {
@@ -26,6 +30,10 @@ public static class Extension
         services.AddScoped<ICourierService, CourierService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IWorkerService, WorkerService>();
+
+        services.AddValidatorsFromAssemblyContaining<AddRestaurantDtoValidator>();
+        services.AddTransient<IValidator<AddRestaurantDto>, AddRestaurantDtoValidator>();
+
         return services;
     }
 
