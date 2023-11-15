@@ -35,9 +35,18 @@ public class WorkerService : IWorkerService
         return result;
     }
 
-    public Task<bool> AddRestaurant()
+    public async Task<bool> AddRestaurant(AddRestaurantDto request)
     {
-        throw new NotImplementedException();
+        var newRestaurant = new Restaurant()
+        {
+            Name = request.Name,
+            Description = request.Description,
+            CommentIds = new List<string>(),
+            FoodIds = new List<string>(),
+            Id = Guid.NewGuid().ToString(),
+            Rating = 0
+        };
+        return await _unitOfWork.WriteRestaurantRepository.AddAsync(newRestaurant);
     }
 
     public async Task<IEnumerable<SummaryCourierDto>> GetAllCouriers()
