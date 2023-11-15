@@ -5,6 +5,7 @@ using Application.Services;
 using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 using Persistence.Context;
+using Serilog;
 
 namespace WebApi.Controllers
 {
@@ -20,20 +21,37 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("getAllRestaurants")]
-        public Task<IEnumerable<RestaurantInfoDto>> GetAllRestaurants()
+        public ActionResult<IEnumerable<RestaurantInfoDto>> GetAllRestaurants()
         {
-            return _userService.GetAllRestaurants();
+            try
+            {
+                return Ok(_userService.GetAllRestaurants());
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [GET] GetAllRestaurants");
+                return BadRequest(exception.Message); 
+            }
         }
 
         [HttpGet("getAllCategories")]
-        public Task<IEnumerable<CategoryInfoDto>> GetAllCategories()
+        public ActionResult<IEnumerable<CategoryInfoDto>> GetAllCategories()
         {
-            return _userService.GetAllFoodCategories();
+            try
+            {
+                return Ok(_userService.GetAllFoodCategories());
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [GET] GetAllCategories");
+                return BadRequest(exception.Message);
+            }
         }
 
         [HttpGet("rateOrder")]
         public Task<bool> RateOrder(RateOrderDto request)
         {
+
             return _userService.RateOrder(request);
         }
     }

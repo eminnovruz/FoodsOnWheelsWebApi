@@ -1,6 +1,7 @@
 using Application.Models;
 using Microsoft.EntityFrameworkCore;
 using Persistence.Context;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,12 @@ builder.Services.AddSwaggerGen();
 var cosmos = new CosmosConfiguration();
 builder.Configuration.GetSection("Cosmos").Bind(cosmos);
 builder.Services.AddDbContext<AppDbContext>(op => op.UseCosmos(cosmos.Uri, cosmos.Key, cosmos.DatabaseName));
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .WriteTo.Console()
+    .WriteTo.File("logs/ApplicationLog-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
 builder.Services.AddServices();
 builder.Services.AddRepositories();
 var app = builder.Build();

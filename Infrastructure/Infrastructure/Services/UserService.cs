@@ -41,144 +41,106 @@ public class UserService : IUserService
 
     public async Task<IEnumerable<RestaurantInfoDto>> GetAllRestaurants()
     {
-        try
-        {
-            var restaurants =  _unitOfWork.ReadRestaurantRepository
-                .GetAll()
-                .ToList();
+        var restaurants = _unitOfWork.ReadRestaurantRepository
+            .GetAll()
+            .ToList();
 
-            var restaurantDtos = restaurants.Select(restaurant => new RestaurantInfoDto
-            {
-                Description = restaurant.Description,
-                Id = restaurant.Id,
-                FoodIds = restaurant.FoodIds,
-                Name = restaurant.Name,
-                Rating = restaurant.Rating
-            });
-
-            return restaurantDtos;
-        }
-        catch (Exception)
+        var restaurantDtos = restaurants.Select(restaurant => new RestaurantInfoDto
         {
-            return Enumerable.Empty<RestaurantInfoDto>();
-        }
+            Description = restaurant.Description,
+            Id = restaurant.Id,
+            FoodIds = restaurant.FoodIds,
+            Name = restaurant.Name,
+            Rating = restaurant.Rating
+        });
+
+        return restaurantDtos;
     }
 
 
     public async Task<IEnumerable<FoodInfoDto>> GetFoodsByCategory(string categoryId)
     {
-        try
-        {
-            var foods = _unitOfWork.ReadFoodRepository
-                .GetWhere(food => food.CategoryIds.Contains(categoryId))
-                .ToList();
+        var foods = _unitOfWork.ReadFoodRepository
+            .GetWhere(food => food.CategoryIds.Contains(categoryId))
+            .ToList();
 
-            var foodDtos = foods.Select(food => new FoodInfoDto
+        var foodDtos = foods.Select(food => new FoodInfoDto
+        {
+            CategoryIds = food.CategoryIds,
+            Description = food.Description,
+            Id = food.Id,
+            Name = food.Name,
+            Price = food.Price,
+        });
+
+        return foodDtos;
+    }
+
+
+    public async Task<IEnumerable<FoodInfoDto>> GetFoodsByRestaurant(string restaurantId)
+    {
+        var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(restaurantId);
+        List<FoodInfoDto> dtos = new List<FoodInfoDto>();
+
+        foreach (var item in restaurant.FoodIds)
+        {
+            var food = await _unitOfWork.ReadFoodRepository.GetAsync(item);
+
+            var dto = new FoodInfoDto()
             {
                 CategoryIds = food.CategoryIds,
                 Description = food.Description,
                 Id = food.Id,
                 Name = food.Name,
                 Price = food.Price,
-            });
-
-            return foodDtos;
+            };
+            dtos.Add(dto);
         }
-        catch (Exception)
-        {
-            return Enumerable.Empty<FoodInfoDto>();
-        }
-    }
 
-
-    public async Task<IEnumerable<FoodInfoDto>> GetFoodsByRestaurant(string restaurantId)
-    {
-        try
-        {
-            var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(restaurantId);
-            List<FoodInfoDto> dtos = new List<FoodInfoDto>();
-
-            foreach (var item in restaurant.FoodIds)
-            {
-                var food = await _unitOfWork.ReadFoodRepository.GetAsync(item);
-
-                var dto = new FoodInfoDto()
-                {
-                    CategoryIds = food.CategoryIds,
-                    Description = food.Description,
-                    Id = food.Id,
-                    Name = food.Name,
-                    Price = food.Price,
-                };
-                dtos.Add(dto);
-            }
-
-            return dtos;
-        }
-        catch (Exception)
-        {
-
-            return null;
-        }
+        return dtos;
     }
 
     public async Task<GetUserProfileInfoDto> GetProfileInfo(string userId)
     {
-        try
-        {
-            var user = await _unitOfWork.ReadUserRepository.GetAsync(userId);
+        var user = await _unitOfWork.ReadUserRepository.GetAsync(userId);
 
-            if (user == null)
-            {
-                return null;
-            }
-
-            return new GetUserProfileInfoDto
-            {
-                Name = user.Name,
-                Surname = user.Surname,
-                BirthDate = user.BirthDate,
-                Email = user.Email,
-                OrderIds = user.OrderIds,
-                PhoneNumber = user.PhoneNumber,
-            };
-        }
-        catch (Exception)
+        if (user == null)
         {
             return null;
         }
+
+        return new GetUserProfileInfoDto
+        {
+            Name = user.Name,
+            Surname = user.Surname,
+            BirthDate = user.BirthDate,
+            Email = user.Email,
+            OrderIds = user.OrderIds,
+            PhoneNumber = user.PhoneNumber,
+        };
     }
 
 
     public async Task<bool> RateOrder(RateOrderDto request)
     {
-        try
+        var order = await _unitOfWork.ReadOrderRepository.GetAsync(request.OrderId);
+
+        var orderRating = new OrderRating
         {
-            var order = await _unitOfWork.ReadOrderRepository.GetAsync(request.OrderId);
+            Id = Guid.NewGuid().ToString(),
+            Content = request.Content,
+            Rate = request.Rate,
+        };
 
-            var orderRating = new OrderRating
-            {
-                Id = Guid.NewGuid().ToString(),
-                Content = request.Content,
-                Rate = request.Rate,
-            };
+        order.OrderRatingId = orderRating.Id;
 
-            order.OrderRatingId = orderRating.Id;
+        bool result = _unitOfWork.WriteOrderRepository.Update(order);
 
-            bool result = _unitOfWork.WriteOrderRepository.Update(order);
-
-            return result;
-        }
-        catch (Exception)
-        {
-            return false;
-        }
+        return result;
     }
 
 
     public async Task<bool> ReportOrder(ReportOrderDto request)
-{
-    try
     {
         var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(request.RestaurantId);
 
@@ -201,10 +163,4 @@ public class UserService : IUserService
 
         return true;
     }
-    catch (Exception)
-    {
-        return false;
-    }
-}
-
 }
