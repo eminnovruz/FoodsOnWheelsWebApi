@@ -41,32 +41,25 @@ public class CourierService : ICourierService
 
     public async Task<GetProfileInfoDto> GetProfileInfo(string CourierId)
     {
-        try
-        {
-            Courier courier = await _unitOfWork.ReadCourierRepository.GetAsync(CourierId);
+        Courier courier = await _unitOfWork.ReadCourierRepository.GetAsync(CourierId);
 
-            if(courier == null)
-            {
-                return null;
-            }
-
-            GetProfileInfoDto dto = new GetProfileInfoDto()
-            {
-                Name = courier.Name,
-                Surname = courier.Surname,
-                BirthDate = courier.BirthDate,
-                Email = courier.Email,
-                OrderIds = courier.OrderIds,
-                PhoneNumber = courier.PhoneNumber,
-                Rating = courier.Rating
-            };
-
-            return dto;
-        }
-        catch (Exception)
+        if (courier == null)
         {
             return null;
         }
+
+        GetProfileInfoDto dto = new GetProfileInfoDto()
+        {
+            Name = courier.Name,
+            Surname = courier.Surname,
+            BirthDate = courier.BirthDate,
+            Email = courier.Email,
+            OrderIds = courier.OrderIds,
+            PhoneNumber = courier.PhoneNumber,
+            Rating = courier.Rating
+        };
+
+        return dto;
     }
 
     public Task<bool> RejectOrder(string OrderId)

@@ -21,11 +21,11 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("getAllRestaurants")]
-        public ActionResult<IEnumerable<RestaurantInfoDto>> GetAllRestaurants()
+        public async Task<ActionResult<IEnumerable<RestaurantInfoDto>>> GetAllRestaurants()
         {
             try
             {
-                return Ok(_userService.GetAllRestaurants());
+                return Ok(await _userService.GetAllRestaurants());
             }
             catch (Exception exception)
             {
@@ -35,11 +35,11 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("getAllCategories")]
-        public ActionResult<IEnumerable<CategoryInfoDto>> GetAllCategories()
+        public async Task<ActionResult<IEnumerable<CategoryInfoDto>>> GetAllCategories()
         {
             try
             {
-                return Ok(_userService.GetAllFoodCategories());
+                return Ok(await _userService.GetAllFoodCategories());
             }
             catch (Exception exception)
             {
@@ -48,11 +48,11 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpGet("rateOrder")]
-        public Task<bool> RateOrder(RateOrderDto request)
-        {
+        //[HttpGet("rateOrder")]
+        //public Task<bool> RateOrder(RateOrderDto request)
+        //{
 
-            return _userService.RateOrder(request);
-        }
+        //    return _userService.RateOrder(request);
+        //}
     }
 }

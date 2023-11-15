@@ -29,7 +29,7 @@ namespace WebApi.Controllers
                     return BadRequest($"Cannot find user - {courierId}. Maybe deleted or missing");
                 }
 
-                return user;
+                return Ok(user);
             }
             catch (Exception exception)
             {

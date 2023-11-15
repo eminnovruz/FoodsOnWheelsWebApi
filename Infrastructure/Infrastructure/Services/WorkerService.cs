@@ -17,29 +17,22 @@ public class WorkerService : IWorkerService
 
     public async Task<bool> AddCourier(AddCourierDto dto)
     {
-        try
+        Courier newCourier = new Courier()
         {
-            Courier newCourier = new Courier()
-            {
-                Name = dto.Name,
-                Surname = dto.Surname,
-                BirthDate = dto.BirthDate,
-                Email = dto.Email,
-                CourierCommentIds = new List<string>(),
-                Id = Guid.NewGuid().ToString(),
-                OrderIds = new List<string>(),
-                PhoneNumber = dto.PhoneNumber,
-                Rating = 0,
-            };
+            Name = dto.Name,
+            Surname = dto.Surname,
+            BirthDate = dto.BirthDate,
+            Email = dto.Email,
+            CourierCommentIds = new List<string>(),
+            Id = Guid.NewGuid().ToString(),
+            OrderIds = new List<string>(),
+            PhoneNumber = dto.PhoneNumber,
+            Rating = 0,
+        };
 
-            var result = await _unitOfWork.WriteCourierRepository.AddAsync(newCourier);
-            _unitOfWork.WriteCourierRepository.SaveChangesAsync();
-            return result;
-        }
-        catch (Exception)
-        {
-            return false;
-        }
+        var result = await _unitOfWork.WriteCourierRepository.AddAsync(newCourier);
+        _unitOfWork.WriteCourierRepository.SaveChangesAsync();
+        return result;
     }
 
     public Task<bool> AddRestaurant()
@@ -49,22 +42,15 @@ public class WorkerService : IWorkerService
 
     public async Task<IEnumerable<SummaryCourierDto>> GetAllCouriers()
     {
-        try
-        {
-            var couriers = _unitOfWork.ReadCourierRepository.GetAll().ToList();
+        var couriers = _unitOfWork.ReadCourierRepository.GetAll().ToList();
 
-            var courierDtos = couriers.Select(item => new SummaryCourierDto
-            {
-                CourierName = item.Name,
-                CourierId = item.Id,
-            }).ToList();
-
-            return courierDtos;
-        }
-        catch (Exception)
+        var courierDtos = couriers.Select(item => new SummaryCourierDto
         {
-            return null;
-        }
+            CourierName = item.Name,
+            CourierId = item.Id,
+        }).ToList();
+
+        return courierDtos;
     }
 
     public Task<bool> GetAllRestaurants()
@@ -74,16 +60,9 @@ public class WorkerService : IWorkerService
 
     public async Task<bool> RemoveCourier(string courierId)
     {
-        try
-        {
-            var result = await _unitOfWork.WriteCourierRepository.RemoveAsync(courierId);
-            _unitOfWork.WriteCourierRepository.SaveChangesAsync();
-            return result;
-        }
-        catch (Exception)
-        {
-            return false;
-        }
+        var result = await _unitOfWork.WriteCourierRepository.RemoveAsync(courierId);
+        _unitOfWork.WriteCourierRepository.SaveChangesAsync();
+        return result;
     }
 
     public Task<bool> RemoveRestaurant()
