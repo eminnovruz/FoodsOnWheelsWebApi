@@ -33,6 +33,7 @@ public static class Extension
 
         services.AddValidatorsFromAssemblyContaining<AddRestaurantDtoValidator>();
         services.AddTransient<IValidator<AddRestaurantDto>, AddRestaurantDtoValidator>();
+        services.AddTransient<IValidator<AddCourierDto>, AddCourierDtoValidator>();
 
         return services;
     }
