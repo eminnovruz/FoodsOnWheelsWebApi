@@ -1,10 +1,18 @@
-﻿using Application.Services;
+﻿using Application.Models.DTOs.Blob;
+using Application.Services;
 
 namespace Infrastructure.Services;
 
 public class BlobService : IBlobService
 {
-    public Task<Stream> GetBlobAsync(string containerName, string blobName)
+    private readonly BlobStorageConfiguration _blobConfiguration;
+
+    public BlobService(BlobStorageConfiguration blobConfiguration)
+    {
+        _blobConfiguration = blobConfiguration;
+    }
+
+    public async Task<Stream> GetBlobAsync(string containerName, string blobName)
     {
         throw new NotImplementedException();
     }
