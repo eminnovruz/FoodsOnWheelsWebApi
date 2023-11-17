@@ -16,7 +16,7 @@ public class JWTService : IJWTService
         _config = config;
     }
 
-    public string GenerateSecurityToken(string id, string email, IEnumerable<string> roles, IEnumerable<Claim> userClaims)
+    public string GenerateSecurityToken(string id, string email)
     {
         var claims = new[]
             {

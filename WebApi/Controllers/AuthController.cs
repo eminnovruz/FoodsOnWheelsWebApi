@@ -1,14 +1,9 @@
-﻿using Application.Models.DTOs;
-using Application.Models.DTOs.Auth;
-using Application.Models.DTOs.Auth.JWT;
+﻿using Application.Models.DTOs.Auth;
+using Application.Repositories;
 using Application.Services;
 using Domain.Models;
-using Infrastructure.Services;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace WebApi.Controllers
 {
@@ -16,10 +11,55 @@ namespace WebApi.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        //[HttpPost("login")]
-        //public async Task<ActionResult> Login([FromBody] UserLoginRequest request)
-        //{
+        private readonly IAuthService _authService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        //}
+        public AuthController(IAuthService authService, IUnitOfWork unitOfWork)
+        {
+            _authService = authService;
+            _unitOfWork = unitOfWork;
+        }
+
+        [HttpPost("login")]
+        public async Task<ActionResult> Login([FromBody] UserLoginRequest request)
+        {
+            try
+            {
+                var users = _unitOfWork.ReadUserRepository.GetAll();
+                User user = users.FirstOrDefault(req => req.Email == req.Email);
+                if (user is null)
+                {
+                    return NotFound("You haven't an account!");
+                }
+
+                var token = await _authService.LoginUser(request);
+                Log.Information($"{user.Name} Logged in");
+                return Ok(token);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] UserRegisterRequest request)
+        {
+            try
+            {
+                if (await _authService.RegisterUser(request))
+                {
+                    Log.Information($"{request.Email} registered");
+                    return Ok("Successfully Registered!");
+                }
+                throw new Exception("Something get wrong!");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

@@ -104,11 +104,12 @@ public static class Extension
         return services;
     }
 
-
     public static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.AddScoped<ICourierService, CourierService>();
         services.AddScoped<IWorkerService, WorkerService>();
+        services.AddScoped<IPassHashService, PassHashService>();
+        services.AddScoped<IAuthService, AuthService>();
 
         services.AddValidatorsFromAssemblyContaining<AddRestaurantDtoValidator>();
         services.AddTransient<IValidator<AddRestaurantDto>, AddRestaurantDtoValidator>();
