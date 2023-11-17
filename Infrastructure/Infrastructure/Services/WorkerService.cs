@@ -60,8 +60,9 @@ public class WorkerService : IWorkerService
                 CommentIds = new List<string>(),
                 FoodIds = new List<string>(),
                 Id = Guid.NewGuid().ToString(),
-                Rating = 0
+                Rating = 0,
             };
+
             var result = await _unitOfWork.WriteRestaurantRepository.AddAsync(newRestaurant);
             await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
             return result;

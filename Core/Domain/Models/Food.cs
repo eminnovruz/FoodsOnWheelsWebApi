@@ -8,4 +8,5 @@ public class Food : BaseEntity
     public string Description { get; set; }
     public uint Price { get; set; }
     public List<string> CategoryIds { get; set; }
+    public string ImageUrl { get; set; }
 }

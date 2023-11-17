@@ -64,7 +64,7 @@ namespace WebApi.Controllers
         }
 
         [HttpPost("addNewRestaurant")]
-        public async Task<ActionResult<bool>> AddNewRestaurant(AddRestaurantDto request)
+        public async Task<ActionResult<bool>> AddNewRestaurant([FromForm]AddRestaurantDto request)
         {
             try
             {
