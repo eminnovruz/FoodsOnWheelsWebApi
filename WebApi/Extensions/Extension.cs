@@ -73,25 +73,13 @@ public static class Extension
 
     public static IServiceCollection AddAuthenticationAndAuthorization(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddIdentity<User, IdentityRole>(op =>
-        {
-            op.Password.RequiredLength = 3;
-            op.Password.RequireNonAlphanumeric = false;
-            op.Password.RequireUppercase = false;
-            op.Password.RequireLowercase = false;
-            op.Password.RequireDigit = false;
-            op.Lockout.AllowedForNewUsers = true;
-            op.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(2);
-            op.Lockout.MaxFailedAccessAttempts = 5;
-        })
-        .AddDefaultTokenProviders();
-
         services.AddScoped<IJWTService, JWTService>();
 
         var jwtConfig = new JWTConfiguration();
         configuration.GetSection("JWT").Bind(jwtConfig);
 
         services.AddSingleton(jwtConfig);
+
 
         services.AddAuthentication(options =>
         {
@@ -113,7 +101,6 @@ public static class Extension
         });
 
         services.AddAuthorization();
-
         return services;
     }
 

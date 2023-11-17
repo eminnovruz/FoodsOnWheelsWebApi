@@ -19,21 +19,25 @@ public class JWTService : IJWTService
     public string GenerateSecurityToken(string id, string email, IEnumerable<string> roles, IEnumerable<Claim> userClaims)
     {
         var claims = new[]
-           {
+            {
                 new Claim(ClaimsIdentity.DefaultNameClaimType, email),
-                new Claim("userId", id),
-                new Claim(ClaimsIdentity.DefaultRoleClaimType, string.Join(",", roles))
-            }.Concat(userClaims);
+                new Claim("userId", id)
+            };
+
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.Secret));
+
         var signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
         var token = new JwtSecurityToken(
             issuer: _config.Issuer,
             audience: _config.Audience,
-            expires: DateTime.UtcNow.AddMinutes(_config.ExpireMunites),
+            expires: DateTime.UtcNow.AddMonths(_config.ExpireMonths),
             signingCredentials: signingCredentials,
             claims: claims
             );
+
         var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
+
         return accessToken;
     }
 }
