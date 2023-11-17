@@ -1,13 +1,13 @@
-﻿using Domain.Models.Common;
-namespace Domain.Models;
+﻿namespace Application.Models.DTOs.Auth;
 
-public class User : BaseEntity
+public class RegisterRequestDto
 {
     public string Name { get; set; }
     public string Surname { get; set; }
     public string Email { get; set; }
+    public string Password { get; set; }
+    public string ConfirmPassword { get; set;}
     public string PhoneNumber { get; set; }
     public DateTime BirthDate { get; set; }
-    public List<string> OrderIds { get; set; }
-    public string? RefreshToken { get; set; }
+    public bool IsCourier { get; set; }
 }
