@@ -1,11 +1,13 @@
 ﻿using Application.Models.DTOs;
 using Application.Models.DTOs.Auth;
+using Application.Models.DTOs.Auth.JWT;
 using Application.Services;
 using Domain.Models;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace WebApi.Controllers
 {
@@ -46,7 +48,7 @@ namespace WebApi.Controllers
         }
 
         [HttpPost("register")]
-        private async Task<ActionResult> Register(RegisterRequestDto request)
+        public async Task<ActionResult> Register(RegisterRequestDto request)
         {
             var existingUser = await _userManager.FindByEmailAsync(request.Email);
             if (existingUser is not null)
@@ -81,5 +83,38 @@ namespace WebApi.Controllers
             return Ok("Registration successful");
         }
 
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginRequestDto request)
+        {
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user is null)
+            {
+                return BadRequest("Invalid email or password");
+            }
+            if (await _userManager.IsEmailConfirmedAsync(user))
+            {
+                var canSignIn = await _signInManager.PasswordSignInAsync(user, request.Password, false,  false);
+
+                if (!canSignIn.Succeeded)
+                    return BadRequest("Invalid email or password");
+
+                var token = await GenerateToken(user);
+                return Ok(token);
+            }
+            return Unauthorized("Email not confirmed");
+        }
+
+        [HttpPost("refresh")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
+        {
+            var user = await _userManager.Users.FirstOrDefaultAsync(e => e.RefreshToken == request.RefreshToken);
+
+            if (user is null)
+                return Unauthorized("Invalid refresh token");
+
+            var token = await GenerateToken(user);
+            return Ok(token);
+        }
     }
 }

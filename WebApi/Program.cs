@@ -10,8 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
+builder.Services.AddSwagger();
 
 var cosmos = new CosmosConfiguration();
 builder.Configuration.GetSection("Cosmos").Bind(cosmos);
@@ -22,6 +21,7 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.File("logs/ApplicationLog-.txt", rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
+builder.Services.AddAuthenticationAndAuthorization(builder.Configuration);
 builder.Services.AddServices();
 builder.Services.AddRepositories();
 var app = builder.Build();
