@@ -11,5 +11,4 @@ public class User : BaseEntity
     public byte[] PassSalt { get; set; }
     public DateTime BirthDate { get; set; }
     public List<string> OrderIds { get; set; }
-    public string? RefreshToken { get; set; }
 }

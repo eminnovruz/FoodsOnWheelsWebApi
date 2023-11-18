@@ -65,7 +65,7 @@ public class WorkerService : IWorkerService
             };
 
             var form = request.File;
-            using (var stream = form.OpenReadStream())
+            using (var stream = form.OpenReadStream()) 
             {
                 var fileName = Guid.NewGuid().ToString() + "-" + newRestaurant.Name + ".jpg";
                 var contentType = form.ContentType;
