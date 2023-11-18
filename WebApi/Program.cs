@@ -1,4 +1,5 @@
 using Application.Models;
+using Application.Models.DTOs.Blob;
 using Microsoft.EntityFrameworkCore;
 using Persistence.Context;
 using Serilog;
@@ -24,6 +25,8 @@ Log.Logger = new LoggerConfiguration()
 builder.Services.AddAuthenticationAndAuthorization(builder.Configuration);
 builder.Services.AddServices();
 builder.Services.AddRepositories();
+
+builder.Services.Configure<BlobStorageConfiguration>(builder.Configuration.GetSection("BlobStorage"));
 var app = builder.Build();
 
 

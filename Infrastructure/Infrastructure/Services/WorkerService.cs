@@ -13,12 +13,13 @@ public class WorkerService : IWorkerService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IValidator<AddRestaurantDto> _restarurantValidator;
     private readonly IValidator<AddCourierDto> _courierValidator;
-
-    public WorkerService(IUnitOfWork unitOfWork, IValidator<AddRestaurantDto> restarurantValidator, IValidator<AddCourierDto> courierValidator)
+    private readonly IBlobService _blobSerice;
+    public WorkerService(IUnitOfWork unitOfWork, IValidator<AddRestaurantDto> restarurantValidator, IValidator<AddCourierDto> courierValidator, IBlobService blobSerice)
     {
         _unitOfWork = unitOfWork;
         _restarurantValidator = restarurantValidator;
         _courierValidator = courierValidator;
+        _blobSerice = blobSerice;
     }
 
     public async Task<bool> AddCourier(AddCourierDto dto)
@@ -62,6 +63,21 @@ public class WorkerService : IWorkerService
                 Id = Guid.NewGuid().ToString(),
                 Rating = 0,
             };
+
+            var form = request.File;
+            using (var stream = form.OpenReadStream())
+            {
+                var fileName = Guid.NewGuid().ToString() + "-" + newRestaurant.Name + ".jpg";
+                var contentType = form.ContentType;
+
+                var blobResult = _blobSerice.UploadFile(stream, fileName, contentType);
+                if(blobResult == false)
+                {
+                    return false;
+                }
+
+                newRestaurant.ImageUrl = _blobSerice.GetSignedUrl(fileName);
+            }
 
             var result = await _unitOfWork.WriteRestaurantRepository.AddAsync(newRestaurant);
             await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();

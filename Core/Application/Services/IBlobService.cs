@@ -2,7 +2,11 @@
 
 public interface IBlobService
 {
-    Task<bool> UploadBlobAsync(string containerName, string blobName, Stream content);
-    Task<bool> RemoveBlobAsync(string containerName, string blobName);
-    Task<Stream> GetBlobAsync(string containerName, string blobName);
+    string GetSignedUrl(string fileName);
+    Task<string> GetSignedUrlAsync(string fileName);
+    bool UploadFile(Stream stream, string fileName, string contentType);
+    Task<bool> UploadFileAsync(Stream stream, string fileName, string contentType);
+
+    bool DeleteFile(string fileName);
+    Task<bool> DeleteFileAsync(string fileName);
 }
