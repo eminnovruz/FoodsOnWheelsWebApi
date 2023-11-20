@@ -1,4 +1,5 @@
 ﻿using Application.Models.DTOs.Courier;
+using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Restaurant;
 using Application.Models.DTOs.Worker;
 using Application.Services;
@@ -75,9 +76,13 @@ namespace WebApi.Controllers
                 Log.Error("error occured with [POST] AddNewRestaurant");
                 return BadRequest(exception.Message);   
             }
-        } 
+        }
 
         // Restaurant Funcs
-
+        [HttpPost("addNewFood")]
+        public async Task<ActionResult<bool>> AddNewFood([FromForm] FoodInfoDto request)
+        {
+            throw new();
+        }
     }
 }

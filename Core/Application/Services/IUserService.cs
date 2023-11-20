@@ -15,4 +15,5 @@ public interface IUserService
     Task<GetUserProfileInfoDto> GetProfileInfo(string userId); // finished
     Task<bool> RateOrder(RateOrderDto request); // finished
     Task<bool> ReportOrder(ReportOrderDto request);  // finished
+    Task<bool> MakeOrder(MakeOrderDto request);
 }

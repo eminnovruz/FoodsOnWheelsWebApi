@@ -6,16 +6,19 @@ using Application.Models.DTOs.User;
 using Application.Repositories;
 using Application.Services;
 using Domain.Models;
+using FluentValidation;
 
 namespace Infrastructure.Services;
 
 public class UserService : IUserService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IValidator<MakeOrderDto> _orderValidator;
 
-    public UserService(IUnitOfWork unitOfWork)
+    public UserService(IUnitOfWork unitOfWork, IValidator<MakeOrderDto> orderValidator)
     {
         _unitOfWork = unitOfWork;
+        _orderValidator = orderValidator;
     }
 
     public async Task<IEnumerable<CategoryInfoDto>> GetAllFoodCategories()
@@ -120,6 +123,33 @@ public class UserService : IUserService
         };
     }
 
+    public async Task<bool> MakeOrder(MakeOrderDto request)
+    {
+        if(_orderValidator.Validate(request).IsValid)
+        {
+            var newOrder = new Order()
+            {
+                Amount = CalculateOrderAmount(request.FoodIds),
+                CourierId = "",
+                Id = Guid.NewGuid().ToString(),
+                IsActivated = false,
+                OrderDate = DateTime.Now,
+                OrderedFoodIds = request.FoodIds,
+                UserId = request.UserId,
+                OrderRatingId = "",
+                RestaurantId = request.RestaurantId,
+            };
+
+            var result = await _unitOfWork.WriteOrderRepository.AddAsync(newOrder);
+            await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
+            return result;
+        }
+        else
+        {
+            return false;
+        }
+
+    }
 
     public async Task<bool> RateOrder(RateOrderDto request)
     {
@@ -162,5 +192,21 @@ public class UserService : IUserService
         await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
 
         return true;
+    }
+
+    public uint CalculateOrderAmount(List<string> foodIds)
+    {
+        var foods = _unitOfWork.ReadFoodRepository.GetAll().ToList();
+        uint amount = 0;
+
+        foreach (var item in foods)
+        {
+            if(foodIds.Contains(item.Id))
+            {
+                amount += item.Price;
+            }
+        }
+
+        return amount;
     }
 }

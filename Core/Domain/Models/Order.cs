@@ -10,7 +10,7 @@ public class Order : BaseEntity
     public DateTime OrderFinishTime { get; set; }
     public List<string> OrderedFoodIds { get; set; }
     public uint Amount { get; set; }
-    public string RestorauntId { get; set; }
+    public string RestaurantId { get; set; }
     public bool IsActivated { get; set; } 
     public string OrderRatingId { get; set; }
 }

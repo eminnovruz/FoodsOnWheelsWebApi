@@ -1,10 +1,12 @@
 ﻿using Application.Models.DTOs.Courier;
+using Application.Models.DTOs.Restaurant;
 using Application.Models.DTOs.Worker;
 using Application.Repositories;
 using Application.Services;
 using Domain.Models;
 using FluentValidation;
 using Serilog;
+using System.Net.WebSockets;
 
 namespace Infrastructure.Services;
 
@@ -24,7 +26,7 @@ public class WorkerService : IWorkerService
 
     public async Task<bool> AddCourier(AddCourierDto dto)
     {
-        if(_courierValidator.Validate(dto).IsValid)
+        if (_courierValidator.Validate(dto).IsValid)
         {
             Courier newCourier = new Courier()
             {
@@ -52,7 +54,7 @@ public class WorkerService : IWorkerService
     {
         var isValid = _restarurantValidator.Validate(request);
 
-        if(isValid.IsValid)
+        if (isValid.IsValid)
         {
             var newRestaurant = new Restaurant()
             {
@@ -65,13 +67,13 @@ public class WorkerService : IWorkerService
             };
 
             var form = request.File;
-            using (var stream = form.OpenReadStream()) 
+            using (var stream = form.OpenReadStream())
             {
                 var fileName = Guid.NewGuid().ToString() + "-" + newRestaurant.Name + ".jpg";
                 var contentType = form.ContentType;
 
                 var blobResult = _blobSerice.UploadFile(stream, fileName, contentType);
-                if(blobResult == false)
+                if (blobResult == false)
                 {
                     return false;
                 }
@@ -101,9 +103,19 @@ public class WorkerService : IWorkerService
         return courierDtos;
     }
 
-    public Task<bool> GetAllRestaurants()
+    public async Task<IEnumerable<RestaurantInfoDto>> GetAllRestaurants()
     {
-        throw new NotImplementedException();
+        var restaurants = _unitOfWork.ReadRestaurantRepository.GetAll();
+        var restaurantDtos = restaurants.Select(item => new RestaurantInfoDto
+        {
+            Description = item.Description,
+            FoodIds = item.FoodIds,
+            Id = item.Id,
+            Name = item.Name,
+            Rating = item.Rating
+        });
+
+        return restaurantDtos;
     }
 
     public async Task<bool> RemoveCourier(string courierId)
@@ -113,14 +125,16 @@ public class WorkerService : IWorkerService
         return result;
     }
 
-    public Task<bool> RemoveRestaurant()
+    public async Task<bool> RemoveRestaurant(string restaurantId)
     {
-        throw new NotImplementedException();
+        var result = await _unitOfWork.WriteRestaurantRepository.RemoveAsync(restaurantId);
+        return result;
     }
 
-    public Task<bool> SeeAllFoods()
+    public async Task<IEnumerable<Food>> SeeAllFoods()
     {
-        throw new NotImplementedException();
+        var restaurants = _unitOfWork.ReadFoodRepository.GetAll();
+        return restaurants;
     }
 }
 

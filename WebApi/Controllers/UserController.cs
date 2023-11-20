@@ -54,5 +54,19 @@ namespace WebApi.Controllers
 
         //    return _userService.RateOrder(request);
         //}
+
+        [HttpPost("makeOrder")]
+        public async Task<ActionResult<bool>> MakeOrder(MakeOrderDto request)
+        {
+            try
+            {
+                return Ok(_userService.MakeOrder(request));
+            }
+            catch (Exception ex)
+            {
+                Log.Error("error occured with making order");
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }
