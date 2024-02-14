@@ -1,7 +1,9 @@
 ﻿using Application.Models.DTOs.Courier;
+using Application.Models.DTOs.Order;
 using Application.Services;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
+using System;
 using System.Reflection;
 
 namespace WebApi.Controllers
@@ -37,5 +39,22 @@ namespace WebApi.Controllers
                 return BadRequest(exception.Message);
             }
         }
+
+        [HttpGet("viewOrderHistory")]
+        public async Task<ActionResult<IEnumerable<OrderInfoDto>>> ViewOrderHistory(string courierId)
+        {
+            try
+            {
+                var pastOrders = await _courierService.GetOrderHistory(courierId);
+
+                return Ok(pastOrders);
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [GET] ViewOrderHistory");
+                return BadRequest(exception.Message);
+            }
+        }
+
     }
 }

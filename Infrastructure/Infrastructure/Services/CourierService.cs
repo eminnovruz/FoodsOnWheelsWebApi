@@ -1,7 +1,9 @@
 ﻿using Application.Models.DTOs.Courier;
+using Application.Models.DTOs.Order;
 using Application.Repositories;
 using Application.Services;
 using Domain.Models;
+using Microsoft.Extensions.Azure;
 
 namespace Persistence.Services;
 
@@ -29,12 +31,38 @@ public class CourierService : ICourierService
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<GetOrderHistoryDto>> GetOrderHistory(string CourierId)
+    public async Task<IEnumerable<OrderInfoDto>> GetOrderHistory(string CourierId)
     {
-        throw new NotImplementedException();
+        Courier courier = await _unitOfWork.ReadCourierRepository.GetAsync(CourierId);
+        List<OrderInfoDto> PastOrders = new List<OrderInfoDto>();
+
+        if(courier == null)
+        {
+            return null;
+        }
+
+        foreach (var item in courier.OrderIds)
+        {
+            var order = await _unitOfWork.ReadOrderRepository.GetAsync(item);
+
+            OrderInfoDto dto = new OrderInfoDto()
+            {
+                OrderDate = order.OrderDate,
+                FoodIds = order.OrderedFoodIds,
+                PayedWithCard = true,
+                Rate = 0,
+                UserId = order.UserId,
+                RestaurantId = order.RestaurantId,
+            };
+
+            PastOrders.Add(dto);
+        }
+
+        return PastOrders;
+
     }
 
-    public Task<GetOrderHistoryDto> GetPastOrderInfoById(string PastOrderId)
+    public Task<OrderInfoDto> GetPastOrderInfoById(string PastOrderId)
     {
         throw new NotImplementedException();
     }
