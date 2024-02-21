@@ -111,6 +111,7 @@ public static class Extension
         services.AddScoped<IPassHashService, PassHashService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IBlobService, BlobService>();
+        services.AddScoped<IUserService, UserService>();
 
         services.AddValidatorsFromAssemblyContaining<AddRestaurantDtoValidator>();
         services.AddTransient<IValidator<AddRestaurantDto>, AddRestaurantDtoValidator>();

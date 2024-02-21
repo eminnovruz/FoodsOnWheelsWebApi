@@ -54,7 +54,8 @@ public class UserService : IUserService
             Id = restaurant.Id,
             FoodIds = restaurant.FoodIds,
             Name = restaurant.Name,
-            Rating = restaurant.Rating
+            Rating = restaurant.Rating,
+            ImageUrl = restaurant.ImageUrl
         });
 
         return restaurantDtos;
