@@ -1,4 +1,5 @@
-﻿using Application.Models.DTOs.Courier;
+﻿using Application.Models.DTOs.Category;
+using Application.Models.DTOs.Courier;
 using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Restaurant;
 using Application.Models.DTOs.Worker;
@@ -6,6 +7,7 @@ using Application.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
+using System;
 
 namespace WebApi.Controllers
 {
@@ -79,10 +81,50 @@ namespace WebApi.Controllers
         }
 
         // Restaurant Funcs
-        [HttpPost("addNewFood")]
-        public async Task<ActionResult<bool>> AddNewFood([FromForm] FoodInfoDto request)
+        //[HttpPost("addNewFood")]
+        //public async Task<ActionResult<bool>> AddNewFood([FromForm] FoodInfoDto request)
+        //{
+        //    try
+        //    {
+        //        return Ok(await _workerService.)
+        //    }
+        //    catch (Exception)
+        //    {
+
+        //        throw;
+        //    }
+        //}
+
+
+        [HttpPost("addNewCategory")]
+        public async Task<ActionResult<bool>> AddNewCategory([FromForm] AddCategoryRequest request)
         {
-            throw new();
+            try
+            {
+                return Ok(await _workerService.AddCategory(request));
+            }
+            catch (Exception exception)
+            {
+                Log.Error("error occured with [POST] AddNewCategory");
+                return BadRequest(exception.Message);
+            }
         }
+
+
+        [HttpDelete("removeCategory")]
+        public async Task<ActionResult<bool>> RemoveCategory(string categoryId)
+        {
+            try
+            {
+                return Ok( _workerService.RemoveCategory(categoryId));
+            }
+            catch (Exception exception)
+            {
+                Log.Error("error occured on [DELETE] RemoveCourier");
+                return BadRequest(exception.Message);
+            }
+        }
+
+
     }
 }

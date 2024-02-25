@@ -1,4 +1,6 @@
-﻿using Application.Models.DTOs.Courier;
+﻿using Application.Models.DTOs.Category;
+using Application.Models.DTOs.Courier;
+using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Restaurant;
 using Application.Models.DTOs.Worker;
 using Application.Repositories;
@@ -22,6 +24,26 @@ public class WorkerService : IWorkerService
         _restarurantValidator = restarurantValidator;
         _courierValidator = courierValidator;
         _blobSerice = blobSerice;
+    }
+
+    public async Task<bool> AddCategory(AddCategoryRequest request)
+    {
+        if (request == null)
+        {
+            Log.Error("Request is null ");
+            throw new ArgumentNullException();
+        }
+
+        Category newCategory = new Category()
+        {
+            CategoryName = request.CategoryName,
+            FoodIds = request.FoodIds,
+            Id = Guid.NewGuid().ToString(),
+        };
+
+        var result = await _unitOfWork.WriteCategoryRepository.AddAsync(newCategory);
+        _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
+        return result;
     }
 
     public async Task<bool> AddCourier(AddCourierDto dto)
@@ -48,6 +70,25 @@ public class WorkerService : IWorkerService
 
         Log.Error("Validation Error in [WORKER-SERVICE]AddCourier");
         return false;
+    }
+
+    public Task<bool> AddNewFood(AddFoodRequest request)
+    {
+        if(request == null)
+        {
+            throw new ArgumentNullException();
+        }
+
+        Food newFood = new Food()
+        {
+            Name = request.Name,
+            CategoryIds = request.CategoryIds,
+            Description = request.Description,
+            Id = Guid.NewGuid().ToString(),
+            ImageUrl = request.ImageUrl,
+            Price = request.Price,
+        };
+
     }
 
     public async Task<bool> AddRestaurant(AddRestaurantDto request)
@@ -118,11 +159,23 @@ public class WorkerService : IWorkerService
         return restaurantDtos;
     }
 
+    public async Task<bool> RemoveCategory(string Id)
+    {
+        var result = await _unitOfWork.WriteCategoryRepository.RemoveAsync(Id);
+        _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
+        return result;
+    }
+
     public async Task<bool> RemoveCourier(string courierId)
     {
         var result = await _unitOfWork.WriteCourierRepository.RemoveAsync(courierId);
         _unitOfWork.WriteCourierRepository.SaveChangesAsync();
         return result;
+    }
+
+    public Task<bool> RemoveFood(string Id)
+    {
+        throw new NotImplementedException();
     }
 
     public async Task<bool> RemoveRestaurant(string restaurantId)

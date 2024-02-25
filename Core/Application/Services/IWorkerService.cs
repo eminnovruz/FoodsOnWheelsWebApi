@@ -1,4 +1,6 @@
-﻿using Application.Models.DTOs.Courier;
+﻿using Application.Models.DTOs.Category;
+using Application.Models.DTOs.Courier;
+using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Restaurant;
 using Application.Models.DTOs.Worker;
 using Domain.Models;
@@ -14,4 +16,8 @@ public interface IWorkerService
     Task<bool> RemoveCourier(string courierId);
     Task<IEnumerable<Food>> SeeAllFoods();
     Task<IEnumerable<SummaryCourierDto>> GetAllCouriers();
+    Task<bool> AddCategory(AddCategoryRequest request);
+    Task<bool> RemoveCategory(string Id);
+    Task<bool> AddNewFood(AddFoodRequest request);
+    Task<bool> RemoveFood(string Id);
 }

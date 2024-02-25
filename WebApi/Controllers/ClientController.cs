@@ -1,4 +1,5 @@
-﻿using Application.Models.DTOs.Restaurant;
+﻿using Application.Models.DTOs.Category;
+using Application.Models.DTOs.Restaurant;
 using Application.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +24,20 @@ namespace WebApi.Controllers
             try
             {
                 return Ok(_userService.GetAllRestaurants());
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [GET] GetAllRestaurants");
+                return BadRequest(exception.Message);
+            }
+        }
+
+        [HttpGet("getAllCategories")]
+        public async Task<ActionResult<CategoryInfoDto>> GetAllCategories()
+        {
+            try
+            {
+                return Ok(_userService.GetAllFoodCategories());
             }
             catch (Exception exception)
             {
