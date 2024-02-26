@@ -3,6 +3,7 @@ using Application.Repositories.Repository;
 using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Persistence.Context;
+using Persistence.Repositories.Repository;
 using System.Security.Policy;
 
 namespace Persistence.Repositories.CourierRepository;

@@ -19,11 +19,11 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("getAllRestaurants")]
-        public async Task<ActionResult<RestaurantInfoDto>> GetAllRestaurants()
+        public ActionResult<RestaurantInfoDto> GetAllRestaurants()
         {
             try
             {
-                return Ok(_userService.GetAllRestaurants());
+                return Ok( _userService.GetAllRestaurants());
             }
             catch (Exception exception)
             {
@@ -33,7 +33,7 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("getAllCategories")]
-        public async Task<ActionResult<CategoryInfoDto>> GetAllCategories()
+        public ActionResult<CategoryInfoDto> GetAllCategories()
         {
             try
             {
@@ -45,5 +45,7 @@ namespace WebApi.Controllers
                 return BadRequest(exception.Message);
             }
         }
+
+
     }
 }

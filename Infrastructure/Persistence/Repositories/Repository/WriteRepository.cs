@@ -3,7 +3,7 @@ using Domain.Models.Common;
 using Microsoft.EntityFrameworkCore;
 using Persistence.Context;
 
-namespace Persistence.Repositories;
+namespace Persistence.Repositories.Repository;
 
 public class WriteRepository<T> : IWriteRepository<T> where T : BaseEntity
 {

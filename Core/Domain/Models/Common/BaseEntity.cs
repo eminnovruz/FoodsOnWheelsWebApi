@@ -1,6 +1,6 @@
 ﻿namespace Domain.Models.Common;
 
-public class BaseEntity
+public abstract class BaseEntity
 {
     public string Id { get; set; }
 }

@@ -21,12 +21,16 @@ public class UserService : IUserService
         _orderValidator = orderValidator;
     }
 
-    public async Task<IEnumerable<CategoryInfoDto>> GetAllFoodCategories()
+
+
+    public  IEnumerable<CategoryInfoDto> GetAllFoodCategories()
     {
-        IEnumerable<Category> categories = _unitOfWork.ReadCategoryRepository.GetAll();
+        var categories = _unitOfWork.ReadCategoryRepository.GetAll();
+
+        if (categories is null)
+            throw new NullReferenceException();
 
         List<CategoryInfoDto> dtos = new List<CategoryInfoDto>();
-
         foreach (var item in categories)
         {
             var dto = new CategoryInfoDto()
@@ -42,11 +46,12 @@ public class UserService : IUserService
         return dtos;
     }
 
-    public async Task<IEnumerable<RestaurantInfoDto>> GetAllRestaurants()
+    public IEnumerable<RestaurantInfoDto> GetAllRestaurants()
     {
-        var restaurants = _unitOfWork.ReadRestaurantRepository
-            .GetAll()
-            .ToList();
+        var restaurants = _unitOfWork.ReadRestaurantRepository.GetAll().ToList();
+
+        if (restaurants is null)
+            throw new NullReferenceException();
 
         var restaurantDtos = restaurants.Select(restaurant => new RestaurantInfoDto
         {
@@ -62,11 +67,14 @@ public class UserService : IUserService
     }
 
 
-    public async Task<IEnumerable<FoodInfoDto>> GetFoodsByCategory(string categoryId)
+    public IEnumerable<FoodInfoDto> GetFoodsByCategory(string categoryId)
     {
         var foods = _unitOfWork.ReadFoodRepository
             .GetWhere(food => food.CategoryIds.Contains(categoryId))
             .ToList();
+
+        if (foods is null)
+            throw new NullReferenceException();
 
         var foodDtos = foods.Select(food => new FoodInfoDto
         {
@@ -84,8 +92,11 @@ public class UserService : IUserService
     public async Task<IEnumerable<FoodInfoDto>> GetFoodsByRestaurant(string restaurantId)
     {
         var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(restaurantId);
-        List<FoodInfoDto> dtos = new List<FoodInfoDto>();
 
+        if (restaurant is null)
+            throw new NullReferenceException();
+
+        List<FoodInfoDto> dtos = new List<FoodInfoDto>();
         foreach (var item in restaurant.FoodIds)
         {
             var food = await _unitOfWork.ReadFoodRepository.GetAsync(item);
@@ -108,10 +119,8 @@ public class UserService : IUserService
     {
         var user = await _unitOfWork.ReadUserRepository.GetAsync(userId);
 
-        if (user == null)
-        {
-            return null;
-        }
+        if (user is null)
+            throw new NullReferenceException();
 
         return new GetUserProfileInfoDto
         {
@@ -156,6 +165,9 @@ public class UserService : IUserService
     {
         var order = await _unitOfWork.ReadOrderRepository.GetAsync(request.OrderId);
 
+        if (order is null)
+            throw new NullReferenceException();
+
         var orderRating = new OrderRating
         {
             Id = Guid.NewGuid().ToString(),
@@ -174,6 +186,9 @@ public class UserService : IUserService
     public async Task<bool> ReportOrder(ReportOrderDto request)
     {
         var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(request.RestaurantId);
+
+        if (restaurant is null)
+            throw new NullReferenceException();
 
         var comment = new RestaurantComment
         {
@@ -198,8 +213,11 @@ public class UserService : IUserService
     public uint CalculateOrderAmount(List<string> foodIds)
     {
         var foods = _unitOfWork.ReadFoodRepository.GetAll().ToList();
-        uint amount = 0;
+        if (foods is null)
+            throw new NullReferenceException();
 
+
+        uint amount = 0; 
         foreach (var item in foods)
         {
             if(foodIds.Contains(item.Id))

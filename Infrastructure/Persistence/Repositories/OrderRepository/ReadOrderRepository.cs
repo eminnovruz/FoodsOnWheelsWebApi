@@ -1,6 +1,7 @@
 ﻿using Application.Repositories.OrderRepository;
 using Domain.Models;
 using Persistence.Context;
+using Persistence.Repositories.Repository;
 
 namespace Persistence.Repositories.OrderRepository;
 

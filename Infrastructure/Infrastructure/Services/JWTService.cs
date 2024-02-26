@@ -1,4 +1,4 @@
-﻿using Application.Models;
+﻿using Application.Models.Config;
 using Application.Services;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;

@@ -18,6 +18,6 @@ public interface IWorkerService
     Task<IEnumerable<SummaryCourierDto>> GetAllCouriers();
     Task<bool> AddCategory(AddCategoryRequest request);
     Task<bool> RemoveCategory(string Id);
-    Task<bool> AddNewFood(AddFoodRequest request);
+    bool AddNewFood(AddFoodRequest request);
     Task<bool> RemoveFood(string Id);
 }

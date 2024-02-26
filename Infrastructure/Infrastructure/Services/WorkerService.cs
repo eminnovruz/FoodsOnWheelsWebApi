@@ -42,7 +42,7 @@ public class WorkerService : IWorkerService
         };
 
         var result = await _unitOfWork.WriteCategoryRepository.AddAsync(newCategory);
-        _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
+        await _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
         return result;
     }
 
@@ -64,7 +64,7 @@ public class WorkerService : IWorkerService
             };
 
             var result = await _unitOfWork.WriteCourierRepository.AddAsync(newCourier);
-            _unitOfWork.WriteCourierRepository.SaveChangesAsync();
+            await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
             return result;
         }
 
@@ -72,7 +72,7 @@ public class WorkerService : IWorkerService
         return false;
     }
 
-    public Task<bool> AddNewFood(AddFoodRequest request)
+    public bool AddNewFood(AddFoodRequest request)
     {
         if(request == null)
         {
@@ -88,7 +88,7 @@ public class WorkerService : IWorkerService
             ImageUrl = request.ImageUrl,
             Price = request.Price,
         };
-
+        return true;
     }
 
     public async Task<bool> AddRestaurant(AddRestaurantDto request)
@@ -162,14 +162,14 @@ public class WorkerService : IWorkerService
     public async Task<bool> RemoveCategory(string Id)
     {
         var result = await _unitOfWork.WriteCategoryRepository.RemoveAsync(Id);
-        _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
+        await _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
         return result;
     }
 
     public async Task<bool> RemoveCourier(string courierId)
     {
         var result = await _unitOfWork.WriteCourierRepository.RemoveAsync(courierId);
-        _unitOfWork.WriteCourierRepository.SaveChangesAsync();
+        await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
         return result;
     }
 

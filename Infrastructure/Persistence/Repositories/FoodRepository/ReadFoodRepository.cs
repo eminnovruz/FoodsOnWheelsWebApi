@@ -2,6 +2,7 @@
 using Application.Repositories.FoodRepository;
 using Domain.Models;
 using Persistence.Context;
+using Persistence.Repositories.Repository;
 
 namespace Persistence.Repositories.FoodRepository;
 

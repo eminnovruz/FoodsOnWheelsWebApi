@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Persistence.Context;
 using System.Linq.Expressions;
 
-namespace Persistence.Repositories;
+namespace Persistence.Repositories.Repository;
 
 public class ReadRepository<T> : IReadRepository<T> where T : BaseEntity
 {
