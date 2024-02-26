@@ -18,7 +18,7 @@ public class AuthService : IAuthService
         _jwtService = jwtService;
     }
 
-    public async Task<string> LoginUser(UserLoginRequest request)
+    public string LoginUser(UserLoginRequest request)
     {
         var users = _unitOfWork.ReadUserRepository.GetAll();
 

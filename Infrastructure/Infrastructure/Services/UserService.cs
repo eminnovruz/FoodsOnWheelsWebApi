@@ -46,6 +46,7 @@ public class UserService : IUserService
         return dtos;
     }
 
+
     public IEnumerable<RestaurantInfoDto> GetAllRestaurants()
     {
         var restaurants = _unitOfWork.ReadRestaurantRepository.GetAll().ToList();
@@ -115,6 +116,7 @@ public class UserService : IUserService
         return dtos;
     }
 
+
     public async Task<GetUserProfileInfoDto> GetProfileInfo(string userId)
     {
         var user = await _unitOfWork.ReadUserRepository.GetAsync(userId);
@@ -132,6 +134,7 @@ public class UserService : IUserService
             PhoneNumber = user.PhoneNumber,
         };
     }
+
 
     public async Task<bool> MakeOrder(MakeOrderDto request)
     {
@@ -160,6 +163,7 @@ public class UserService : IUserService
         }
 
     }
+
 
     public async Task<bool> RateOrder(RateOrderDto request)
     {
@@ -209,6 +213,7 @@ public class UserService : IUserService
 
         return true;
     }
+
 
     public uint CalculateOrderAmount(List<string> foodIds)
     {

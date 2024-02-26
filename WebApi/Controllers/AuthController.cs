@@ -21,18 +21,21 @@ namespace WebApi.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult> Login([FromBody] UserLoginRequest request)
+        public ActionResult Login([FromBody] UserLoginRequest request)
         {
             try
             {
                 var users = _unitOfWork.ReadUserRepository.GetAll();
-                User user = users.FirstOrDefault(req => req.Email == req.Email);
+                if (users is null)
+                    return NotFound("You haven't an account!");
+
+                User user = users.FirstOrDefault(req => req?.Email == request.Email)!;
                 if (user is null)
                 {
                     return NotFound("You haven't an account!");
                 }
 
-                var token = await _authService.LoginUser(request);
+                var token =  _authService.LoginUser(request);
                 Log.Information($"{user.Name} Logged in");
                 return Ok(token);
             }

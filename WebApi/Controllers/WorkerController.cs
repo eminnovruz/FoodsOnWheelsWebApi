@@ -81,19 +81,19 @@ namespace WebApi.Controllers
         }
 
         // Restaurant Funcs
-        //[HttpPost("addNewFood")]
-        //public async Task<ActionResult<bool>> AddNewFood([FromForm] FoodInfoDto request)
-        //{
-        //    try
-        //    {
-        //        return Ok(await _workerService.)
-        //    }
-        //    catch (Exception)
-        //    {
+        [HttpPost("addNewFood")]
+        public ActionResult<bool> AddNewFood([FromForm] AddFoodRequest request)
+        {
+            try
+            {
+                return Ok(_workerService.AddNewFood(request));
+            }
+            catch (Exception)
+            {
 
-        //        throw;
-        //    }
-        //}
+                throw;
+            }
+        }
 
 
         [HttpPost("addNewCategory")]

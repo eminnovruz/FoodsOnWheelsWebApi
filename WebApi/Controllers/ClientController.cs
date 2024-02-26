@@ -1,4 +1,5 @@
 ﻿using Application.Models.DTOs.Category;
+using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Restaurant;
 using Application.Services;
 using Microsoft.AspNetCore.Http;
@@ -46,6 +47,35 @@ namespace WebApi.Controllers
             }
         }
 
+        [HttpGet("getFoodsByCategory")]
+        public ActionResult<IEnumerable<FoodInfoDto>> GetFoodsByCategory(string categoryId)
+        {
+            try
+            {
+                return Ok(_userService.GetFoodsByCategory(categoryId));
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [GET] GetFoodsByCategory");
+                return BadRequest(exception.Message);
+            }
+        }
+
+
+        [HttpGet("getFoodsByRestaurant")]
+        public async Task<ActionResult<IEnumerable<FoodInfoDto>>> GetFoodsByRestaurant(string restaurantId)
+        {
+            try
+            {
+                return Ok(await _userService.GetFoodsByRestaurant(restaurantId));
+                
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [GET] GetFoodsByRestaurant");
+                return BadRequest(exception.Message);
+            }
+        }
 
     }
 }
