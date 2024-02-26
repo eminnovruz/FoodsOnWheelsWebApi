@@ -1,6 +1,7 @@
 ﻿using Application.Models.DTOs.Category;
 using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Restaurant;
+using Application.Models.DTOs.User;
 using Application.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -77,5 +78,19 @@ namespace WebApi.Controllers
             }
         }
 
+
+        [HttpGet("getProfileInfo")]
+        public async Task<ActionResult<GetUserProfileInfoDto>> GetProfileInfo(string userId)
+        {
+            try
+            {
+                return Ok(await _userService.GetProfileInfo(userId));
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [GET] GetProfileInfo");
+                return BadRequest(exception.Message);
+            }
+        }
     }
 }
