@@ -32,8 +32,8 @@ namespace Infrastructure.Services
             if (request is null)
                 throw new ArgumentNullException("The Information Is Not Complete");
 
-            var categoryTest = _unitOfWork.ReadCategoryRepository.GetWhere(x => x.CategoryName.ToLower() == request.CategoryName.ToLower());
-            if (categoryTest is not null)
+            var categoryTest = _unitOfWork.ReadCategoryRepository.GetWhere(x => x.CategoryName.ToLower() == request.CategoryName.ToLower()).ToList();
+            if (categoryTest.Count > 0)
                 throw new InvalidDataException("A Category With This Name Already Exists");
 
             var category = new Category
