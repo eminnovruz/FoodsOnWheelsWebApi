@@ -86,12 +86,13 @@ namespace WebApi.Controllers
         {
             try
             {
+
                 return Ok(_workerService.AddNewFood(request));
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-
-                throw;
+                Log.Error("error occured with [POST] AddNewRestaurant");
+                return BadRequest(exception.Message);   
             }
         }
 
