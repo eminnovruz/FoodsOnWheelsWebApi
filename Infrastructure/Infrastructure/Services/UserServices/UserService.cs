@@ -4,11 +4,11 @@ using Application.Models.DTOs.Order;
 using Application.Models.DTOs.Restaurant;
 using Application.Models.DTOs.User;
 using Application.Repositories;
-using Application.Services;
+using Application.Services.IUserServices;
 using Domain.Models;
 using FluentValidation;
 
-namespace Infrastructure.Services;
+namespace Infrastructure.Services.UserServices;
 
 public class UserService : IUserService
 {
@@ -23,7 +23,7 @@ public class UserService : IUserService
 
 
 
-    public  IEnumerable<CategoryInfoDto> GetAllFoodCategories()
+    public IEnumerable<CategoryInfoDto> GetAllFoodCategories()
     {
         var categories = _unitOfWork.ReadCategoryRepository.GetAll();
 
@@ -100,7 +100,7 @@ public class UserService : IUserService
         List<FoodInfoDto> dtos = new List<FoodInfoDto>();
         foreach (var item in restaurant.FoodIds)
         {
-            var food = await _unitOfWork.ReadFoodRepository.GetAsync(item);
+            var food = await _unitOfWork.ReadFoodRepository.GetAsync(item); ;
 
             var dto = new FoodInfoDto()
             {
@@ -138,7 +138,7 @@ public class UserService : IUserService
 
     public async Task<bool> MakeOrder(MakeOrderDto request)
     {
-        if(_orderValidator.Validate(request).IsValid)
+        if (_orderValidator.Validate(request).IsValid)
         {
             var newOrder = new Order()
             {
@@ -222,10 +222,10 @@ public class UserService : IUserService
             throw new NullReferenceException();
 
 
-        uint amount = 0; 
+        uint amount = 0;
         foreach (var item in foods)
         {
-            if(foodIds.Contains(item.Id))
+            if (foodIds.Contains(item.Id))
             {
                 amount += item.Price;
             }

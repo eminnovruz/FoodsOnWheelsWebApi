@@ -1,11 +1,11 @@
 ﻿using Application.Models.Config;
-using Application.Services;
+using Application.Services.IAuthServices;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace Infrastructure.Services;
+namespace Infrastructure.Services.AuthServices;
 
 public class JWTService : IJWTService
 {

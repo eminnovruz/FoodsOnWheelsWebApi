@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace Application.Services;
+namespace Application.Services.IAuthServices;
 
 public interface IJWTService
 {

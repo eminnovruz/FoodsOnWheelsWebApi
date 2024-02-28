@@ -1,6 +1,6 @@
 ﻿using Application.Models.DTOs.Auth;
 using Application.Repositories;
-using Application.Services;
+using Application.Services.IAuthServices;
 using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;

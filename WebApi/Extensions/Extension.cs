@@ -8,8 +8,12 @@ using Application.Repositories.OrderRepository;
 using Application.Repositories.RestaurantRepository;
 using Application.Repositories.UserRepository;
 using Application.Services;
+using Application.Services.IAuthServices;
+using Application.Services.IUserServices;
 using FluentValidation;
 using Infrastructure.Services;
+using Infrastructure.Services.AuthServices;
+using Infrastructure.Services.UserServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -20,7 +24,6 @@ using Persistence.Repositories.FoodRepository;
 using Persistence.Repositories.OrderRepository;
 using Persistence.Repositories.RestaurantRepository;
 using Persistence.Repositories.UserRepository;
-using Persistence.Services;
 using System.Text;
 using WebApi.Validators;
 
@@ -108,6 +111,7 @@ public static class Extension
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IBlobService, BlobService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IRestaurantService, RestaurantService>();
 
         services.AddValidatorsFromAssemblyContaining<AddRestaurantDtoValidator>();
         services.AddTransient<IValidator<AddRestaurantDto>, AddRestaurantDtoValidator>();

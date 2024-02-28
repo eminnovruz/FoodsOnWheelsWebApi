@@ -1,8 +1,9 @@
 ﻿using Application.Models.DTOs.Category;
 using Application.Models.DTOs.Food;
+using Application.Models.DTOs.Order;
 using Application.Models.DTOs.Restaurant;
 using Application.Models.DTOs.User;
-using Application.Services;
+using Application.Services.IUserServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
@@ -11,11 +12,11 @@ namespace WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ClientController : ControllerBase
+    public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
 
-        public ClientController(IUserService userService)
+        public UserController(IUserService userService)
         {
             _userService = userService;
         }
@@ -47,6 +48,7 @@ namespace WebApi.Controllers
                 return BadRequest(exception.Message);
             }
         }
+        
 
         [HttpGet("getFoodsByCategory")]
         public ActionResult<IEnumerable<FoodInfoDto>> GetFoodsByCategory(string categoryId)
@@ -89,6 +91,50 @@ namespace WebApi.Controllers
             catch (Exception exception)
             {
                 Log.Error("Error occured on [GET] GetProfileInfo");
+                return BadRequest(exception.Message);
+            }
+        }
+
+
+        [HttpPost("rateOrder")]
+        public async Task<ActionResult<bool>> RateOrder(RateOrderDto request)
+        {
+            try
+            {
+                return Ok(await _userService.RateOrder(request));
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [POST] RateOrder");
+                return BadRequest(exception.Message);
+            }
+        }
+
+
+        [HttpPost("reportOrder")]
+        public async Task<ActionResult<bool>> ReportOrder(ReportOrderDto request)
+        {
+            try
+            {
+                return Ok(await _userService.ReportOrder(request));
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [POST] RateOrder");
+                return BadRequest(exception.Message);
+            }
+        }
+
+        [HttpPost("makeOrder")]
+        public async Task<ActionResult<bool>> MakeOrder(MakeOrderDto request)
+        {
+            try
+            {
+                return Ok(await _userService.MakeOrder(request));
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [POST] MakeOrder");
                 return BadRequest(exception.Message);
             }
         }

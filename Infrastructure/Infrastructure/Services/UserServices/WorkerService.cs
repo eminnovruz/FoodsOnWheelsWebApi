@@ -5,12 +5,13 @@ using Application.Models.DTOs.Restaurant;
 using Application.Models.DTOs.Worker;
 using Application.Repositories;
 using Application.Services;
+using Application.Services.IUserServices;
 using Domain.Models;
 using FluentValidation;
 using Serilog;
 using System.Net.WebSockets;
 
-namespace Infrastructure.Services;
+namespace Infrastructure.Services.UserServices;
 
 public class WorkerService : IWorkerService
 {
@@ -31,7 +32,7 @@ public class WorkerService : IWorkerService
         if (request == null)
         {
             Log.Error("Request is null ");
-            throw new ArgumentNullException();
+            throw new ArgumentNullException("Request is null ");
         }
 
         Category newCategory = new Category()
@@ -74,7 +75,7 @@ public class WorkerService : IWorkerService
 
     public bool AddNewFood(AddFoodRequest request)
     {
-        if(request == null)
+        if (request == null)
         {
             throw new ArgumentNullException();
         }
