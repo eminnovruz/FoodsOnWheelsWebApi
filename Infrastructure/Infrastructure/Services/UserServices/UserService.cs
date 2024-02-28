@@ -28,7 +28,7 @@ public class UserService : IUserService
         var categories = _unitOfWork.ReadCategoryRepository.GetAll();
 
         if (categories is null)
-            throw new NullReferenceException();
+            throw new ArgumentNullException();
 
         List<CategoryInfoDto> dtos = new List<CategoryInfoDto>();
         foreach (var item in categories)
@@ -52,7 +52,7 @@ public class UserService : IUserService
         var restaurants = _unitOfWork.ReadRestaurantRepository.GetAll().ToList();
 
         if (restaurants is null)
-            throw new NullReferenceException();
+            throw new ArgumentNullException();
 
         var restaurantDtos = restaurants.Select(restaurant => new RestaurantInfoDto
         {
@@ -75,7 +75,7 @@ public class UserService : IUserService
             .ToList();
 
         if (foods is null)
-            throw new NullReferenceException();
+            throw new ArgumentNullException();
 
         var foodDtos = foods.Select(food => new FoodInfoDto
         {
@@ -95,7 +95,7 @@ public class UserService : IUserService
         var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(restaurantId);
 
         if (restaurant is null)
-            throw new NullReferenceException();
+            throw new ArgumentNullException();
 
         List<FoodInfoDto> dtos = new List<FoodInfoDto>();
         foreach (var item in restaurant.FoodIds)
@@ -122,7 +122,7 @@ public class UserService : IUserService
         var user = await _unitOfWork.ReadUserRepository.GetAsync(userId);
 
         if (user is null)
-            throw new NullReferenceException();
+            throw new ArgumentNullException();
 
         return new GetUserProfileInfoDto
         {
@@ -170,7 +170,7 @@ public class UserService : IUserService
         var order = await _unitOfWork.ReadOrderRepository.GetAsync(request.OrderId);
 
         if (order is null)
-            throw new NullReferenceException();
+            throw new ArgumentNullException();
 
         var orderRating = new OrderRating
         {
@@ -192,7 +192,7 @@ public class UserService : IUserService
         var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(request.RestaurantId);
 
         if (restaurant is null)
-            throw new NullReferenceException();
+            throw new ArgumentNullException();
 
         var comment = new RestaurantComment
         {
@@ -219,7 +219,7 @@ public class UserService : IUserService
     {
         var foods = _unitOfWork.ReadFoodRepository.GetAll().ToList();
         if (foods is null)
-            throw new NullReferenceException();
+            throw new ArgumentNullException();
 
 
         uint amount = 0;
