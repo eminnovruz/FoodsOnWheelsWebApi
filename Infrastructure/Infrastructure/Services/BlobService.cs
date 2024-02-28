@@ -41,7 +41,7 @@ public class BlobService : IBlobService
         var contaionerClient = serviceClient.GetBlobContainerClient(_storageOptions.ContainerName);
         var blobClient = contaionerClient.GetBlobClient(fileName);
 
-        var signedUrl = blobClient.GenerateSasUri(BlobSasPermissions.Read, DateTime.Now.AddHours(2)).AbsoluteUri;
+        var signedUrl = blobClient.GenerateSasUri(BlobSasPermissions.Read, DateTime.Now.AddMonths(1)).AbsoluteUri;
 
         return signedUrl;
     }
