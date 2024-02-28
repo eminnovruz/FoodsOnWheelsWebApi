@@ -1,4 +1,5 @@
 using Application.Models;
+using Application.Models.Config;
 using Application.Models.DTOs.Blob;
 using Microsoft.EntityFrameworkCore;
 using Persistence.Context;
@@ -25,7 +26,7 @@ Log.Logger = new LoggerConfiguration()
 builder.Services.AddAuthenticationAndAuthorization(builder.Configuration);
 builder.Services.AddServices();
 builder.Services.AddRepositories();
-
+builder.Services.AddDistributedMemoryCache(); // cache
 builder.Services.Configure<BlobStorageConfiguration>(builder.Configuration.GetSection("BlobStorage"));
 var app = builder.Build();
 
