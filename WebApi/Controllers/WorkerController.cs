@@ -3,7 +3,7 @@ using Application.Models.DTOs.Courier;
 using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Restaurant;
 using Application.Models.DTOs.Worker;
-using Application.Services;
+using Application.Services.IUserServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;

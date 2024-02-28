@@ -5,7 +5,7 @@ using Application.Models.DTOs.Restaurant;
 using Application.Models.DTOs.Worker;
 using Domain.Models;
 
-namespace Application.Services;
+namespace Application.Services.IUserServices;
 
 public interface IWorkerService
 {

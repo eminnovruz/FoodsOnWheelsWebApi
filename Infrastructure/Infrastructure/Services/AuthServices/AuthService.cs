@@ -1,9 +1,9 @@
 ﻿using Application.Models.DTOs.Auth;
 using Application.Repositories;
-using Application.Services;
+using Application.Services.IAuthServices;
 using Domain.Models;
 
-namespace Infrastructure.Services;
+namespace Infrastructure.Services.AuthServices;
 
 public class AuthService : IAuthService
 {

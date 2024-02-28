@@ -1,7 +1,7 @@
 ﻿using Application.Models.DTOs.Courier;
 using Application.Models.DTOs.Order;
 
-namespace Application.Services;
+namespace Application.Services.IUserServices;
 
 public interface ICourierService
 {

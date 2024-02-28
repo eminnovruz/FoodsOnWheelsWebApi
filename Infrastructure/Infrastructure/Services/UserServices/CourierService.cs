@@ -1,11 +1,11 @@
 ﻿using Application.Models.DTOs.Courier;
 using Application.Models.DTOs.Order;
 using Application.Repositories;
-using Application.Services;
+using Application.Services.IUserServices;
 using Domain.Models;
 using Microsoft.Extensions.Azure;
 
-namespace Persistence.Services;
+namespace Infrastructure.Services.UserServices;
 
 public class CourierService : ICourierService
 {
@@ -33,13 +33,12 @@ public class CourierService : ICourierService
 
     public async Task<IEnumerable<OrderInfoDto>> GetOrderHistory(string CourierId)
     {
-        Courier courier = await _unitOfWork.ReadCourierRepository.GetAsync(CourierId);
+        Courier? courier = await _unitOfWork.ReadCourierRepository.GetAsync(CourierId);
         List<OrderInfoDto> PastOrders = new List<OrderInfoDto>();
 
-        if(courier == null)
-        {
-            return null;
-        }
+        if (courier is null)
+            throw new NullReferenceException();
+
 
         foreach (var item in courier.OrderIds)
         {
@@ -69,12 +68,10 @@ public class CourierService : ICourierService
 
     public async Task<GetProfileInfoDto> GetProfileInfo(string CourierId)
     {
-        Courier courier = await _unitOfWork.ReadCourierRepository.GetAsync(CourierId);
+        Courier? courier = await _unitOfWork.ReadCourierRepository.GetAsync(CourierId);
 
-        if (courier == null)
-        {
-            return null;
-        }
+        if (courier is null)
+            throw new NullReferenceException();
 
         GetProfileInfoDto dto = new GetProfileInfoDto()
         {

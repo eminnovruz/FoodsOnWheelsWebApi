@@ -1,8 +1,8 @@
-﻿using Application.Services;
+﻿using Application.Services.IAuthServices;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Infrastructure.Services;
+namespace Infrastructure.Services.AuthServices;
 
 public class PassHashService : IPassHashService
 {

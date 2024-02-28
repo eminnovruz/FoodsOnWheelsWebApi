@@ -1,4 +1,4 @@
-﻿namespace Application.Services;
+﻿namespace Application.Services.IAuthServices;
 
 public interface IPassHashService
 {
