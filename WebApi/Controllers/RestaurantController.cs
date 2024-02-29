@@ -19,6 +19,8 @@ namespace WebApi.Controllers
             this.restaurantService = restaurantService;
         }
 
+
+        #region ADD METOD
         [HttpPost("addCategory")]
         public async Task<ActionResult<bool>> AddCategory(AddCategoryRequest request) 
         {
@@ -48,7 +50,10 @@ namespace WebApi.Controllers
             }
         }
 
+        #endregion
 
+
+        #region GET METOD
         [HttpGet("getRestaurantInfo")]
         public async Task<ActionResult<RestaurantInfoDto>> GetRestaurantInfo(string Id)
         {
@@ -63,7 +68,10 @@ namespace WebApi.Controllers
             }
         }
 
+        #endregion
 
+
+        #region DELETE METOD
         [HttpDelete("removeFood")]
         public async Task<ActionResult<bool>> RemoveFood(string Id)
         {
@@ -77,6 +85,6 @@ namespace WebApi.Controllers
                 return BadRequest(exception.Message);
             }
         }
-
+        #endregion
     }
 }

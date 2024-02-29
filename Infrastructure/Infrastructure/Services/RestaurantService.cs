@@ -1,5 +1,6 @@
 ﻿using Application.Models.DTOs.Category;
 using Application.Models.DTOs.Food;
+using Application.Models.DTOs.Order;
 using Application.Models.DTOs.Restaurant;
 using Application.Repositories;
 using Application.Services;
@@ -119,9 +120,37 @@ namespace Infrastructure.Services
         }
 
 
-        public Task<bool> GetActiveOrders()
+        public async Task<List<OrderInfoDto>> GetActiveOrders(string Id)
         {
-            throw new NotImplementedException();
+            var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(Id);
+            if (restaurant is null)
+                throw new ArgumentNullException("Wrong Restaurant");
+
+            var orders = _unitOfWork.ReadOrderRepository.GetWhere(x=> x.RestaurantId == Id).ToList();
+            if (orders.Count == 0)
+                throw new InvalidDataException("There are no orders");
+            
+
+            var activeOrders = new List<OrderInfoDto>();
+            foreach (var order in orders)
+            {
+                if (order.OrderFinishTime == null)
+                {
+                    activeOrders.Add(new OrderInfoDto
+                    {
+                        RestaurantId = order.RestaurantId,
+                        OrderDate = order.OrderDate,
+                        PayedWithCard = true,
+                        FoodIds = order.OrderedFoodIds,
+                        UserId = order.UserId,
+                        Rate = order.Amount,
+                    });
+                }
+            }
+            if (activeOrders.Count == 0)
+                throw new ArgumentNullException("There are no ongoing orders at the moment");
+
+            return activeOrders;
         }
 
 

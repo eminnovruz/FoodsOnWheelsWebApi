@@ -7,5 +7,5 @@ public class OrderInfoDto
     public List<string> FoodIds { get; set; }
     public bool PayedWithCard { get; set; }
     public string UserId { get; set; }
-    public int Rate { get; set; }
+    public uint Rate { get; set; }
 }
