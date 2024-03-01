@@ -21,7 +21,6 @@ public interface IRestaurantService
     #endregion
 
     #region DELETE METOD
-    public Task<bool> RemoveCategory();
     public Task<bool> RemoveFood(string Id);
     #endregion
 }

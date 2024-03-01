@@ -4,6 +4,7 @@ using Application.Models.DTOs.Order;
 using Application.Models.DTOs.Restaurant;
 using Application.Repositories;
 using Application.Services;
+using Azure.Storage.Blobs.Models;
 using Domain.Models;
 using System;
 using System.Collections.Generic;
@@ -45,7 +46,7 @@ namespace Infrastructure.Services
             };
 
             await _unitOfWork.WriteCategoryRepository.AddAsync(category);
-            await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
+            await _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
 
             return true;
         }
@@ -66,16 +67,18 @@ namespace Infrastructure.Services
                 Name = request.Name,
                 Description = request.Description,
                 CategoryIds = request.CategoryIds,
-                Price = request.Price,
+                Price = request.Price, 
             };
+            
 
             var form = request.File;
             using (var stream = form.OpenReadStream())
             {
-                var fileName = Guid.NewGuid().ToString() + "-" + food.Name + ".jpg";
+                var fileName = food.Id + "-" + food.Name + ".jpg";
                 var contentType = form.ContentType;
 
-                var blobResult = _blobSerice.UploadFile(stream, fileName, contentType);
+                
+                var blobResult = await _blobSerice.UploadFileAsync(stream, fileName, contentType);
                 if (blobResult is false)
                 {
                     return false;
@@ -87,9 +90,9 @@ namespace Infrastructure.Services
             restaurant.FoodIds.Add(food.Id);
 
             _unitOfWork.WriteRestaurantRepository.Update(restaurant);
-            await _unitOfWork.WriteFoodRepository.AddAsync(food);
-
             await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
+
+            await _unitOfWork.WriteFoodRepository.AddAsync(food);
             await _unitOfWork.WriteFoodRepository.SaveChangesAsync();
             return true;
         }
@@ -134,13 +137,13 @@ namespace Infrastructure.Services
             var activeOrders = new List<OrderInfoDto>();
             foreach (var order in orders)
             {
-                if (order.OrderFinishTime == null)
+                if (order is not null && order.OrderFinishTime == default)
                 {
                     activeOrders.Add(new OrderInfoDto
                     {
                         RestaurantId = order.RestaurantId,
                         OrderDate = order.OrderDate,
-                        PayedWithCard = true,
+                        PayedWithCard = order.PayedWithCard,
                         FoodIds = order.OrderedFoodIds,
                         UserId = order.UserId,
                         Rate = order.Amount,
@@ -172,19 +175,13 @@ namespace Infrastructure.Services
 
         #region DELETE METOD
 
-
-        public Task<bool> RemoveCategory()
-        {
-            throw new NotImplementedException();
-        }
-
-
         public async Task<bool> RemoveFood(string Id)
         {
             var food = await _unitOfWork.ReadFoodRepository.GetAsync(Id);
             if (food is null)
                 throw new ArgumentNullException("Wrong food");
 
+            await _blobSerice.DeleteFileAsync(food.Id + "-" + food.Name + ".jpg");
 
             _unitOfWork.WriteFoodRepository.Remove(food);
             await _unitOfWork.WriteFoodRepository.SaveChangesAsync();

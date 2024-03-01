@@ -1,6 +1,7 @@
 ﻿using Application.Models.DTOs.Blob;
 using Application.Services;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualBasic.FileIO;
@@ -67,7 +68,11 @@ public class BlobService : IBlobService
         var contaionerClient = serviceClient.GetBlobContainerClient(_storageOptions.ContainerName);
         var blobClient = contaionerClient.GetBlobClient(fileName);
 
-        await blobClient.UploadAsync(stream);
+        var blobHttpHeaders = new BlobHttpHeaders
+        {
+            ContentType = contentType
+        };
+        await blobClient.UploadAsync(stream, blobHttpHeaders);
         return true;
     }
 }

@@ -18,6 +18,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Courier>().ToContainer("Couriers");
         modelBuilder.Entity<Restaurant>().ToContainer("Restaurants");
         modelBuilder.Entity<Category>().ToContainer("Categories");
+        modelBuilder.Entity<Food>().ToContainer("Foods");
 
 
         base.OnModelCreating(modelBuilder);
@@ -27,5 +28,6 @@ public class AppDbContext : DbContext
     public DbSet<Order> Orders { get; set; }
     public DbSet<Courier> Couriers { get; set; }
     public DbSet<Restaurant> Restaurants { get; set; }
+    public DbSet<Food> Foods { get; set; }
     public DbSet<Category> Categories { get; set; }
 }

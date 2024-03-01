@@ -51,7 +51,7 @@ namespace WebApi.Controllers
         
 
         [HttpGet("getFoodsByCategory")]
-        public ActionResult<IEnumerable<FoodInfoDto>> GetFoodsByCategory(string categoryId)
+        public ActionResult<FoodInfoDto> GetFoodsByCategory(string categoryId)
         {
             try
             {
