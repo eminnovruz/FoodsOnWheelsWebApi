@@ -3,7 +3,7 @@ using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Order;
 using Application.Models.DTOs.Restaurant;
 
-namespace Application.Services;
+namespace Application.Services.IUserServices;
 
 public interface IRestaurantService
 {

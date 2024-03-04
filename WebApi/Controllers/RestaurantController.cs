@@ -1,7 +1,7 @@
 ﻿using Application.Models.DTOs.Category;
 using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Restaurant;
-using Application.Services;
+using Application.Services.IUserServices;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 
@@ -55,7 +55,7 @@ namespace WebApi.Controllers
 
         #region GET METOD
         [HttpGet("getRestaurantInfo")]
-        public async Task<ActionResult<RestaurantInfoDto>> GetRestaurantInfo(string Id)
+        public async Task<ActionResult<RestaurantInfoDto>> GetRestaurantInfo([FromQuery]string Id)
         {
             try
             {

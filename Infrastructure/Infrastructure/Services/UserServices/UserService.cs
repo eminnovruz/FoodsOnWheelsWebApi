@@ -70,12 +70,18 @@ public class UserService : IUserService
 
     public IEnumerable<FoodInfoDto> GetFoodsByCategory(string categoryId)
     {
-        var foods = _unitOfWork.ReadFoodRepository
-            .GetWhere(food => food.CategoryIds.Contains(categoryId))
-            .ToList();
-
-        if (foods is null)
+        var allFoods = _unitOfWork.ReadFoodRepository.GetAll().ToList();
+        if (allFoods is null)
             throw new ArgumentNullException();
+
+        var foods = new List<Food>();
+        foreach (var item in allFoods)
+        {
+            if (item is not null && item.CategoryIds.Contains(categoryId))
+            {
+                foods.Add(item);
+            }
+        }
 
         var foodDtos = foods.Select(food => new FoodInfoDto
         {
@@ -84,6 +90,7 @@ public class UserService : IUserService
             Id = food.Id,
             Name = food.Name,
             Price = food.Price,
+            ImageUrl = food.ImageUrl
         });
 
         return foodDtos;
@@ -109,6 +116,7 @@ public class UserService : IUserService
                 Id = food.Id,
                 Name = food.Name,
                 Price = food.Price,
+                ImageUrl = food.ImageUrl
             };
             dtos.Add(dto);
         }

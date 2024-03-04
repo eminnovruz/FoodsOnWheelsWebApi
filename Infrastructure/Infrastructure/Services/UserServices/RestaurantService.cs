@@ -4,15 +4,11 @@ using Application.Models.DTOs.Order;
 using Application.Models.DTOs.Restaurant;
 using Application.Repositories;
 using Application.Services;
-using Azure.Storage.Blobs.Models;
+using Application.Services.IUserServices;
+using Azure.Core;
 using Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Infrastructure.Services
+namespace Infrastructure.Services.UserServices
 {
     public class RestaurantService : IRestaurantService
     {
@@ -28,6 +24,7 @@ namespace Infrastructure.Services
 
 
         #region ADD METOD
+
 
         public async Task<bool> AddCategory(AddCategoryRequest request)
         {
@@ -45,11 +42,26 @@ namespace Infrastructure.Services
                 FoodIds = request.FoodIds,
             };
 
+
+            if (request.FoodIds.Count != 0)
+            {
+                foreach (var item in request.FoodIds)
+                {
+                    var food = await _unitOfWork.ReadFoodRepository.GetAsync(x => item == x.Id);
+                    if (food is null)
+                        throw new ArgumentNullException("Food Id Is Not Found");
+                    food.CategoryIds.Add(category.Id);
+                    _unitOfWork.WriteFoodRepository.Update(food);
+                    await _unitOfWork.WriteFoodRepository.SaveChangesAsync();
+                }
+            }
+
             await _unitOfWork.WriteCategoryRepository.AddAsync(category);
             await _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
 
             return true;
         }
+
 
         public async Task<bool> AddFood(AddFoodToRestaurantDto request)
         {
@@ -60,16 +72,16 @@ namespace Infrastructure.Services
             if (restaurant is null)
                 throw new ArgumentNullException("Wrong Restaurant");
 
-
             var food = new Food
             {
                 Id = Guid.NewGuid().ToString(),
                 Name = request.Name,
                 Description = request.Description,
                 CategoryIds = request.CategoryIds,
-                Price = request.Price, 
+                Price = request.Price,
+                RestaurantId = request.RestaurantId
             };
-            
+
 
             var form = request.File;
             using (var stream = form.OpenReadStream())
@@ -77,7 +89,7 @@ namespace Infrastructure.Services
                 var fileName = food.Id + "-" + food.Name + ".jpg";
                 var contentType = form.ContentType;
 
-                
+
                 var blobResult = await _blobSerice.UploadFileAsync(stream, fileName, contentType);
                 if (blobResult is false)
                 {
@@ -87,10 +99,21 @@ namespace Infrastructure.Services
                 food.ImageUrl = _blobSerice.GetSignedUrl(fileName);
             }
 
-            restaurant.FoodIds.Add(food.Id);
 
+            foreach (var item in request.CategoryIds)
+            {
+                var category = await _unitOfWork.ReadCategoryRepository.GetAsync(item);
+                if (category is null)
+                    throw new ArgumentNullException("Category Id Is Not Found");
+                category.FoodIds.Add(food.Id);
+                _unitOfWork.WriteCategoryRepository.Update(category);
+                await _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
+            }
+
+            restaurant.FoodIds.Add(food.Id);
             _unitOfWork.WriteRestaurantRepository.Update(restaurant);
             await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
+
 
             await _unitOfWork.WriteFoodRepository.AddAsync(food);
             await _unitOfWork.WriteFoodRepository.SaveChangesAsync();
@@ -129,10 +152,10 @@ namespace Infrastructure.Services
             if (restaurant is null)
                 throw new ArgumentNullException("Wrong Restaurant");
 
-            var orders = _unitOfWork.ReadOrderRepository.GetWhere(x=> x.RestaurantId == Id).ToList();
+            var orders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.RestaurantId == Id).ToList();
             if (orders.Count == 0)
                 throw new InvalidDataException("There are no orders");
-            
+
 
             var activeOrders = new List<OrderInfoDto>();
             foreach (var order in orders)
@@ -179,9 +202,29 @@ namespace Infrastructure.Services
         {
             var food = await _unitOfWork.ReadFoodRepository.GetAsync(Id);
             if (food is null)
-                throw new ArgumentNullException("Wrong food");
+                throw new ArgumentNullException("Wrong Food");
+
+            var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(food.RestaurantId);
+            if (restaurant is null)
+                throw new ArgumentNullException("Wrong Restaurant");
+
+
+            foreach (var item in food.CategoryIds)
+            {
+                var category = await _unitOfWork.ReadCategoryRepository.GetAsync(item);
+                if (category is null)
+                    throw new ArgumentNullException("Category Id Is Not Found");
+                category.FoodIds.Remove(food.Id);
+                _unitOfWork.WriteCategoryRepository.Update(category);
+                await _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
+            }
 
             await _blobSerice.DeleteFileAsync(food.Id + "-" + food.Name + ".jpg");
+
+            restaurant.FoodIds.Remove(food.Id);
+            _unitOfWork.WriteRestaurantRepository.Update(restaurant);
+            await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
+
 
             _unitOfWork.WriteFoodRepository.Remove(food);
             await _unitOfWork.WriteFoodRepository.SaveChangesAsync();

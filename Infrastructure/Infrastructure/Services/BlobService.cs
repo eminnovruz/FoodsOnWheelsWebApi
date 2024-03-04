@@ -57,8 +57,9 @@ public class BlobService : IBlobService
         var serviceClient = new BlobServiceClient(_storageOptions.ConnectionString);
         var contaionerClient = serviceClient.GetBlobContainerClient(_storageOptions.ContainerName);
         var blobClient = contaionerClient.GetBlobClient(fileName);
+        var blobHttpHeaders = new BlobHttpHeaders {ContentType = contentType};
 
-        blobClient.Upload(stream);
+        blobClient.Upload(stream, blobHttpHeaders);
         return true;
     }
 
@@ -67,11 +68,8 @@ public class BlobService : IBlobService
         var serviceClient = new BlobServiceClient(_storageOptions.ConnectionString);
         var contaionerClient = serviceClient.GetBlobContainerClient(_storageOptions.ContainerName);
         var blobClient = contaionerClient.GetBlobClient(fileName);
+        var blobHttpHeaders = new BlobHttpHeaders{ContentType = contentType};
 
-        var blobHttpHeaders = new BlobHttpHeaders
-        {
-            ContentType = contentType
-        };
         await blobClient.UploadAsync(stream, blobHttpHeaders);
         return true;
     }
