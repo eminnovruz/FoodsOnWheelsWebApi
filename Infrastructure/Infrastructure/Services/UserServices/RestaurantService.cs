@@ -161,6 +161,7 @@ namespace Infrastructure.Services.UserServices
                 {
                     activeOrders.Add(new OrderInfoDto
                     {
+                        Id = order.Id,
                         RestaurantId = order.RestaurantId,
                         OrderDate = order.OrderDate,
                         PayedWithCard = order.PayedWithCard,
@@ -190,6 +191,7 @@ namespace Infrastructure.Services.UserServices
                 {
                     restaurantOrders.Add(new OrderInfoDto
                     {
+                        Id = order.Id,
                         RestaurantId = order.RestaurantId,
                         OrderDate = order.OrderDate,
                         PayedWithCard = order.PayedWithCard,
@@ -221,6 +223,7 @@ namespace Infrastructure.Services.UserServices
                 {
                     pastOrders.Add(new OrderInfoDto
                     {
+                        Id = order.Id,
                         RestaurantId = order.RestaurantId,
                         OrderDate = order.OrderDate,
                         PayedWithCard = order.PayedWithCard,

@@ -16,10 +16,19 @@ public class CourierService : ICourierService
         _unitOfWork = unitOfWork;
     }
 
-    public Task<bool> AcceptOrder(string OrderId)
+    public async Task<bool> AcceptOrder(string OrderId, string CourierId)
     {
-        throw new NotImplementedException();
+        var order = await _unitOfWork.ReadOrderRepository.GetAsync(OrderId);
+        if (order is null)
+            throw new ArgumentNullException();
+
+        order.CourierId = CourierId;
+
+        _unitOfWork.WriteOrderRepository.Update(order);
+        await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
+        return true;
     }
+
 
     public Task<OrderDto> GetActiveOrderInfo(string OrderId)
     {
@@ -29,6 +38,30 @@ public class CourierService : ICourierService
     public Task<IEnumerable<CommentDto>> GetAllComments(string CourierId)
     {
         throw new NotImplementedException();
+    }
+
+    public List<OrderInfoDto> GetNewOrder()
+    {
+        var neworders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.CourierId == default).ToList();
+        if (neworders is null)
+            throw new ArgumentNullException();
+
+        var newOrdersDto = new List<OrderInfoDto>();
+        foreach (var neworder in neworders)
+        {
+            if (neworder is not null)
+                newOrdersDto.Add(new OrderInfoDto
+                {
+                    Id = neworder.Id,
+                    RestaurantId = neworder.RestaurantId,
+                    FoodIds = neworder.OrderedFoodIds,
+                    OrderDate = neworder.OrderDate,
+                    PayedWithCard = neworder.PayedWithCard,
+                    Rate = 12,
+                    UserId = neworder.UserId,
+                });
+        }
+        return newOrdersDto;
     }
 
     public async Task<IEnumerable<OrderInfoDto>> GetOrderHistory(string CourierId)
@@ -44,17 +77,17 @@ public class CourierService : ICourierService
         {
             var order = await _unitOfWork.ReadOrderRepository.GetAsync(item);
 
-            OrderInfoDto dto = new OrderInfoDto()
-            {
-                OrderDate = order.OrderDate,
-                FoodIds = order.OrderedFoodIds,
-                PayedWithCard = true,
-                Rate = 0,
-                UserId = order.UserId,
-                RestaurantId = order.RestaurantId,
-            };
-
-            PastOrders.Add(dto);
+            if (order is not null)
+                PastOrders.Add(new OrderInfoDto
+                {
+                    Id = order.Id,
+                    OrderDate = order.OrderDate,
+                    FoodIds = order.OrderedFoodIds,
+                    PayedWithCard = true,
+                    Rate = 0,
+                    UserId = order.UserId,
+                    RestaurantId = order.RestaurantId,
+                });
         }
 
         return PastOrders;

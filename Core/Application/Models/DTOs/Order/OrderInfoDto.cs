@@ -2,6 +2,7 @@
 
 public class OrderInfoDto
 {
+    public string Id { get; set; }
     public DateTime OrderDate { get; set; }
     public string RestaurantId { get; set; }
     public List<string> FoodIds { get; set; }
