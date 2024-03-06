@@ -108,17 +108,19 @@ public class UserService : IUserService
         foreach (var item in restaurant.FoodIds)
         {
             var food = await _unitOfWork.ReadFoodRepository.GetAsync(item); ;
-
-            var dto = new FoodInfoDto()
+            if (food is not null)
             {
-                CategoryIds = food.CategoryIds,
-                Description = food.Description,
-                Id = food.Id,
-                Name = food.Name,
-                Price = food.Price,
-                ImageUrl = food.ImageUrl
-            };
-            dtos.Add(dto);
+                var dto = new FoodInfoDto()
+                {
+                    CategoryIds = food.CategoryIds,
+                    Description = food.Description,
+                    Id = food.Id,
+                    Name = food.Name,
+                    Price = food.Price,
+                    ImageUrl = food.ImageUrl
+                };
+                dtos.Add(dto);
+            }
         }
 
         return dtos;
@@ -188,8 +190,11 @@ public class UserService : IUserService
         };
 
         order.OrderRatingId = orderRating.Id;
+        order.OrderFinishTime = DateTime.Now;
+
 
         bool result = _unitOfWork.WriteOrderRepository.Update(order);
+        await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
 
         return result;
     }

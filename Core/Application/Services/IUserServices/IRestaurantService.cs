@@ -14,10 +14,12 @@ public interface IRestaurantService
     #endregion
 
     #region GET METOD
+
     public Task<RestaurantInfoDto> GetRestaurantInfo(string Id);
-    public Task<List<OrderInfoDto>> GetActiveOrders(string Id);
-    public Task<bool> GetOrderHistory();
-    public Task<bool> GetPastOrderInfoById();
+    public List<OrderInfoDto> GetActiveOrders(string Id);
+    public List<OrderInfoDto> GetOrderHistory(string Id);
+    public List<OrderInfoDto> GetPastOrderInfoById(string orderId);
+    
     #endregion
 
     #region DELETE METOD

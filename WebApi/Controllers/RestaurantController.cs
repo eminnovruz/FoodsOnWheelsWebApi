@@ -1,5 +1,6 @@
 ﻿using Application.Models.DTOs.Category;
 using Application.Models.DTOs.Food;
+using Application.Models.DTOs.Order;
 using Application.Models.DTOs.Restaurant;
 using Application.Services.IUserServices;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +21,11 @@ namespace WebApi.Controllers
         }
 
 
+
+
         #region ADD METOD
+
+
         [HttpPost("addCategory")]
         public async Task<ActionResult<bool>> AddCategory(AddCategoryRequest request) 
         {
@@ -30,7 +35,7 @@ namespace WebApi.Controllers
             }
             catch (Exception exception)
             {
-                Log.Error("Error occured on [POST] AddCategory");
+                Log.Error($"Error occured on [POST] AddCategory {exception.Message}");
                 return BadRequest(exception.Message);
             }
         }
@@ -45,7 +50,7 @@ namespace WebApi.Controllers
             }
             catch (Exception exception)
             {
-                Log.Error("Error occured on [POST] AddFood");
+                Log.Error($"Error occured on [POST] AddFood : {exception.Message}");
                 return BadRequest(exception.Message);
             }
         }
@@ -53,7 +58,12 @@ namespace WebApi.Controllers
         #endregion
 
 
+
+
+
         #region GET METOD
+
+
         [HttpGet("getRestaurantInfo")]
         public async Task<ActionResult<RestaurantInfoDto>> GetRestaurantInfo([FromQuery]string Id)
         {
@@ -63,7 +73,53 @@ namespace WebApi.Controllers
             }
             catch (Exception exception)
             {
-                Log.Error("Error occured on [GET] GetRestaurantInfo");
+                Log.Error($"Error occured on [GET] GetRestaurantInfo : {exception.Message}");
+                return BadRequest(exception.Message);
+            }
+        }
+
+
+        [HttpGet("getActiveOrders")]
+        public ActionResult<List<OrderInfoDto>> GetActiveOrders([FromQuery]string Id)
+        {
+            try
+            {
+                return Ok(restaurantService.GetActiveOrders(Id));
+            }
+            catch (Exception exception)
+            {
+                Log.Error($"Error occured on [GET] GetActiveOrders : {exception.Message}");
+                return BadRequest(exception.Message);
+            }
+
+        }
+
+
+        [HttpGet("getOrderHistory")]
+        public ActionResult<List<OrderInfoDto>> GetOrderHistory(string Id)
+        {
+            try
+            {
+                return Ok(restaurantService.GetOrderHistory(Id));
+            }
+            catch (Exception exception)
+            {
+                Log.Error($"Error occured on [GET] GetOrderHistory : {exception.Message}");
+                return BadRequest(exception.Message);
+            }
+        }
+
+
+        [HttpGet("getPastOrderInfoById")]
+        public ActionResult<List<OrderInfoDto>> GetPastOrderInfoById(string Id)
+        {
+            try
+            {
+                return Ok(restaurantService.GetPastOrderInfoById(Id));
+            }
+            catch (Exception exception)
+            {
+                Log.Error($"Error occured on [GET] GetPastOrderInfoById : {exception.Message}");
                 return BadRequest(exception.Message);
             }
         }
@@ -71,7 +127,12 @@ namespace WebApi.Controllers
         #endregion
 
 
+
+
+
         #region DELETE METOD
+
+
         [HttpDelete("removeFood")]
         public async Task<ActionResult<bool>> RemoveFood(string Id)
         {
@@ -81,10 +142,12 @@ namespace WebApi.Controllers
             }
             catch (Exception exception)
             {
-                Log.Error("Error occured on [DELETE] RemoveFood");
+                Log.Error($"Error occured on [DELETE] RemoveFood : {exception.Message}");
                 return BadRequest(exception.Message);
             }
         }
+
+
         #endregion
     }
 }
