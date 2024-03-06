@@ -119,6 +119,7 @@ namespace Infrastructure.Services.UserServices
             await _unitOfWork.WriteFoodRepository.SaveChangesAsync();
             return true;
         }
+        
 
         #endregion
 
@@ -236,11 +237,11 @@ namespace Infrastructure.Services.UserServices
         }
 
 
-
         #endregion
 
 
         #region DELETE METOD
+
 
         public async Task<bool> RemoveFood(string Id)
         {
@@ -274,6 +275,7 @@ namespace Infrastructure.Services.UserServices
             await _unitOfWork.WriteFoodRepository.SaveChangesAsync();
             return true;
         }
+
 
         #endregion      
     }

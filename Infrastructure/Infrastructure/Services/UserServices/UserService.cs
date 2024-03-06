@@ -33,14 +33,19 @@ public class UserService : IUserService
         List<CategoryInfoDto> dtos = new List<CategoryInfoDto>();
         foreach (var item in categories)
         {
-            var dto = new CategoryInfoDto()
+            if (item is not null)
             {
-                CategoryName = item.CategoryName,
-                FoodIds = item.FoodIds,
-                Id = item.Id
-            };
 
-            dtos.Add(dto);
+
+                var dto = new CategoryInfoDto()
+                {
+                    CategoryName = item.CategoryName,
+                    FoodIds = item.FoodIds,
+                    Id = item.Id
+                };
+
+                dtos.Add(dto);
+            }
         }
 
         return dtos;
@@ -238,7 +243,7 @@ public class UserService : IUserService
         uint amount = 0;
         foreach (var item in foods)
         {
-            if (foodIds.Contains(item.Id))
+            if (item is not null && foodIds.Contains(item.Id))
             {
                 amount += item.Price;
             }

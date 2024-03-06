@@ -24,6 +24,7 @@ using Persistence.Repositories.FoodRepository;
 using Persistence.Repositories.OrderRepository;
 using Persistence.Repositories.RestaurantRepository;
 using Persistence.Repositories.UserRepository;
+using System.Configuration;
 using System.Text;
 using WebApi.Validators;
 
@@ -103,7 +104,7 @@ public static class Extension
         return services;
     }
 
-    public static IServiceCollection AddServices(this IServiceCollection services)
+    public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<ICourierService, CourierService>();
         services.AddScoped<IWorkerService, WorkerService>();
@@ -112,10 +113,15 @@ public static class Extension
         services.AddScoped<IBlobService, BlobService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IRestaurantService, RestaurantService>();
+        services.AddScoped<IMailService, MailService>();
 
         services.AddValidatorsFromAssemblyContaining<AddRestaurantDtoValidator>();
         services.AddTransient<IValidator<AddRestaurantDto>, AddRestaurantDtoValidator>();
         services.AddTransient<IValidator<AddCourierDto>, AddCourierDtoValidator>();
+
+        var smtpConfig = new SMTPConfig();
+        configuration.GetSection("SMTP").Bind(smtpConfig);
+        services.AddSingleton(smtpConfig);
 
         return services;
     }

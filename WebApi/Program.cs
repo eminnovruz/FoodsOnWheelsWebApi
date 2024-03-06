@@ -24,7 +24,7 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 
 builder.Services.AddAuthenticationAndAuthorization(builder.Configuration);
-builder.Services.AddServices();
+builder.Services.AddServices(builder.Configuration);
 builder.Services.AddRepositories();
 builder.Services.AddDistributedMemoryCache(); // cache
 builder.Services.Configure<BlobStorageConfiguration>(builder.Configuration.GetSection("BlobStorage"));

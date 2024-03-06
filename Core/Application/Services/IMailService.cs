@@ -2,8 +2,8 @@
 
 public interface IMailService
 {
-    public Task<bool> SendOrderFinishedMessage();
-    public Task<bool> SendOrderActived();
-    public Task<bool> SendOrderIsReadyMessage();
-    public Task<bool> SendNewOrderMessage();
+    public void SendOrderFinishedMessage(string email);
+    public void SendOrderActived(string email);
+    public void SendOrderIsReadyMessage(string email);
+    public void SendNewOrderMessage(string email);
 }
