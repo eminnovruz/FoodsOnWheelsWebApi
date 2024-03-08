@@ -45,12 +45,16 @@ namespace Infrastructure.Services.UserServices
 
             if (request.FoodIds.Count != 0)
             {
+                var foods = _unitOfWork.ReadFoodRepository.GetAll().ToList();
+
                 foreach (var item in request.FoodIds)
                 {
-                    var food = await _unitOfWork.ReadFoodRepository.GetAsync(x => item == x.Id);
-                    if (food is null)
+                   var food = foods.FirstOrDefault(x => x?.Id == item); 
+                   if (food == default)
                         throw new ArgumentNullException("Food Id Is Not Found");
+                   
                     food.CategoryIds.Add(category.Id);
+                    
                     _unitOfWork.WriteFoodRepository.Update(food);
                     await _unitOfWork.WriteFoodRepository.SaveChangesAsync();
                 }
