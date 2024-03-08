@@ -2,7 +2,6 @@
 using Application.Models.DTOs.Courier;
 using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Restaurant;
-using Application.Models.DTOs.Worker;
 using Domain.Models;
 
 namespace Application.Services.IUserServices;

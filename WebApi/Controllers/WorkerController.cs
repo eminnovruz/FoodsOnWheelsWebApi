@@ -1,7 +1,7 @@
 ﻿using Application.Models.DTOs.Category;
 using Application.Models.DTOs.Courier;
 using Application.Models.DTOs.Food;
-using Application.Models.DTOs.Worker;
+using Application.Models.DTOs.Restaurant;
 using Application.Services.IUserServices;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;

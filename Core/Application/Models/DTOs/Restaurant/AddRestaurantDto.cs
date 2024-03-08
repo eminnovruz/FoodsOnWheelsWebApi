@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace Application.Models.DTOs.Worker;
+namespace Application.Models.DTOs.Restaurant;
 
 public class AddRestaurantDto
 {

@@ -1,4 +1,4 @@
-﻿namespace Application.Models.DTOs.Worker;
+﻿namespace Application.Models.DTOs.Courier;
 
 public class AddCourierDto
 {

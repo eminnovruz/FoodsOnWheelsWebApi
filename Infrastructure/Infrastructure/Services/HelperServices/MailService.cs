@@ -1,9 +1,9 @@
 ﻿using Application.Models.Config;
-using Application.Services;
 using System.Net.Mail;
 using System.Net;
+using Application.Services.IHelperServices;
 
-namespace Infrastructure.Services;
+namespace Infrastructure.Services.HelperServices;
 
 public class MailService : IMailService
 {
@@ -22,7 +22,7 @@ public class MailService : IMailService
             Port = _config.Port,
             EnableSsl = _config.EnableSsl,
             Credentials = new NetworkCredential(_config.Username, _config.Password)
-        };  
+        };
 
         using var mailMessage = new MailMessage()
         {

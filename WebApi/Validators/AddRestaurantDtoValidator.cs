@@ -1,4 +1,4 @@
-﻿using Application.Models.DTOs.Worker;
+﻿using Application.Models.DTOs.Restaurant;
 using FluentValidation;
 
 namespace WebApi.Validators;

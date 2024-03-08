@@ -2,9 +2,8 @@
 using Application.Models.DTOs.Courier;
 using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Restaurant;
-using Application.Models.DTOs.Worker;
 using Application.Repositories;
-using Application.Services;
+using Application.Services.IHelperServices;
 using Application.Services.IUserServices;
 using Domain.Models;
 using FluentValidation;
@@ -160,11 +159,6 @@ public class WorkerService : IWorkerService
         return restaurantDtos;
     }
 
-    public Task<IEnumerable<RestaurantInfoDto>> GetAllRestxaurants()
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task<bool> RemoveCategory(string Id)
     {
         var result = await _unitOfWork.WriteCategoryRepository.RemoveAsync(Id);
@@ -190,35 +184,10 @@ public class WorkerService : IWorkerService
         return result;
     }
 
-    public Task<IEnumerable<Category>> SeeAllCategories()
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task<IEnumerable<Food>> SeeAllFoods()
     {
         var restaurants = _unitOfWork.ReadFoodRepository.GetAll();
         return restaurants;
-    }
-
-    public Task<bool> UpdateCategory(UpdateCategoryRequest request)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<bool> UpdateCourier(UpdateCourierDto dto)
-    {
-        throw new NotImplementedException();
-    }
-
-    public bool UpdateFood(UpdateFoodRequest request)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<bool> UptadeRestaurant(UpdateRestaurantDto dto)
-    {
-        throw new NotImplementedException();
     }
 }
 

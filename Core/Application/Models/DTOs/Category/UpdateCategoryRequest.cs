@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Models.DTOs.Worker
+namespace Application.Models.DTOs.Category
 {
-    public class UpdateCourierDto
+    public class UpdateCategoryRequest
     {
     }
 }

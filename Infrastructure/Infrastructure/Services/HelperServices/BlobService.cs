@@ -1,12 +1,12 @@
 ﻿using Application.Models.DTOs.Blob;
-using Application.Services;
+using Application.Services.IHelperServices;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualBasic.FileIO;
 
-namespace Infrastructure.Services;
+namespace Infrastructure.Services.HelperServices;
 
 public class BlobService : IBlobService
 {
@@ -57,7 +57,7 @@ public class BlobService : IBlobService
         var serviceClient = new BlobServiceClient(_storageOptions.ConnectionString);
         var contaionerClient = serviceClient.GetBlobContainerClient(_storageOptions.ContainerName);
         var blobClient = contaionerClient.GetBlobClient(fileName);
-        var blobHttpHeaders = new BlobHttpHeaders {ContentType = contentType};
+        var blobHttpHeaders = new BlobHttpHeaders { ContentType = contentType };
 
         blobClient.Upload(stream, blobHttpHeaders);
         return true;
@@ -68,7 +68,7 @@ public class BlobService : IBlobService
         var serviceClient = new BlobServiceClient(_storageOptions.ConnectionString);
         var contaionerClient = serviceClient.GetBlobContainerClient(_storageOptions.ContainerName);
         var blobClient = contaionerClient.GetBlobClient(fileName);
-        var blobHttpHeaders = new BlobHttpHeaders{ContentType = contentType};
+        var blobHttpHeaders = new BlobHttpHeaders { ContentType = contentType };
 
         await blobClient.UploadAsync(stream, blobHttpHeaders);
         return true;
