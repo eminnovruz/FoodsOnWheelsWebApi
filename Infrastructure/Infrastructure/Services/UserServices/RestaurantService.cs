@@ -63,7 +63,7 @@ namespace Infrastructure.Services.UserServices
         }
 
 
-        public async Task<bool> AddFood(AddFoodToRestaurantDto request)
+        public async Task<bool> AddFood(AddFoodRequest request)
         {
             if (request is null)
                 throw new ArgumentNullException("The Information Is Not Complete");

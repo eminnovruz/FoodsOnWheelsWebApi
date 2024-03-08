@@ -80,15 +80,15 @@ public class WorkerService : IWorkerService
             throw new ArgumentNullException();
         }
 
-        Food newFood = new Food()
-        {
-            Name = request.Name,
-            CategoryIds = request.CategoryIds,
-            Description = request.Description,
-            Id = Guid.NewGuid().ToString(),
-            ImageUrl = request.ImageUrl,
-            Price = request.Price,
-        };
+        Food newFood = new Food();
+        //{
+        //    Name = request.Name,
+        //    CategoryIds = request.CategoryIds,
+        //    Description = request.Description,
+        //    Id = Guid.NewGuid().ToString(),
+        //    ImageUrl = request.ImageUrl,
+        //    Price = request.Price,
+        //};
         return true;
     }
 

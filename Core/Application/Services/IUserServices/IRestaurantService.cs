@@ -10,7 +10,7 @@ public interface IRestaurantService
 
     #region ADD METOD
     public Task<bool> AddCategory(AddCategoryRequest request);
-    public Task<bool> AddFood(AddFoodToRestaurantDto request);
+    public Task<bool> AddFood(AddFoodRequest request);
     #endregion
 
     #region GET METOD

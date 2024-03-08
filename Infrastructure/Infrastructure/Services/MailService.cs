@@ -22,7 +22,7 @@ public class MailService : IMailService
             Port = _config.Port,
             EnableSsl = _config.EnableSsl,
             Credentials = new NetworkCredential(_config.Username, _config.Password)
-        };
+        };  
 
         using var mailMessage = new MailMessage()
         {
