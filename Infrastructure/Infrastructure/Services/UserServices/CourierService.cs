@@ -17,13 +17,14 @@ public class CourierService : ICourierService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<bool> AcceptOrder(string OrderId, string CourierId)
+    public async Task<bool> AcceptOrder(AcceptOrderDto request)
     {
-        var order = await _unitOfWork.ReadOrderRepository.GetAsync(OrderId);
+        var order = await _unitOfWork.ReadOrderRepository.GetAsync(request.OrderId);
         if (order is null)
             throw new ArgumentNullException();
+        
 
-        order.CourierId = CourierId;
+        order.CourierId = request.CourierId;
 
         _unitOfWork.WriteOrderRepository.Update(order);
         await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
