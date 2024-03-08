@@ -22,12 +22,21 @@ public class CourierService : ICourierService
         var order = await _unitOfWork.ReadOrderRepository.GetAsync(request.OrderId);
         if (order is null)
             throw new ArgumentNullException();
-        
+        var courier = await _unitOfWork.ReadCourierRepository.GetAsync(request.CourierId);
+        if (courier is null)
+            throw new ArgumentNullException();
 
         order.CourierId = request.CourierId;
 
         _unitOfWork.WriteOrderRepository.Update(order);
         await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
+
+
+        courier.ActiveOrderId = request.OrderId;
+
+        _unitOfWork.WriteCourierRepository.Update(courier);
+        await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
+
         return true;
     }
 
@@ -96,9 +105,24 @@ public class CourierService : ICourierService
 
     }
 
-    public Task<OrderInfoDto> GetPastOrderInfoById(string PastOrderId)
+    public async Task<OrderInfoDto> GetPastOrderInfoById(string PastOrderId)
     {
-        throw new NotImplementedException();
+        var pastOrder = await _unitOfWork.ReadOrderRepository.GetAsync(PastOrderId);
+
+        if (pastOrder is null || pastOrder.OrderFinishTime == default)
+            throw new ArgumentNullException();
+
+        var order = new OrderInfoDto
+        {
+            OrderDate = pastOrder.OrderDate,
+            FoodIds=pastOrder.OrderedFoodIds,   
+            PayedWithCard = pastOrder.PayedWithCard,
+            Id = pastOrder.Id,
+            UserId=pastOrder.UserId,
+            RestaurantId=pastOrder.RestaurantId,    
+            Rate = pastOrder.Amount,
+        };
+        return order;
     }
 
     public async Task<GetProfileInfoDto> GetProfileInfo(string CourierId)

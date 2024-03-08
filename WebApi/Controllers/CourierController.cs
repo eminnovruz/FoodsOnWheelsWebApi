@@ -25,12 +25,10 @@ namespace WebApi.Controllers
             try
             {
                 var user = await _courierService.GetProfileInfo(courierId);
-
+            
                 if (user is null)
-                {
                     return BadRequest($"Cannot find user - {courierId}. Maybe deleted or missing");
-                }
-
+            
                 return Ok(user);
             }
             catch (Exception exception)
