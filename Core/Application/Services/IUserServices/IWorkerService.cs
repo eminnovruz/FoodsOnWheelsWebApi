@@ -17,7 +17,7 @@ public interface IWorkerService
     Task<bool> RemoveCourier(string courierId);
     Task<IEnumerable<SummaryCourierDto>> GetAllCouriers();
     bool AddNewFood(AddFoodRequest request);
-    bool UpdateFood(UpdateFoodRequest request);
+    Task<bool> UpdateFood(UpdateFoodRequest request);
     Task<bool> RemoveFood(string Id);
     Task<IEnumerable<Food>> SeeAllFoods();
     Task<bool> AddCategory(AddCategoryRequest request);

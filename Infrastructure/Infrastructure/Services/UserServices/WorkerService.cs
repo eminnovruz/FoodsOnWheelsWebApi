@@ -1,4 +1,4 @@
-﻿/*using Application.Models.DTOs.Category;
+﻿using Application.Models.DTOs.Category;
 using Application.Models.DTOs.Courier;
 using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Restaurant;
@@ -68,7 +68,7 @@ public class WorkerService : IWorkerService
 
     public async Task<bool> UptadeRestaurant(UpdateRestaurantDto dto)
     {
-        var existingRestaurant = await _unitOfWork.WriteRestaurantRepository.GetByIdAsync(dto.Id);
+        var existingRestaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(dto.Id);
 
         if (existingRestaurant == null)
         {
@@ -81,7 +81,7 @@ public class WorkerService : IWorkerService
         if (dto.Description != null)
             existingRestaurant.Description = dto.Description;
 
-        var result = await _unitOfWork.WriteRestaurantRepository.UpdateAsync(existingRestaurant);
+        var result = await _unitOfWork.WriteRestaurantRepository.UpdateAsync(existingRestaurant.Id);
         await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
 
         return result;
@@ -136,7 +136,7 @@ public class WorkerService : IWorkerService
 
     public async Task<bool> UpdateCourier(UpdateCourierDto dto)
     {
-        var existingCourier = await _unitOfWork.WriteCourierRepository.GetByIdAsync(dto.Id);
+        var existingCourier = await _unitOfWork.ReadCourierRepository.GetAsync(dto.Id);
 
         if (existingCourier == null)
         {
@@ -155,7 +155,7 @@ public class WorkerService : IWorkerService
         if (dto.PhoneNumber != null)
             existingCourier.PhoneNumber = dto.PhoneNumber;
 
-        var result = await _unitOfWork.WriteCourierRepository.UpdateAsync(existingCourier);
+        var result = await _unitOfWork.WriteCourierRepository.UpdateAsync(existingCourier.Id);
         await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
 
         return result;
@@ -200,9 +200,9 @@ public class WorkerService : IWorkerService
         return true;
     }
 
-    public async bool UpdateFood(UpdateFoodRequest request)
+    public async Task<bool> UpdateFood(UpdateFoodRequest request)
     {
-        var existingFood = await _unitOfWork.WriteFoodRepository.GetByIdAsync(request.Id);
+        var existingFood = await _unitOfWork.ReadFoodRepository.GetAsync(request.Id);
 
         if (existingFood == null)
         {
@@ -220,8 +220,8 @@ public class WorkerService : IWorkerService
             existingFood.ImageUrl = request.ImageUrl;
         if (request.Price != default(decimal))
             existingFood.Price = request.Price;
-        
-        var result = await _unitOfWork.WriteFoodRepository.UpdateAsync(existingFood);
+
+        var result = await _unitOfWork.WriteFoodRepository.UpdateAsync(existingFood.Id);
         await _unitOfWork.WriteFoodRepository.SaveChangesAsync();
 
         return result;
@@ -236,7 +236,7 @@ public class WorkerService : IWorkerService
 
     public async Task<IEnumerable<Food>> SeeAllFoods()
     {
-        var restaurants = _unitOfWork.ReadFoodRepository.GetAll();
+        var restaurants = await _unitOfWork.ReadFoodRepository.GetAllAsync();
         return restaurants;
     }
 
@@ -262,7 +262,7 @@ public class WorkerService : IWorkerService
 
     public async Task<bool> UpdateCategory(UpdateCategoryRequest request)
     {
-        var existingCategory = await _unitOfWork.WriteCategoryRepository.GetByIdAsync(request.Id);
+        var existingCategory = await _unitOfWork.ReadCategoryRepository.GetAsync(request.Id);
 
         if (existingCategory == null)
         {
@@ -275,7 +275,7 @@ public class WorkerService : IWorkerService
         if (request.FoodIds != null)
             existingCategory.FoodIds = request.FoodIds;
 
-        var result = await _unitOfWork.WriteCategoryRepository.UpdateAsync(existingCategory);
+        var result = await _unitOfWork.WriteCategoryRepository.UpdateAsync(existingCategory.Id);
         await _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
 
         return result;
@@ -293,4 +293,4 @@ public class WorkerService : IWorkerService
         var categories = await _unitOfWork.ReadCategoryRepository.GetAllAsync();
         return categories;
     }
-}*/
+}

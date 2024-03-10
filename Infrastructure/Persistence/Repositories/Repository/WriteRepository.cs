@@ -15,6 +15,9 @@ public class WriteRepository<T> : IWriteRepository<T> where T : BaseEntity
 
     DbSet<T> Table => _context.Set<T>();
 
+
+    #region Add
+
     public async Task<bool> AddAsync(T entity)
     {
         var entry = await Table.AddAsync(entity);
@@ -26,6 +29,11 @@ public class WriteRepository<T> : IWriteRepository<T> where T : BaseEntity
         await Table.AddRangeAsync(entities);
     }
 
+    #endregion
+
+
+    #region Remove
+    
     public bool Remove(T entity)
     {
         var entry = Table.Remove(entity);
@@ -34,9 +42,18 @@ public class WriteRepository<T> : IWriteRepository<T> where T : BaseEntity
 
     public async Task<bool> RemoveAsync(string id)
     {
-        var entry = Table.Remove(Table.FirstOrDefault(e => e.Id == id));
+        var element = await Table.FirstOrDefaultAsync(e => e.Id == id);
+        if (element == null)
+            throw new ArgumentNullException("Id is not found");
+
+        var entry = Table.Remove(element);
         return entry.State == EntityState.Deleted;
     }
+    
+    #endregion
+
+
+    #region Update
 
     public bool Update(T entity)
     {
@@ -44,5 +61,22 @@ public class WriteRepository<T> : IWriteRepository<T> where T : BaseEntity
         return entry.State == EntityState.Modified;
     }
 
+    public async Task<bool> UpdateAsync(string Id)
+    {
+        var element = await Table.FirstOrDefaultAsync(e => e.Id == Id);
+        if (element == null)
+            throw new ArgumentNullException("Id is not found");
+
+        var entry = Table.Update(element);
+        return entry.State == EntityState.Modified;
+    }
+
+    #endregion
+
+
+    #region Save
+
     public async Task<int> SaveChangesAsync() => await _context.SaveChangesAsync();
+
+    #endregion
 }

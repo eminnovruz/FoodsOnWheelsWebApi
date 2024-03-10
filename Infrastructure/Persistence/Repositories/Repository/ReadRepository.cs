@@ -29,5 +29,11 @@ public class ReadRepository<T> : IReadRepository<T> where T : BaseEntity
         return Table.AsNoTracking().ToList();
     }
 
+    public async Task<IEnumerable<T?>> GetAllAsync(bool tracking = true)
+    {
+        if (tracking)
+            return await Table.ToListAsync();
 
+        return await Table.AsNoTracking().ToListAsync();
+    }
 }

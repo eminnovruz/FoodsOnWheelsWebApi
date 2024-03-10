@@ -13,6 +13,6 @@ namespace Application.Models.DTOs.Food
         public List<string> CategoryIds { get; set; }
         public string Description { get; set; }
         public string ImageUrl { get; set; }
-        public decimal Price { get; set; }
+        public uint Price { get; set; }
     }
 }
