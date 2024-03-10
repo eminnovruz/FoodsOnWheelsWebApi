@@ -1,4 +1,4 @@
-﻿using Application.Models.DTOs.Category;
+﻿/*using Application.Models.DTOs.Category;
 using Application.Models.DTOs.Courier;
 using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Restaurant;
@@ -66,9 +66,25 @@ public class WorkerService : IWorkerService
         return false;
     }
 
-    public Task<bool> UptadeRestaurant(UpdateRestaurantDto dto)
+    public async Task<bool> UptadeRestaurant(UpdateRestaurantDto dto)
     {
-        throw new NotImplementedException();
+        var existingRestaurant = await _unitOfWork.WriteRestaurantRepository.GetByIdAsync(dto.Id);
+
+        if (existingRestaurant == null)
+        {
+            Log.Error("Restaurant not found with ID: {RestaurantId}", dto.Id);
+            return false;
+        }
+
+        if (dto.Name != null)
+            existingRestaurant.Name = dto.Name;
+        if (dto.Description != null)
+            existingRestaurant.Description = dto.Description;
+
+        var result = await _unitOfWork.WriteRestaurantRepository.UpdateAsync(existingRestaurant);
+        await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
+
+        return result;
     }
 
     public async Task<bool> RemoveRestaurant(string restaurantId)
@@ -118,9 +134,31 @@ public class WorkerService : IWorkerService
         return false;
     }
 
-    public Task<bool> UpdateCourier(UpdateCourierDto dto)
+    public async Task<bool> UpdateCourier(UpdateCourierDto dto)
     {
-        throw new NotImplementedException();
+        var existingCourier = await _unitOfWork.WriteCourierRepository.GetByIdAsync(dto.Id);
+
+        if (existingCourier == null)
+        {
+            Log.Error("Courier not found with ID: {CourierId}", dto.Id);
+            return false;
+        }
+
+        if (dto.Name != null)
+            existingCourier.Name = dto.Name;
+        if (dto.Surname != null)
+            existingCourier.Surname = dto.Surname;
+        if (dto.BirthDate != null)
+            existingCourier.BirthDate = dto.BirthDate;
+        if (dto.Email != null)
+            existingCourier.Email = dto.Email;
+        if (dto.PhoneNumber != null)
+            existingCourier.PhoneNumber = dto.PhoneNumber;
+
+        var result = await _unitOfWork.WriteCourierRepository.UpdateAsync(existingCourier);
+        await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
+
+        return result;
     }
 
     public async Task<bool> RemoveCourier(string courierId)
@@ -162,9 +200,31 @@ public class WorkerService : IWorkerService
         return true;
     }
 
-    public bool UpdateFood(UpdateFoodRequest request)
+    public async bool UpdateFood(UpdateFoodRequest request)
     {
-        throw new NotImplementedException();
+        var existingFood = await _unitOfWork.WriteFoodRepository.GetByIdAsync(request.Id);
+
+        if (existingFood == null)
+        {
+            Log.Error("Food not found with ID: {FoodId}", request.Id);
+            return false;
+        }
+
+        if (request.Name != null)
+            existingFood.Name = request.Name;
+        if (request.CategoryIds != null)
+            existingFood.CategoryIds = request.CategoryIds;
+        if (request.Description != null)
+            existingFood.Description = request.Description;
+        if (request.ImageUrl != null)
+            existingFood.ImageUrl = request.ImageUrl;
+        if (request.Price != default(decimal))
+            existingFood.Price = request.Price;
+        
+        var result = await _unitOfWork.WriteFoodRepository.UpdateAsync(existingFood);
+        await _unitOfWork.WriteFoodRepository.SaveChangesAsync();
+
+        return result;
     }
 
     public async Task<bool> RemoveFood(string Id)
@@ -200,9 +260,25 @@ public class WorkerService : IWorkerService
         return result;
     }
 
-    public Task<bool> UpdateCategory(UpdateCategoryRequest request)
+    public async Task<bool> UpdateCategory(UpdateCategoryRequest request)
     {
-        throw new NotImplementedException();
+        var existingCategory = await _unitOfWork.WriteCategoryRepository.GetByIdAsync(request.Id);
+
+        if (existingCategory == null)
+        {
+            Log.Error("Category not found with ID: {CategoryId}", request.Id);
+            return false;
+        }
+
+        if (request.CategoryName != null)
+            existingCategory.CategoryName = request.CategoryName;
+        if (request.FoodIds != null)
+            existingCategory.FoodIds = request.FoodIds;
+
+        var result = await _unitOfWork.WriteCategoryRepository.UpdateAsync(existingCategory);
+        await _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
+
+        return result;
     }
 
     public async Task<bool> RemoveCategory(string Id)
@@ -212,8 +288,9 @@ public class WorkerService : IWorkerService
         return result;
     }
 
-    public Task<IEnumerable<Category>> SeeAllCategories()
+    public async Task<IEnumerable<Category>> SeeAllCategories()
     {
-        throw new NotImplementedException();
+        var categories = await _unitOfWork.ReadCategoryRepository.GetAllAsync();
+        return categories;
     }
-}
+}*/
