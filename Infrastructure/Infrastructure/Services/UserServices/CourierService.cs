@@ -41,9 +41,25 @@ public class CourierService : ICourierService
     }
 
 
-    public Task<OrderDto> GetActiveOrderInfo(string OrderId)
+    public async Task<OrderInfoDto> GetActiveOrderInfo(string OrderId)
     {
-        throw new NotImplementedException();
+        var order = await _unitOfWork.ReadOrderRepository.GetAsync(OrderId);
+        if (order is null)
+            throw new ArgumentNullException();
+
+
+        var orderInfo = new OrderInfoDto
+        {
+            Id = order.Id,
+            RestaurantId = order.RestaurantId,
+            FoodIds = order.OrderedFoodIds,
+            OrderDate = order.OrderDate,
+            PayedWithCard = order.PayedWithCard,
+            Rate = order.Amount,
+            UserId = order.UserId,
+        };
+
+        return orderInfo;
     }
 
     public Task<IEnumerable<CommentDto>> GetAllComments(string CourierId)
@@ -68,7 +84,7 @@ public class CourierService : ICourierService
                     FoodIds = neworder.OrderedFoodIds,
                     OrderDate = neworder.OrderDate,
                     PayedWithCard = neworder.PayedWithCard,
-                    Rate = 12,
+                    Rate = neworder.Amount,
                     UserId = neworder.UserId,
                 });
         }
@@ -115,11 +131,11 @@ public class CourierService : ICourierService
         var order = new OrderInfoDto
         {
             OrderDate = pastOrder.OrderDate,
-            FoodIds=pastOrder.OrderedFoodIds,   
+            FoodIds = pastOrder.OrderedFoodIds,
             PayedWithCard = pastOrder.PayedWithCard,
             Id = pastOrder.Id,
-            UserId=pastOrder.UserId,
-            RestaurantId=pastOrder.RestaurantId,    
+            UserId = pastOrder.UserId,
+            RestaurantId = pastOrder.RestaurantId,
             Rate = pastOrder.Amount,
         };
         return order;
