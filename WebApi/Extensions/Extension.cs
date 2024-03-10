@@ -108,7 +108,7 @@ public static class Extension
     public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<ICourierService, CourierService>();
-        services.AddScoped<IWorkerService, WorkerService>();
+        // services.AddScoped<IWorkerService, WorkerService>();
         services.AddScoped<IPassHashService, PassHashService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IBlobService, BlobService>();
