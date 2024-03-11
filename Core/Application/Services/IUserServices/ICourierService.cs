@@ -12,6 +12,6 @@ public interface ICourierService
     Task<GetProfileInfoDto> GetProfileInfo(string CourierId);
     Task<IEnumerable<OrderInfoDto>> GetOrderHistory(string CourierId);
     Task<OrderInfoDto> GetActiveOrderInfo(string OrderId);
-    Task<IEnumerable<CommentDto>> GetAllComments(string CourierId);
+    Task<IEnumerable<GetCommentDto>> GetAllComments(string CourierId);
     Task<OrderInfoDto> GetPastOrderInfoById(string PastOrderId);
 }

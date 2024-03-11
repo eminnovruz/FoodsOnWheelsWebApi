@@ -62,9 +62,28 @@ public class CourierService : ICourierService
         return orderInfo;
     }
 
-    public Task<IEnumerable<CommentDto>> GetAllComments(string CourierId)
+    public async Task<IEnumerable<GetCommentDto>> GetAllComments(string CourierId)
     {
-        throw new NotImplementedException();
+        var courier = await _unitOfWork.ReadCourierRepository.GetAsync(CourierId);
+        if (courier is null)
+            throw new ArgumentNullException();
+        
+        var comments = _unitOfWork.ReadCourierCommentRepository.GetWhere(x=> x.CourierId == courier.Id);
+        var commentDtos = new List<GetCommentDto>(); 
+        foreach (var comment in comments)
+        {
+            if (comment is not null)
+                commentDtos.Add(new GetCommentDto
+                {
+                    OrderId = comment.Id,
+                    Content = comment.Content,
+                    CourierId = courier.Id,
+                    Rate = comment.Rate,
+                    CommentDate = comment.CommentDate
+                });
+        }
+
+        return commentDtos;
     }
 
     public List<OrderInfoDto> GetNewOrder()
@@ -164,6 +183,7 @@ public class CourierService : ICourierService
 
     public Task<bool> RejectOrder(string OrderId)
     {
+
         throw new NotImplementedException();
     }
 }
