@@ -8,11 +8,11 @@ namespace Application.Services.IUserServices;
 
 public interface IUserService
 {
-    IEnumerable<RestaurantInfoDto> GetAllRestaurants();
+    Task<IEnumerable<RestaurantInfoDto>> GetAllRestaurants();
 
-    IEnumerable<CategoryInfoDto> GetAllFoodCategories();
+    Task<IEnumerable<CategoryInfoDto>> GetAllFoodCategories();
 
-    IEnumerable<FoodInfoDto> GetFoodsByCategory(string categoryId);
+    Task<IEnumerable<FoodInfoDto>> GetFoodsByCategory(string categoryId);
 
     Task<IEnumerable<FoodInfoDto>> GetFoodsByRestaurant(string restaurantId);
 

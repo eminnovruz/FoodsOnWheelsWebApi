@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Persistence.Repositories.RestaurantCommentRepository
 {
-    internal class WriteRestaurantCommentRepository: WriteRepository<RestaurantComment> , IWriteRestaurantCommentRepository
+    public class WriteRestaurantCommentRepository: WriteRepository<RestaurantComment> , IWriteRestaurantCommentRepository
     {
         public WriteRestaurantCommentRepository(AppDbContext context) : base(context)
         {

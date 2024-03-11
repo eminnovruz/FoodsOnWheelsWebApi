@@ -45,17 +45,17 @@ namespace Infrastructure.Services.UserServices
 
             if (request.FoodIds.Count != 0)
             {
-                var foods = _unitOfWork.ReadFoodRepository.GetAll().ToList();
+                var foods = await _unitOfWork.ReadFoodRepository.GetAllAsync();
 
                 foreach (var item in request.FoodIds)
                 {
-                   var food = foods.FirstOrDefault(x => x?.Id == item); 
+                    var food = foods.FirstOrDefault(x => x?.Id == item); 
                    if (food == default)
                         throw new ArgumentNullException("Food Id Is Not Found");
                    
                     food.CategoryIds.Add(category.Id);
                     
-                    _unitOfWork.WriteFoodRepository.Update(food);
+                    await _unitOfWork.WriteFoodRepository.UpdateAsync(food.Id);
                     await _unitOfWork.WriteFoodRepository.SaveChangesAsync();
                 }
             }
@@ -103,19 +103,19 @@ namespace Infrastructure.Services.UserServices
                 food.ImageUrl = _blobSerice.GetSignedUrl(fileName);
             }
 
-
+            var categorys = await _unitOfWork.ReadCategoryRepository.GetAllAsync();
             foreach (var item in request.CategoryIds)
             {
-                var category = await _unitOfWork.ReadCategoryRepository.GetAsync(item);
+                var category = categorys.FirstOrDefault(x => item == x.Id);
                 if (category is null)
                     throw new ArgumentNullException("Category Id Is Not Found");
                 category.FoodIds.Add(food.Id);
-                _unitOfWork.WriteCategoryRepository.Update(category);
+                await _unitOfWork.WriteCategoryRepository.UpdateAsync(category.Id);
                 await _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
             }
 
             restaurant.FoodIds.Add(food.Id);
-            _unitOfWork.WriteRestaurantRepository.Update(restaurant);
+            await _unitOfWork.WriteRestaurantRepository.UpdateAsync(restaurant.Id);
             await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
 
 
@@ -137,7 +137,7 @@ namespace Infrastructure.Services.UserServices
             if (restaurant is null)
                 throw new ArgumentNullException("Wrong Restaurant");
 
-            var restaurantDto = new RestaurantInfoDto
+            RestaurantInfoDto restaurantDto = new RestaurantInfoDto
             {
                 Id = Id,
                 Name = restaurant.Name,
@@ -146,6 +146,7 @@ namespace Infrastructure.Services.UserServices
                 ImageUrl = restaurant.ImageUrl,
                 Rating = restaurant.Rating,
             };
+
 
             return restaurantDto;
         }
@@ -261,24 +262,25 @@ namespace Infrastructure.Services.UserServices
                 throw new ArgumentNullException("Wrong Restaurant");
 
 
+            var categorys = await _unitOfWork.ReadCategoryRepository.GetAllAsync();
             foreach (var item in food.CategoryIds)
             {
-                var category = await _unitOfWork.ReadCategoryRepository.GetAsync(item);
+                var category = categorys.FirstOrDefault(x => item == x.Id);
                 if (category is null)
                     throw new ArgumentNullException("Category Id Is Not Found");
                 category.FoodIds.Remove(food.Id);
-                _unitOfWork.WriteCategoryRepository.Update(category);
+                await _unitOfWork.WriteCategoryRepository.UpdateAsync(category.Id);
                 await _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
             }
 
             await _blobSerice.DeleteFileAsync(food.Id + "-" + food.Name + ".jpg");
 
             restaurant.FoodIds.Remove(food.Id);
-            _unitOfWork.WriteRestaurantRepository.Update(restaurant);
+            await _unitOfWork.WriteRestaurantRepository.UpdateAsync(restaurant.Id);
             await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
 
 
-            _unitOfWork.WriteFoodRepository.Remove(food);
+            await _unitOfWork.WriteFoodRepository.RemoveAsync(food.Id);
             await _unitOfWork.WriteFoodRepository.SaveChangesAsync();
             return true;
         }

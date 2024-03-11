@@ -28,13 +28,13 @@ public class CourierService : ICourierService
 
         order.CourierId = request.CourierId;
 
-        _unitOfWork.WriteOrderRepository.Update(order);
+        await _unitOfWork.WriteOrderRepository.UpdateAsync(order.Id);
         await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
 
 
         courier.ActiveOrderId = request.OrderId;
 
-        _unitOfWork.WriteCourierRepository.Update(courier);
+        await _unitOfWork.WriteCourierRepository.UpdateAsync(courier.Id);
         await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
 
         return true;

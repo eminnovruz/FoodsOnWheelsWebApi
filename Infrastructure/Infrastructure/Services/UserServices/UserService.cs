@@ -23,9 +23,9 @@ public class UserService : IUserService
 
 
 
-    public IEnumerable<CategoryInfoDto> GetAllFoodCategories()
+    public async Task<IEnumerable<CategoryInfoDto>> GetAllFoodCategories()
     {
-        var categories = _unitOfWork.ReadCategoryRepository.GetAll();
+        var categories =await _unitOfWork.ReadCategoryRepository.GetAllAsync();
 
         if (categories is null)
             throw new ArgumentNullException();
@@ -52,9 +52,9 @@ public class UserService : IUserService
     }
 
 
-    public IEnumerable<RestaurantInfoDto> GetAllRestaurants()
+    public async Task<IEnumerable<RestaurantInfoDto>> GetAllRestaurants()
     {
-        var restaurants = _unitOfWork.ReadRestaurantRepository.GetAll().ToList();
+        var restaurants = await _unitOfWork.ReadRestaurantRepository.GetAllAsync();
 
         if (restaurants is null)
             throw new ArgumentNullException();
@@ -73,9 +73,9 @@ public class UserService : IUserService
     }
 
 
-    public IEnumerable<FoodInfoDto> GetFoodsByCategory(string categoryId)
+    public async Task<IEnumerable<FoodInfoDto>> GetFoodsByCategory(string categoryId)
     {
-        var allFoods = _unitOfWork.ReadFoodRepository.GetAll().ToList();
+        var allFoods =await _unitOfWork.ReadFoodRepository.GetAllAsync();
         if (allFoods is null)
             throw new ArgumentNullException();
 
@@ -157,7 +157,7 @@ public class UserService : IUserService
         {
             var newOrder = new Order()
             {
-                Amount = CalculateOrderAmount(request.FoodIds),
+                Amount = await CalculateOrderAmountAsync(request.FoodIds),
                 CourierId = "",
                 Id = Guid.NewGuid().ToString(),
                 IsActivated = false,
@@ -233,9 +233,9 @@ public class UserService : IUserService
     }
 
 
-    public uint CalculateOrderAmount(List<string> foodIds)
+    public async Task<uint> CalculateOrderAmountAsync(List<string> foodIds)
     {
-        var foods = _unitOfWork.ReadFoodRepository.GetAll().ToList();
+        var foods = await _unitOfWork.ReadFoodRepository.GetAllAsync();
         if (foods is null)
             throw new ArgumentNullException();
 

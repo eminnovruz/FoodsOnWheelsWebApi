@@ -3,9 +3,11 @@ using Application.Models.DTOs.Courier;
 using Application.Models.DTOs.Restaurant;
 using Application.Repositories;
 using Application.Repositories.CategoryRepository;
+using Application.Repositories.CourierCommentRepository;
 using Application.Repositories.CourierRepository;
 using Application.Repositories.FoodRepository;
 using Application.Repositories.OrderRepository;
+using Application.Repositories.RestaurantCommentRepository;
 using Application.Repositories.RestaurantRepository;
 using Application.Repositories.UserRepository;
 using Application.Services.IAuthServices;
@@ -20,9 +22,11 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Persistence.Repositories;
 using Persistence.Repositories.CategoryRepository;
+using Persistence.Repositories.CourierCommentRepository;
 using Persistence.Repositories.CourierRepository;
 using Persistence.Repositories.FoodRepository;
 using Persistence.Repositories.OrderRepository;
+using Persistence.Repositories.RestaurantCommentRepository;
 using Persistence.Repositories.RestaurantRepository;
 using Persistence.Repositories.UserRepository;
 using System.Configuration;
@@ -146,6 +150,13 @@ public static class Extension
 
         services.AddScoped<IReadCategoryRepository, ReadCategoryRepository>();
         services.AddScoped<IWriteCategoryRepository, WriteCategoryRepository>();
+        
+        services.AddScoped<IReadCourierCommentRepository, ReadCourierCommentRepository>();
+        services.AddScoped<IWriteCourierCommentRepository, WriteCourierCommentRepository>();
+        
+        services.AddScoped<IReadRestaurantCommentRepository, ReadRestaurantCommentRepository>();
+        services.AddScoped<IWriteRestaurantCommentRepository , WriteRestaurantCommentRepository>();
+
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
