@@ -24,4 +24,9 @@ public interface IWorkerService
     Task<bool> UpdateCategory(UpdateCategoryRequest request);
     Task<bool> RemoveCategory(string Id);
     Task<IEnumerable<Category>> SeeAllCategories();
+    //Task<bool> AddWorker(AddWorkerDto dto);
+    //Task<bool> UpdateWorker(UpdateWorkerDto dto);
+    //Task<bool> RemoveWorker(string id);
+    //Task<IEnumerable<GetWorkerDto>> GetAllWorkers();
+
 }

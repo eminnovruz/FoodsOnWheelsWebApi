@@ -76,10 +76,8 @@ public class WorkerService : IWorkerService
             return false;
         }
 
-        if (dto.Name != null)
-            existingRestaurant.Name = dto.Name;
-        if (dto.Description != null)
-            existingRestaurant.Description = dto.Description;
+        existingRestaurant.Name = dto.Name;
+        existingRestaurant.Description = dto.Description;
 
         var result = await _unitOfWork.WriteRestaurantRepository.UpdateAsync(existingRestaurant.Id);
         await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
@@ -93,7 +91,7 @@ public class WorkerService : IWorkerService
         return result;
     }
 
-    public async Task<IEnumerable<RestaurantInfoDto>> GetAllRestaurants()
+    public async Task<IEnumerable<RestaurantInfoDto>> GetAllRestaurants() // check
     {
         var restaurants = _unitOfWork.ReadRestaurantRepository.GetAll();
         var restaurantDtos = restaurants.Select(item => new RestaurantInfoDto
@@ -144,16 +142,11 @@ public class WorkerService : IWorkerService
             return false;
         }
 
-        if (dto.Name != null)
-            existingCourier.Name = dto.Name;
-        if (dto.Surname != null)
-            existingCourier.Surname = dto.Surname;
-        if (dto.BirthDate != null)
-            existingCourier.BirthDate = dto.BirthDate;
-        if (dto.Email != null)
-            existingCourier.Email = dto.Email;
-        if (dto.PhoneNumber != null)
-            existingCourier.PhoneNumber = dto.PhoneNumber;
+        existingCourier.Name = dto.Name;
+        existingCourier.Surname = dto.Surname;
+        existingCourier.BirthDate = dto.BirthDate;
+        existingCourier.Email = dto.Email;
+        existingCourier.PhoneNumber = dto.PhoneNumber;
 
         var result = await _unitOfWork.WriteCourierRepository.UpdateAsync(existingCourier.Id);
         await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
@@ -168,7 +161,7 @@ public class WorkerService : IWorkerService
         return result;
     }
 
-    public async Task<IEnumerable<SummaryCourierDto>> GetAllCouriers()
+    public async Task<IEnumerable<SummaryCourierDto>> GetAllCouriers() // check
     {
         var couriers = _unitOfWork.ReadCourierRepository.GetAll().ToList();
 
@@ -181,7 +174,7 @@ public class WorkerService : IWorkerService
         return courierDtos;
     }
 
-    public bool AddNewFood(AddFoodRequest request)
+    public bool AddNewFood(AddFoodRequest request) // check
     {
         if (request == null)
         {
@@ -210,16 +203,11 @@ public class WorkerService : IWorkerService
             return false;
         }
 
-        if (request.Name != null)
-            existingFood.Name = request.Name;
-        if (request.CategoryIds != null)
-            existingFood.CategoryIds = request.CategoryIds;
-        if (request.Description != null)
-            existingFood.Description = request.Description;
-        if (request.ImageUrl != null)
-            existingFood.ImageUrl = request.ImageUrl;
-        if (request.Price != default(decimal))
-            existingFood.Price = request.Price;
+        existingFood.Name = request.Name;
+        existingFood.CategoryIds = request.CategoryIds;
+        existingFood.Description = request.Description;
+        existingFood.ImageUrl = request.ImageUrl;
+        existingFood.Price = request.Price;
 
         var result = await _unitOfWork.WriteFoodRepository.UpdateAsync(existingFood.Id);
         await _unitOfWork.WriteFoodRepository.SaveChangesAsync();
@@ -234,9 +222,9 @@ public class WorkerService : IWorkerService
         return result;
     }
 
-    public async Task<IEnumerable<Food>> SeeAllFoods()
+    public async Task<IEnumerable<Food>> SeeAllFoods() // 
     {
-        var restaurants = await _unitOfWork.ReadFoodRepository.GetAllAsync();
+        var restaurants = _unitOfWork.ReadFoodRepository.GetAll();
         return restaurants;
     }
 
@@ -270,10 +258,8 @@ public class WorkerService : IWorkerService
             return false;
         }
 
-        if (request.CategoryName != null)
-            existingCategory.CategoryName = request.CategoryName;
-        if (request.FoodIds != null)
-            existingCategory.FoodIds = request.FoodIds;
+        existingCategory.CategoryName = request.CategoryName;
+        existingCategory.FoodIds = request.FoodIds;
 
         var result = await _unitOfWork.WriteCategoryRepository.UpdateAsync(existingCategory.Id);
         await _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
@@ -290,7 +276,7 @@ public class WorkerService : IWorkerService
 
     public async Task<IEnumerable<Category>> SeeAllCategories()
     {
-        var categories = await _unitOfWork.ReadCategoryRepository.GetAllAsync();
+        var categories = _unitOfWork.ReadCategoryRepository.GetAll();
         return categories;
     }
 }
