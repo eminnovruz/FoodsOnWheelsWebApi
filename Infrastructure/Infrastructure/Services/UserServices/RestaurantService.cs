@@ -45,11 +45,13 @@ namespace Infrastructure.Services.UserServices
 
             if (request.FoodIds.Count != 0)
             {
-                var foods = await _unitOfWork.ReadFoodRepository.GetAllAsync();
+                var foods =_unitOfWork.ReadFoodRepository.GetAll().ToList();
+                if (foods.Count == 0)
+                    throw new ArgumentNullException("Food Id Is Not Found");
 
                 foreach (var item in request.FoodIds)
                 {
-                    var food = foods.FirstOrDefault(x => x?.Id == item); 
+                   var food = foods.FirstOrDefault(x => x?.Id == item); 
                    if (food == default)
                         throw new ArgumentNullException("Food Id Is Not Found");
                    
@@ -104,7 +106,9 @@ namespace Infrastructure.Services.UserServices
                 food.ImageUrl = _blobSerice.GetSignedUrl(fileName);
             }
 
-            var categorys = await _unitOfWork.ReadCategoryRepository.GetAllAsync();
+            var categorys = _unitOfWork.ReadCategoryRepository.GetAll().ToList();
+            if (categorys.Count == 0)
+                throw new ArgumentNullException("Food Id Is Not Found");
             foreach (var item in request.CategoryIds)
             {
                 var category = categorys.FirstOrDefault(x => item == x.Id);
@@ -263,7 +267,7 @@ namespace Infrastructure.Services.UserServices
                 throw new ArgumentNullException("Wrong Restaurant");
 
 
-            var categorys = await _unitOfWork.ReadCategoryRepository.GetAllAsync();
+            var categorys = _unitOfWork.ReadCategoryRepository.GetAll();
             foreach (var item in food.CategoryIds)
             {
                 var category = categorys.FirstOrDefault(x => item == x.Id);

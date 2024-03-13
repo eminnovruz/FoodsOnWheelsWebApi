@@ -27,7 +27,7 @@ public class UserService : IUserService
     {
         var categories = _unitOfWork.ReadCategoryRepository.GetAll().ToList();
 
-        if (categories is null)
+        if (categories.Count == 0)
             throw new ArgumentNullException();
 
         List<CategoryInfoDto> dtos = new List<CategoryInfoDto>();
@@ -35,15 +35,12 @@ public class UserService : IUserService
         {
             if (item is not null)
             {
-
-
                 var dto = new CategoryInfoDto()
                 {
                     CategoryName = item.CategoryName,
                     FoodIds = item.FoodIds,
                     Id = item.Id
                 };
-
                 dtos.Add(dto);
             }
         }
@@ -56,7 +53,7 @@ public class UserService : IUserService
     {
         var restaurants = _unitOfWork.ReadRestaurantRepository.GetAll().ToList();
 
-        if (restaurants is null)
+        if (restaurants.Count == 0)
             throw new ArgumentNullException();
 
         var restaurantDtos = restaurants.Select(restaurant => new RestaurantInfoDto
@@ -76,7 +73,7 @@ public class UserService : IUserService
     public IEnumerable<FoodInfoDto> GetFoodsByCategory(string categoryId)
     {
         var allFoods = _unitOfWork.ReadFoodRepository.GetAll().ToList();
-        if (allFoods is null)
+        if (allFoods.Count == 0)
             throw new ArgumentNullException();
 
         var foods = new List<Food>();
@@ -235,8 +232,8 @@ public class UserService : IUserService
 
     public uint CalculateOrderAmountAsync(List<string> foodIds)
     {
-        var foods = _unitOfWork.ReadFoodRepository.GetAll();
-        if (foods is null)
+        var foods = _unitOfWork.ReadFoodRepository.GetAll().ToList();
+        if (foods.Count == 0)
             throw new ArgumentNullException();
 
 
