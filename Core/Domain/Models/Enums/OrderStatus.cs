@@ -3,9 +3,10 @@
 public enum OrderStatus
 {
     Waiting = 0,
-    Comfirmed = 1,
-    Preparing = 2,
-    OnTheWheels = 3,
-    Delivered = 4,
-    Rated = 5
+    Rejected = 1,
+    Comfirmed = 2,
+    Preparing = 3,
+    OnTheWheels = 4,
+    Delivered = 5,
+    Rated = 6
 }

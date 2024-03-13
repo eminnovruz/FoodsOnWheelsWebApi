@@ -58,8 +58,8 @@ public class UserService : IUserService
 
         var restaurantDtos = restaurants.Select(restaurant => new RestaurantInfoDto
         {
-            Description = restaurant.Description,
             Id = restaurant.Id,
+            Description = restaurant.Description,
             FoodIds = restaurant.FoodIds,
             Name = restaurant.Name,
             Rating = restaurant.Rating,
@@ -94,6 +94,10 @@ public class UserService : IUserService
             Price = food.Price,
             ImageUrl = food.ImageUrl
         });
+
+        if (foodDtos is null)
+            throw new ArgumentNullException();
+
 
         return foodDtos;
     }
@@ -163,10 +167,12 @@ public class UserService : IUserService
                 UserId = request.UserId,
                 OrderRatingId = "",
                 RestaurantId = request.RestaurantId,
+                OrderStatus = 0
             };
 
             var result = await _unitOfWork.WriteOrderRepository.AddAsync(newOrder);
             await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
+
             return result;
         }
         else
@@ -195,7 +201,7 @@ public class UserService : IUserService
         order.OrderFinishTime = DateTime.Now;
 
 
-        bool result = _unitOfWork.WriteOrderRepository.Update(order);
+        bool result =await  _unitOfWork.WriteOrderRepository.UpdateAsync(order.Id);
         await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
 
         return result;
@@ -222,8 +228,7 @@ public class UserService : IUserService
 
         restaurant.CommentIds.Add(comment.Id);
 
-        _unitOfWork.WriteRestaurantRepository.Update(restaurant);
-
+        await _unitOfWork.WriteRestaurantRepository.UpdateAsync(restaurant.Id);
         await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
 
         return true;

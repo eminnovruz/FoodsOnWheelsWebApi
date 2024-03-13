@@ -1,4 +1,5 @@
 ﻿using Domain.Models.Common;
+using Domain.Models.Enums;
 
 namespace Domain.Models;
 
@@ -14,4 +15,5 @@ public class Order : BaseEntity
     public string RestaurantId { get; set; }
     public bool IsActivated { get; set; } 
     public string OrderRatingId { get; set; }
+    public OrderStatus OrderStatus { get; set; }
 }

@@ -1,4 +1,6 @@
-﻿namespace Application.Models.DTOs.Order;
+﻿using Domain.Models.Enums;
+
+namespace Application.Models.DTOs.Order;
 
 public class OrderInfoDto
 {
@@ -8,5 +10,7 @@ public class OrderInfoDto
     public List<string> FoodIds { get; set; }
     public bool PayedWithCard { get; set; }
     public string UserId { get; set; }
+    public OrderStatus OrderStatus { get; set; }
+    public uint Amount { get; set; }
     public uint Rate { get; set; }
 }

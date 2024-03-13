@@ -17,7 +17,7 @@ public class CourierService : ICourierService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<bool> AcceptOrder(AcceptOrderDto request)
+    public async Task<bool> AcceptOrder(AcceptOrderFromCourierDto request)
     {
         var order = await _unitOfWork.ReadOrderRepository.GetAsync(request.OrderId);
         if (order is null)

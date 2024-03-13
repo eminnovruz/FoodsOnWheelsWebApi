@@ -11,15 +11,21 @@ public interface IRestaurantService
     #region ADD METOD
     public Task<bool> AddCategory(AddCategoryRequest request);
     public Task<bool> AddFood(AddFoodRequest request);
+    public Task<bool> InLastDecidesSituation(InLastSituationOrderDto orderDto);
     #endregion
 
     #region GET METOD
+    public IEnumerable<OrderInfoDto> WaitingOrders(string resturantId); // 
 
     public Task<RestaurantInfoDto> GetRestaurantInfo(string Id);
-    public List<OrderInfoDto> GetActiveOrders(string Id);
-    public List<OrderInfoDto> GetOrderHistory(string Id);
-    public List<OrderInfoDto> GetPastOrderInfoById(string orderId);
-    
+    public IEnumerable<OrderInfoDto> GetActiveOrders(string Id);
+    public IEnumerable<OrderInfoDto> GetOrderHistory(string Id);
+    public IEnumerable<OrderInfoDto> GetPastOrderInfoById(string orderId);
+
+    #endregion
+
+    #region Update
+    public Task<bool> UpdateStatusOrder(UpdateOrderStatusDto statusDto);
     #endregion
 
     #region DELETE METOD

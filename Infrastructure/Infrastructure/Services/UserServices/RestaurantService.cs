@@ -28,9 +28,6 @@ namespace Infrastructure.Services.UserServices
 
         public async Task<bool> AddCategory(AddCategoryRequest request)
         {
-            if (request is null)
-                throw new ArgumentNullException("The Information Is Not Complete");
-
             var categoryTest = _unitOfWork.ReadCategoryRepository.GetWhere(x => x.CategoryName.ToLower() == request.CategoryName.ToLower()).ToList();
             if (categoryTest.Count > 0)
                 throw new InvalidDataException("A Category With This Name Already Exists");
@@ -46,8 +43,8 @@ namespace Infrastructure.Services.UserServices
             if (request.FoodIds.Count != 0)
             {
                 var foods =_unitOfWork.ReadFoodRepository.GetAll().ToList();
-                if (foods.Count == 0)
-                    throw new ArgumentNullException("Food Id Is Not Found");
+                if (foods is null || foods.Count == 0)
+                    throw new ArgumentNullException("Foods Is Not Found");
 
                 foreach (var item in request.FoodIds)
                 {
@@ -71,9 +68,6 @@ namespace Infrastructure.Services.UserServices
 
         public async Task<bool> AddFood(AddFoodRequest request)
         {
-            if (request is null)
-                throw new ArgumentNullException("The Information Is Not Complete");
-
             var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(request.RestaurantId);
             if (restaurant is null)
                 throw new ArgumentNullException("Wrong Restaurant");
@@ -107,11 +101,11 @@ namespace Infrastructure.Services.UserServices
             }
 
             var categorys = _unitOfWork.ReadCategoryRepository.GetAll().ToList();
-            if (categorys.Count == 0)
-                throw new ArgumentNullException("Food Id Is Not Found");
+            if (categorys is null || categorys.Count == 0)
+                throw new ArgumentNullException("Categorys Is Not Found");
             foreach (var item in request.CategoryIds)
             {
-                var category = categorys.FirstOrDefault(x => item == x.Id);
+                var category = categorys.FirstOrDefault(x => item == x?.Id);
                 if (category is null)
                     throw new ArgumentNullException("Category Id Is Not Found");
                 category.FoodIds.Add(food.Id);
@@ -129,12 +123,56 @@ namespace Infrastructure.Services.UserServices
             return true;
         }
         
+        public async Task<bool> InLastDecidesSituation(InLastSituationOrderDto orderDto)
+        {
+            var order = await _unitOfWork.ReadOrderRepository.GetAsync(orderDto.OrderId);
+            if (order == null)
+                throw new ArgumentNullException();
+
+            if (orderDto.IsLastSituation)
+                order.OrderStatus = Domain.Models.Enums.OrderStatus.Comfirmed;
+            else
+                order.OrderStatus = Domain.Models.Enums.OrderStatus.Rejected;
+
+            await _unitOfWork.WriteOrderRepository.UpdateAsync(order.Id);
+            await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
+
+            return true;
+        }
 
         #endregion
 
 
         #region GET METOD
 
+        public IEnumerable<OrderInfoDto> WaitingOrders(string resturantId)
+        {
+            var orders = _unitOfWork.ReadOrderRepository.GetWhere(x=> x.RestaurantId == resturantId && x.OrderStatus == 0).ToList();
+            if (orders.Count == 0)
+                throw new ArgumentNullException();
+
+            var waitingOrdersDto = new List<OrderInfoDto>();
+
+            foreach (var item in orders)
+            {
+                if (item is not null)
+                {
+                    waitingOrdersDto.Add(new OrderInfoDto
+                    {
+                        Id = item.Id,
+                        OrderStatus = item.OrderStatus,
+                        OrderDate = item.OrderDate,
+                        FoodIds = item.OrderedFoodIds,
+                        PayedWithCard = item.PayedWithCard,
+                        Rate = 0,
+                        Amount = item.Amount,
+                        UserId = item.UserId,
+                        RestaurantId = item.RestaurantId,
+                    });
+                }
+            }
+            return waitingOrdersDto;
+        }
 
         public async Task<RestaurantInfoDto> GetRestaurantInfo(string Id)
         {
@@ -157,7 +195,7 @@ namespace Infrastructure.Services.UserServices
         }
 
 
-        public List<OrderInfoDto> GetActiveOrders(string Id)
+        public IEnumerable<OrderInfoDto> GetActiveOrders(string Id)
         {
             var orders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.RestaurantId == Id).ToList();
             if (orders.Count == 0)
@@ -188,7 +226,7 @@ namespace Infrastructure.Services.UserServices
         }
 
 
-        public List<OrderInfoDto> GetOrderHistory(string Id)
+        public IEnumerable<OrderInfoDto> GetOrderHistory(string Id)
         {
             var orders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.RestaurantId == Id).ToList();
             if (orders.Count == 0)
@@ -219,7 +257,7 @@ namespace Infrastructure.Services.UserServices
         }
 
 
-        public List<OrderInfoDto> GetPastOrderInfoById(string Id)
+        public IEnumerable<OrderInfoDto> GetPastOrderInfoById(string Id)
         {
             var orders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.RestaurantId == Id).ToList();
             if (orders.Count == 0)
@@ -252,7 +290,24 @@ namespace Infrastructure.Services.UserServices
 
         #endregion
 
+        #region Update
 
+        public async Task<bool> UpdateStatusOrder(UpdateOrderStatusDto statusDto)
+        {
+            var order = await _unitOfWork.ReadOrderRepository.GetAsync(statusDto.OrderId);
+            if (order == null)
+                throw new ArgumentNullException();
+
+            order.OrderStatus = statusDto.OrderStatus;
+
+            await _unitOfWork.WriteOrderRepository.UpdateAsync(order.Id);
+            await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
+            return true;
+        }
+
+        #endregion
+        
+        
         #region DELETE METOD
 
 
@@ -267,7 +322,9 @@ namespace Infrastructure.Services.UserServices
                 throw new ArgumentNullException("Wrong Restaurant");
 
 
-            var categorys = _unitOfWork.ReadCategoryRepository.GetAll();
+            var categorys = _unitOfWork.ReadCategoryRepository.GetAll().ToList();
+            if (categorys is null || categorys.Count == 0)
+                throw new ArgumentNullException("Categorys Is Not Found");
             foreach (var item in food.CategoryIds)
             {
                 var category = categorys.FirstOrDefault(x => item == x.Id);
@@ -291,6 +348,9 @@ namespace Infrastructure.Services.UserServices
         }
 
 
-        #endregion      
+
+
+
+        #endregion
     }
 }
