@@ -2,6 +2,7 @@
 using Application.Models.DTOs.Courier;
 using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Restaurant;
+using Application.Models.DTOs.Worker;
 using Application.Repositories;
 using Application.Services.IHelperServices;
 using Application.Services.IUserServices;
@@ -91,6 +92,11 @@ public class WorkerService : IWorkerService
         return result;
     }
 
+    public Task<bool> GetRestaurantById(string id)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<IEnumerable<RestaurantInfoDto>> GetAllRestaurants() // check
     {
         var restaurants = _unitOfWork.ReadRestaurantRepository.GetAll();
@@ -161,6 +167,11 @@ public class WorkerService : IWorkerService
         return result;
     }
 
+    public Task<bool> GetCourierById(string id)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<IEnumerable<SummaryCourierDto>> GetAllCouriers() // check
     {
         var couriers = _unitOfWork.ReadCourierRepository.GetAll().ToList();
@@ -174,22 +185,56 @@ public class WorkerService : IWorkerService
         return courierDtos;
     }
 
-    public bool AddNewFood(AddFoodRequest request) // check
+    public async Task<bool> AddNewFood(AddFoodRequest request)
     {
-        if (request == null)
+        if (request is null)
+            throw new ArgumentNullException("The Information Is Not Complete");
+
+        var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(request.RestaurantId);
+        if (restaurant is null)
+            throw new ArgumentNullException("Wrong Restaurant");
+
+        var food = new Food
         {
-            throw new ArgumentNullException();
+            Id = Guid.NewGuid().ToString(),
+            Name = request.Name,
+            Description = request.Description,
+            CategoryIds = request.CategoryIds,
+            Price = request.Price,
+            RestaurantId = request.RestaurantId
+        };
+
+        var form = request.File;
+        using (var stream = form.OpenReadStream())
+        {
+            var fileName = food.Id + "-" + food.Name + ".jpg";
+            var contentType = form.ContentType;
+
+            var blobResult = await _blobSerice.UploadFileAsync(stream, fileName, contentType);
+            if (blobResult is false) return false;
+
+            food.ImageUrl = _blobSerice.GetSignedUrl(fileName);
         }
 
-        Food newFood = new Food();
-        //{
-        //    Name = request.Name,
-        //    CategoryIds = request.CategoryIds,
-        //    Description = request.Description,
-        //    Id = Guid.NewGuid().ToString(),
-        //    ImageUrl = request.ImageUrl,
-        //    Price = request.Price,
-        //};
+        var categorys = _unitOfWork.ReadCategoryRepository.GetAll().ToList();
+        if (categorys.Count == 0) throw new ArgumentNullException("Category is not found");
+
+        foreach (var item in request.CategoryIds)
+        {
+            var category = categorys.FirstOrDefault(x => item == x.Id);
+            if (category is null) throw new ArgumentNullException("Category Id Is Not Found");
+            category.FoodIds.Add(food.Id);
+
+            await _unitOfWork.WriteCategoryRepository.UpdateAsync(category.Id);
+            await _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
+        }
+
+        restaurant.FoodIds.Add(food.Id);
+        await _unitOfWork.WriteRestaurantRepository.UpdateAsync(restaurant.Id);
+        await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
+        await _unitOfWork.WriteFoodRepository.AddAsync(food);
+        await _unitOfWork.WriteFoodRepository.SaveChangesAsync();
+
         return true;
     }
 
@@ -220,6 +265,11 @@ public class WorkerService : IWorkerService
         var result = await _unitOfWork.WriteFoodRepository.RemoveAsync(Id);
         await _unitOfWork.WriteFoodRepository.SaveChangesAsync();
         return result;
+    }
+
+    public Task<bool> GetFoodById(string id)
+    {
+        throw new NotImplementedException();
     }
 
     public async Task<IEnumerable<Food>> SeeAllFoods() // 
@@ -274,9 +324,39 @@ public class WorkerService : IWorkerService
         return result;
     }
 
+    public Task<bool> GetCategoryById(string id)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<IEnumerable<Category>> SeeAllCategories()
     {
         var categories = _unitOfWork.ReadCategoryRepository.GetAll();
         return categories;
+    }
+
+    public Task<bool> AddWorker(AddWorkerDto dto)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<bool> UpdateWorker(UpdateWorkerDto dto)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<bool> RemoveWorker(string id)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<bool> GetWorkerById(string id)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IEnumerable<GetWorkerDto>> GetAllWorkers()
+    {
+        throw new NotImplementedException();
     }
 }
