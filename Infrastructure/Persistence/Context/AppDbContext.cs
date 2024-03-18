@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Worker>().ToContainer("Worker");
         modelBuilder.Entity<User>().ToContainer("Users");
         modelBuilder.Entity<Order>().ToContainer("Orders");
         modelBuilder.Entity<Courier>().ToContainer("Couriers");
@@ -26,6 +27,7 @@ public class AppDbContext : DbContext
         base.OnModelCreating(modelBuilder);
     }
 
+    public DbSet<Worker> Workers { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<Courier> Couriers { get; set; }

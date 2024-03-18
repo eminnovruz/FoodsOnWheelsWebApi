@@ -20,21 +20,6 @@ namespace WebApi.Controllers
 
         // Courier Funcs
 
-        [HttpGet("getAllCouriers")]
-        public async Task<ActionResult<IEnumerable<SummaryCourierDto>>> GetAllCouriers()
-        {
-            try
-            {
-                var result = await _workerService.GetAllCouriers();
-                return Ok(result);
-            }
-            catch (Exception exception)
-            {
-                Log.Error("error occured on [GET] GetAllCouriers");
-                return BadRequest(exception.Message);
-            }
-        }
-
         [HttpPost("addNewCourier")]
         public async Task<ActionResult<bool>> AddNewCourier(AddCourierDto request)
         {
@@ -59,6 +44,21 @@ namespace WebApi.Controllers
             catch (Exception exception)
             {
                 Log.Error("error occured on [DELETE] RemoveCourier");
+                return BadRequest(exception.Message);
+            }
+        }
+
+        [HttpGet("getAllCouriers")]
+        public async Task<ActionResult<IEnumerable<SummaryCourierDto>>> GetAllCouriers()
+        {
+            try
+            {
+                var result = await _workerService.GetAllCouriers();
+                return Ok(result);
+            }
+            catch (Exception exception)
+            {
+                Log.Error("error occured on [GET] GetAllCouriers");
                 return BadRequest(exception.Message);
             }
         }
@@ -122,7 +122,5 @@ namespace WebApi.Controllers
                 return BadRequest(exception.Message);
             }
         }
-
-
     }
 }

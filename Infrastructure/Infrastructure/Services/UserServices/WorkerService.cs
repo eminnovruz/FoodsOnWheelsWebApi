@@ -398,28 +398,95 @@ public class WorkerService : IWorkerService
         return categories;
     }
 
-    public Task<bool> AddWorker(AddWorkerDto dto)
+    public async Task<bool> AddWorker(AddWorkerDto dto)
     {
-        throw new NotImplementedException();
+        if (dto == null)
+        {
+            Log.Error("Request is null ");
+            throw new ArgumentNullException("Request is null ");
+        }
+
+        Worker newWorker = new Worker()
+        {
+            Name = dto.Name,
+            Surname = dto.Surname,
+            BirthDate = dto.BirthDate,
+            Email = dto.Email,
+            PhoneNumber = dto.PhoneNumber,
+            Id = Guid.NewGuid().ToString(),
+        };
+
+        var result = await _unitOfWork.WriteWorkerRepository.AddAsync(newWorker);
+        await _unitOfWork.WriteWorkerRepository.SaveChangesAsync();
+        return result;
     }
 
-    public Task<bool> UpdateWorker(UpdateWorkerDto dto)
+    public async Task<bool> UpdateWorker(UpdateWorkerDto dto)
     {
-        throw new NotImplementedException();
+        var existingWorker = await _unitOfWork.ReadWorkerRepository.GetAsync(dto.Id);
+
+        if (existingWorker == null)
+        {
+            Log.Error("Worker not found with ID: {WorkerId}", dto.Id);
+            return false;
+        }
+
+        existingWorker.Name = dto.Name;
+        existingWorker.Surname = dto.Surname;
+        existingWorker.BirthDate = dto.BirthDate;
+        existingWorker.Email = dto.Email;
+        existingWorker.PhoneNumber = dto.PhoneNumber;
+
+        var result = await _unitOfWork.WriteWorkerRepository.UpdateAsync(existingWorker.Id);
+        await _unitOfWork.WriteWorkerRepository.SaveChangesAsync();
+
+        return result;
     }
 
-    public Task<bool> RemoveWorker(string id)
+
+    public async Task<bool> RemoveWorker(string id)
     {
-        throw new NotImplementedException();
+        var result = await _unitOfWork.WriteWorkerRepository.RemoveAsync(id);
+        await _unitOfWork.WriteWorkerRepository.SaveChangesAsync();
+        return result;
     }
 
-    public Task<GetWorkerDto> GetWorkerById(string id)
+    public async Task<GetWorkerDto> GetWorkerById(string id)
     {
-        throw new NotImplementedException();
+        var worker = await _unitOfWork.ReadWorkerRepository.GetAsync(id);
+
+        if (worker == null)
+        {
+            Log.Error("Worker not found with ID: {WorkerId}", id);
+            return null;
+        }
+
+        var workerDto = new GetWorkerDto
+        {
+            Name = worker.Name,
+            Surname = worker.Surname,
+            BirthDate = worker.BirthDate,
+            Email = worker.Email,
+            PhoneNumber = worker.PhoneNumber,
+        };
+
+        return workerDto;
     }
 
-    public Task<IEnumerable<GetWorkerDto>> GetAllWorkers()
+
+    public async Task<IEnumerable<GetWorkerDto>> GetAllWorkers()
     {
-        throw new NotImplementedException();
+        var workers = _unitOfWork.ReadWorkerRepository.GetAll().ToList();
+
+        var workerDtos = workers.Select(worker => new GetWorkerDto
+        {
+            Name = worker.Name,
+            Surname = worker.Surname,
+            BirthDate = worker.BirthDate,
+            Email = worker.Email,
+            PhoneNumber = worker.PhoneNumber,
+        });
+
+        return workerDtos;
     }
 }

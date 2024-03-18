@@ -7,6 +7,7 @@ using Application.Repositories.OrderRepository;
 using Application.Repositories.RestaurantCommentRepository;
 using Application.Repositories.RestaurantRepository;
 using Application.Repositories.UserRepository;
+using Application.Repositories.WorkerRepository;
 
 namespace Application.Repositories;
 
@@ -30,4 +31,6 @@ public interface IUnitOfWork
     IWriteRestaurantCommentRepository WriteRestaurantCommentRepository { get; }
     IReadOrderRatingRepository ReadOrderRatingRepository { get; }
     IWriteOrderRatingRepository WriteOrderRatingRepository { get; }
+    IWriteWorkerRepository WriteWorkerRepository { get; }
+    IReadWorkerRepository ReadWorkerRepository { get; }
 }
