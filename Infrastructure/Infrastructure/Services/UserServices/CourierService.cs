@@ -4,7 +4,7 @@ using Application.Models.DTOs.Order;
 using Application.Repositories;
 using Application.Services.IUserServices;
 using Domain.Models;
-using Microsoft.Extensions.Azure;
+using Domain.Models.Enums;
 
 namespace Infrastructure.Services.UserServices;
 
@@ -57,6 +57,7 @@ public class CourierService : ICourierService
             PayedWithCard = order.PayedWithCard,
             Rate = order.Amount,
             UserId = order.UserId,
+            OrderStatus = order.OrderStatus
         };
 
         return orderInfo;
@@ -181,10 +182,20 @@ public class CourierService : ICourierService
         return dto;
     }
 
-    public Task<bool> RejectOrder(string OrderId)
+    public async Task<bool> RejectOrder(RejectOrderDto orderDto)
     {
+        var order = await _unitOfWork.ReadOrderRepository.GetAsync(orderDto.OrderId);
+        if (order is null)
+            throw new ArgumentNullException();
 
-        throw new NotImplementedException();
+        if (order.OrderStatus != OrderStatus.Delivered && order.CourierId == orderDto.CourierId)
+            order.CourierId = string.Empty;
+        else
+            throw new ArgumentException("Wrong"); 
+
+        await _unitOfWork.WriteOrderRepository.UpdateAsync(order.Id);
+        await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
+
+        return true;
     }
 }
-

@@ -148,6 +148,39 @@ namespace Infrastructure.Services.UserServices
 
         #region GET METOD
 
+
+        public IEnumerable<OrderInfoDto> GetAllOrders(string resturantId)
+        {
+            var orders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.RestaurantId == resturantId).ToList();
+            if (orders.Count == 0)
+                throw new InvalidDataException("There are no orders");
+
+
+            var ordersDto = new List<OrderInfoDto>();
+            foreach (var order in orders)
+            {
+                if (order is not null)
+                {
+                    ordersDto.Add(new OrderInfoDto
+                    {
+                        Id = order.Id,
+                        RestaurantId = order.RestaurantId,
+                        OrderDate = order.OrderDate,
+                        PayedWithCard = order.PayedWithCard,
+                        FoodIds = order.OrderedFoodIds,
+                        UserId = order.UserId,
+                        Rate = order.Amount,
+                        OrderStatus = order.OrderStatus
+                    });
+                }
+            }
+            if (orders.Count == 0)
+                throw new ArgumentNullException("There are no ongoing orders at the moment");
+
+            return ordersDto;
+        }
+
+
         public IEnumerable<OrderInfoDto> WaitingOrders(string resturantId)
         {
             var orders = _unitOfWork.ReadOrderRepository.GetWhere(x=> x.RestaurantId == resturantId && x.OrderStatus == OrderStatus.Waiting).ToList();

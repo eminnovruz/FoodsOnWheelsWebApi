@@ -79,6 +79,7 @@ namespace WebApi.Controllers
         #region GET METOD
 
 
+
         [HttpGet("getRestaurantInfo")]
         public async Task<ActionResult<RestaurantInfoDto>> GetRestaurantInfo([FromQuery]string Id)
         {

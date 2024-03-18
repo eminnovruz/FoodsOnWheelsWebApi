@@ -7,7 +7,7 @@ namespace Application.Services.IUserServices;
 public interface ICourierService
 {
     Task<bool> AcceptOrder(AcceptOrderFromCourierDto request);
-    Task<bool> RejectOrder(string OrderId);
+    Task<bool> RejectOrder(RejectOrderDto orderDto);
     List<OrderInfoDto> GetNewOrder();
     Task<GetProfileInfoDto> GetProfileInfo(string CourierId);
     Task<IEnumerable<OrderInfoDto>> GetOrderHistory(string CourierId);

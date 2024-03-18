@@ -201,6 +201,8 @@ public class UserService : IUserService
         order.OrderFinishTime = DateTime.Now;
 
 
+        await _unitOfWork.WriteOrderRatingRepository.AddAsync(orderRating);
+        await _unitOfWork.WriteOrderRatingRepository.SaveChangesAsync();
         bool result = await  _unitOfWork.WriteOrderRepository.UpdateAsync(order.Id);
         await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
 
