@@ -11,6 +11,7 @@ using Application.Repositories.OrderRepository;
 using Application.Repositories.RestaurantCommentRepository;
 using Application.Repositories.RestaurantRepository;
 using Application.Repositories.UserRepository;
+using Application.Repositories.WorkerRepository;
 using Application.Services.IAuthServices;
 using Application.Services.IHelperServices;
 using Application.Services.IUserServices;
@@ -31,6 +32,7 @@ using Persistence.Repositories.OrderRepository;
 using Persistence.Repositories.RestaurantCommentRepository;
 using Persistence.Repositories.RestaurantRepository;
 using Persistence.Repositories.UserRepository;
+using Persistence.Repositories.WorkerRepository;
 using System.Configuration;
 using System.Text;
 using WebApi.Validators;
@@ -161,6 +163,9 @@ public static class Extension
 
         services.AddScoped<IReadOrderRatingRepository, ReadOrderRatingRepository>();
         services.AddScoped<IWriteOrderRatingRepository , WriteOrderRatingRepository>();
+
+        services.AddScoped<IReadWorkerRepository, ReadWorkerRepository>();
+        services.AddScoped<IWriteWorkerRepository, WriteWorkerRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
