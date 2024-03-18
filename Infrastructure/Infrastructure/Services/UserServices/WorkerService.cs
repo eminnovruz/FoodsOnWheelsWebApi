@@ -422,29 +422,4 @@ public class WorkerService : IWorkerService
     {
         throw new NotImplementedException();
     }
-
-    Task<bool> IWorkerService.GetRestaurantById(string id)
-    {
-        throw new NotImplementedException();
-    }
-
-    Task<bool> IWorkerService.GetCourierById(string id)
-    {
-        throw new NotImplementedException();
-    }
-
-    Task<bool> IWorkerService.GetFoodById(string id)
-    {
-        throw new NotImplementedException();
-    }
-
-    Task<bool> IWorkerService.GetCategoryById(string id)
-    {
-        throw new NotImplementedException();
-    }
-
-    Task<bool> IWorkerService.GetWorkerById(string id)
-    {
-        throw new NotImplementedException();
-    }
 }

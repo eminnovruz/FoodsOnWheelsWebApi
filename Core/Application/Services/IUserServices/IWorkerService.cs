@@ -22,12 +22,12 @@ public interface IWorkerService
     Task<bool> AddNewFood(AddFoodRequest request);
     Task<bool> UpdateFood(UpdateFoodRequest request);
     Task<bool> RemoveFood(string Id);
-    Task<Food> GetFoodById(string id);
+    Task<FoodInfoDto> GetFoodById(string id);
     Task<IEnumerable<Food>> SeeAllFoods();
     Task<bool> AddCategory(AddCategoryRequest request);
     Task<bool> UpdateCategory(UpdateCategoryRequest request);
     Task<bool> RemoveCategory(string Id);
-    Task<Category> GetCategoryById(string id);
+    Task<CategoryInfoDto> GetCategoryById(string id);
     Task<IEnumerable<Category>> SeeAllCategories();
     Task<bool> AddWorker(AddWorkerDto dto);
     Task<bool> UpdateWorker(UpdateWorkerDto dto);
