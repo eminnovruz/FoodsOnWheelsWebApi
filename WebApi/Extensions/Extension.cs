@@ -6,6 +6,7 @@ using Application.Repositories.CategoryRepository;
 using Application.Repositories.CourierCommentRepository;
 using Application.Repositories.CourierRepository;
 using Application.Repositories.FoodRepository;
+using Application.Repositories.OrderRatingRepository;
 using Application.Repositories.OrderRepository;
 using Application.Repositories.RestaurantCommentRepository;
 using Application.Repositories.RestaurantRepository;
@@ -25,6 +26,7 @@ using Persistence.Repositories.CategoryRepository;
 using Persistence.Repositories.CourierCommentRepository;
 using Persistence.Repositories.CourierRepository;
 using Persistence.Repositories.FoodRepository;
+using Persistence.Repositories.OrderRatingRepository;
 using Persistence.Repositories.OrderRepository;
 using Persistence.Repositories.RestaurantCommentRepository;
 using Persistence.Repositories.RestaurantRepository;
@@ -157,6 +159,8 @@ public static class Extension
         services.AddScoped<IReadRestaurantCommentRepository, ReadRestaurantCommentRepository>();
         services.AddScoped<IWriteRestaurantCommentRepository , WriteRestaurantCommentRepository>();
 
+        services.AddScoped<IReadOrderRatingRepository, ReadOrderRatingRepository>();
+        services.AddScoped<IWriteOrderRatingRepository , WriteOrderRatingRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 

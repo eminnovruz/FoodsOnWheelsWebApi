@@ -138,7 +138,7 @@ public class UserService : IUserService
         var user = await _unitOfWork.ReadUserRepository.GetAsync(userId);
 
         if (user is null)
-            throw new ArgumentNullException();
+            throw new ArgumentNullException("User is not Found");
 
         return new GetUserProfileInfoDto
         {
@@ -201,7 +201,7 @@ public class UserService : IUserService
         order.OrderFinishTime = DateTime.Now;
 
 
-        bool result =await  _unitOfWork.WriteOrderRepository.UpdateAsync(order.Id);
+        bool result = await  _unitOfWork.WriteOrderRepository.UpdateAsync(order.Id);
         await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
 
         return result;
@@ -227,6 +227,9 @@ public class UserService : IUserService
         };
 
         restaurant.CommentIds.Add(comment.Id);
+
+        await _unitOfWork.WriteRestaurantCommentRepository.AddAsync(comment);
+        await _unitOfWork.WriteRestaurantCommentRepository.SaveChangesAsync();
 
         await _unitOfWork.WriteRestaurantRepository.UpdateAsync(restaurant.Id);
         await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();

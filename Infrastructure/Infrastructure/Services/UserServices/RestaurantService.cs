@@ -7,6 +7,7 @@ using Application.Services.IHelperServices;
 using Application.Services.IUserServices;
 using Azure.Core;
 using Domain.Models;
+using Domain.Models.Enums;
 
 namespace Infrastructure.Services.UserServices
 {
@@ -123,16 +124,18 @@ namespace Infrastructure.Services.UserServices
             return true;
         }
         
+
+
         public async Task<bool> InLastDecidesSituation(InLastSituationOrderDto orderDto)
         {
             var order = await _unitOfWork.ReadOrderRepository.GetAsync(orderDto.OrderId);
-            if (order == null)
-                throw new ArgumentNullException();
+            if (order is null)
+                throw new ArgumentNullException("There are no orders");
 
             if (orderDto.IsLastSituation)
-                order.OrderStatus = Domain.Models.Enums.OrderStatus.Comfirmed;
+                order.OrderStatus = OrderStatus.Comfirmed;
             else
-                order.OrderStatus = Domain.Models.Enums.OrderStatus.Rejected;
+                order.OrderStatus = OrderStatus.Rejected;
 
             await _unitOfWork.WriteOrderRepository.UpdateAsync(order.Id);
             await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
@@ -147,9 +150,9 @@ namespace Infrastructure.Services.UserServices
 
         public IEnumerable<OrderInfoDto> WaitingOrders(string resturantId)
         {
-            var orders = _unitOfWork.ReadOrderRepository.GetWhere(x=> x.RestaurantId == resturantId && x.OrderStatus == 0).ToList();
+            var orders = _unitOfWork.ReadOrderRepository.GetWhere(x=> x.RestaurantId == resturantId && x.OrderStatus == OrderStatus.Waiting).ToList();
             if (orders.Count == 0)
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("There are no orders");
 
             var waitingOrdersDto = new List<OrderInfoDto>();
 
@@ -171,8 +174,10 @@ namespace Infrastructure.Services.UserServices
                     });
                 }
             }
+
             return waitingOrdersDto;
         }
+
 
         public async Task<RestaurantInfoDto> GetRestaurantInfo(string Id)
         {
@@ -216,6 +221,7 @@ namespace Infrastructure.Services.UserServices
                         FoodIds = order.OrderedFoodIds,
                         UserId = order.UserId,
                         Rate = order.Amount,
+                        OrderStatus = order.OrderStatus
                     });
                 }
             }
@@ -246,6 +252,8 @@ namespace Infrastructure.Services.UserServices
                         FoodIds = order.OrderedFoodIds,
                         UserId = order.UserId,
                         Rate = order.Amount,
+                        OrderStatus = order.OrderStatus
+
                     });
                 }
             }
@@ -278,6 +286,8 @@ namespace Infrastructure.Services.UserServices
                         FoodIds = order.OrderedFoodIds,
                         UserId = order.UserId,
                         Rate = order.Amount,
+                        OrderStatus = order.OrderStatus
+
                     });
                 }
             }
@@ -290,13 +300,13 @@ namespace Infrastructure.Services.UserServices
 
         #endregion
 
-        #region Update
+        #region UPDATE
 
         public async Task<bool> UpdateStatusOrder(UpdateOrderStatusDto statusDto)
         {
             var order = await _unitOfWork.ReadOrderRepository.GetAsync(statusDto.OrderId);
             if (order == null)
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("There are no orders");
 
             order.OrderStatus = statusDto.OrderStatus;
 
@@ -346,9 +356,6 @@ namespace Infrastructure.Services.UserServices
             await _unitOfWork.WriteFoodRepository.SaveChangesAsync();
             return true;
         }
-
-
-
 
 
         #endregion

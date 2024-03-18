@@ -2,6 +2,7 @@
 using Application.Repositories.CourierCommentRepository;
 using Application.Repositories.CourierRepository;
 using Application.Repositories.FoodRepository;
+using Application.Repositories.OrderRatingRepository;
 using Application.Repositories.OrderRepository;
 using Application.Repositories.RestaurantCommentRepository;
 using Application.Repositories.RestaurantRepository;
@@ -27,4 +28,6 @@ public interface IUnitOfWork
     IWriteCourierCommentRepository WriteCourierCommentRepository { get; }
     IReadRestaurantCommentRepository ReadRestaurantCommentRepository { get; }
     IWriteRestaurantCommentRepository WriteRestaurantCommentRepository { get; }
+    IReadOrderRatingRepository ReadOrderRatingRepository { get; }
+    IWriteOrderRatingRepository WriteOrderRatingRepository { get; }
 }
