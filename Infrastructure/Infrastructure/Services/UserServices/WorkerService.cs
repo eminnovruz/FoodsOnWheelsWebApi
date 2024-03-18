@@ -92,9 +92,25 @@ public class WorkerService : IWorkerService
         return result;
     }
 
-    public Task<bool> GetRestaurantById(string id)
+    public async Task<RestaurantInfoDto> GetRestaurantById(string id)
     {
-        throw new NotImplementedException();
+        var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(id);
+
+        if (restaurant == null)
+        {
+            Log.Error("Restaurant not found with ID: {RestaurantId}", id);
+            return null;
+        }
+
+        var restaurantDto = new RestaurantInfoDto
+        {
+            Id = restaurant.Id,
+            Name = restaurant.Name,
+            Description = restaurant.Description,
+            Rating = restaurant.Rating,
+        };
+
+        return restaurantDto;
     }
 
     public async Task<IEnumerable<RestaurantInfoDto>> GetAllRestaurants() // check
@@ -167,9 +183,23 @@ public class WorkerService : IWorkerService
         return result;
     }
 
-    public Task<bool> GetCourierById(string id)
+    public async Task<SummaryCourierDto> GetCourierById(string id)
     {
-        throw new NotImplementedException();
+        var courier = await _unitOfWork.ReadCourierRepository.GetAsync(id);
+
+        if (courier == null)
+        {
+            Log.Error("Courier not found with ID: {CourierId}", id);
+            return null; 
+        }
+
+        var summaryCourierDto = new SummaryCourierDto
+        {
+            CourierId = courier.Id,
+            CourierName = courier.Name,
+        };
+
+        return summaryCourierDto;
     }
 
     public async Task<IEnumerable<SummaryCourierDto>> GetAllCouriers() // check
@@ -267,9 +297,27 @@ public class WorkerService : IWorkerService
         return result;
     }
 
-    public Task<bool> GetFoodById(string id)
+    public async Task<FoodInfoDto> GetFoodById(string id)
     {
-        throw new NotImplementedException();
+        var food = await _unitOfWork.ReadFoodRepository.GetAsync(id);
+
+        if (food == null)
+        {
+            Log.Error("Food not found with ID: {FoodId}", id);
+            return null;
+        }
+
+        var foodDto = new FoodInfoDto
+        {
+            Id = food.Id,
+            Name = food.Name,
+            Description = food.Description,
+            CategoryIds = food.CategoryIds,
+            Price = food.Price,
+            ImageUrl = food.ImageUrl,
+        };
+
+        return foodDto;
     }
 
     public async Task<IEnumerable<Food>> SeeAllFoods() // 
@@ -324,9 +372,24 @@ public class WorkerService : IWorkerService
         return result;
     }
 
-    public Task<bool> GetCategoryById(string id)
+    public async Task<CategoryInfoDto> GetCategoryById(string id)
     {
-        throw new NotImplementedException();
+        var category = await _unitOfWork.ReadCategoryRepository.GetAsync(id);
+
+        if (category == null)
+        {
+            Log.Error("Category not found with ID: {CategoryId}", id);
+            return null;
+        }
+
+        var categoryDto = new CategoryInfoDto
+        {
+            Id = category.Id,
+            CategoryName = category.CategoryName,
+            FoodIds = category.FoodIds,
+        };
+
+        return categoryDto;
     }
 
     public async Task<IEnumerable<Category>> SeeAllCategories()
@@ -350,7 +413,7 @@ public class WorkerService : IWorkerService
         throw new NotImplementedException();
     }
 
-    public Task<bool> GetWorkerById(string id)
+    public Task<GetWorkerDto> GetWorkerById(string id)
     {
         throw new NotImplementedException();
     }
