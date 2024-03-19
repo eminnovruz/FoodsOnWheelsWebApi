@@ -27,6 +27,7 @@ public class CourierService : ICourierService
             throw new ArgumentNullException();
 
         order.CourierId = request.CourierId;
+        order.OrderStatus = OrderStatus.OnTheWheels;
 
         await _unitOfWork.WriteOrderRepository.UpdateAsync(order.Id);
         await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
