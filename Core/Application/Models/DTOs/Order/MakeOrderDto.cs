@@ -6,8 +6,6 @@ public class MakeOrderDto
     public string RestaurantId { get; set; }
     public List<string> FoodIds { get; set; }
     public bool PayWithCard { get; set; }
-    public string CardNumber { get; set; }
-    public string ExpireDate { get; set; }
-    public string CardOwnerFullName { get; set; }
+    public string BankCardId { get; set; } = string.Empty;
     public string UserId { get; set; }
 }

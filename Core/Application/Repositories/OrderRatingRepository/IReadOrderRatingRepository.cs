@@ -3,7 +3,7 @@ using Domain.Models;
 
 namespace Application.Repositories.OrderRatingRepository;
 
-public interface IReadOrderRatingRepository : IReadRepository<OrderRating>
+public interface IReadOrderRatingRepository : IReadBankCardRepository<OrderRating>
 {
 
 }

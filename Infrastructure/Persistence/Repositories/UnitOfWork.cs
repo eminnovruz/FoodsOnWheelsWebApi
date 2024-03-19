@@ -1,4 +1,5 @@
 ﻿using Application.Repositories;
+using Application.Repositories.BankCardRepository;
 using Application.Repositories.CategoryRepository;
 using Application.Repositories.CourierCommentRepository;
 using Application.Repositories.CourierRepository;
@@ -15,7 +16,7 @@ namespace Persistence.Repositories;
 
 public class UnitOfWork : IUnitOfWork
 {
-    public UnitOfWork(IReadCourierRepository readCourierRepository, IWriteCourierRepository writeCourierRepository, IReadCategoryRepository readCategoryRepository, IWriteCategoryRepository writeCategoryRepository, IReadFoodRepository readFoodRepository, IWriteFoodRepository writeFoodRepository, IReadRestaurantRepository readRestaurantRepository, IWriteRestaurantRepository writeRestaurantRepository, IReadUserRepository readUserRepository, IWriteUserRepository writeUserRepository, IReadOrderRepository readOrderRepository, IWriteOrderRepository writeOrderRepository, IReadCourierCommentRepository readCourierCommentRepository, IWriteCourierCommentRepository writeCourierCommentRepository, IReadRestaurantCommentRepository readRestaurantCommentRepository, IWriteRestaurantCommentRepository writeRestaurantCommentRepository, IReadOrderRatingRepository readOrderRatingRepository, IWriteOrderRatingRepository writeOrderRatingRepository, IReadWorkerRepository readWorkerRepository, IWriteWorkerRepository writeWorkerRepository)
+    public UnitOfWork(IReadCourierRepository readCourierRepository, IWriteCourierRepository writeCourierRepository, IReadCategoryRepository readCategoryRepository, IWriteCategoryRepository writeCategoryRepository, IReadFoodRepository readFoodRepository, IWriteFoodRepository writeFoodRepository, IReadRestaurantRepository readRestaurantRepository, IWriteRestaurantRepository writeRestaurantRepository, IReadUserRepository readUserRepository, IWriteUserRepository writeUserRepository, IReadOrderRepository readOrderRepository, IWriteOrderRepository writeOrderRepository, IReadCourierCommentRepository readCourierCommentRepository, IWriteCourierCommentRepository writeCourierCommentRepository, IReadRestaurantCommentRepository readRestaurantCommentRepository, IWriteRestaurantCommentRepository writeRestaurantCommentRepository, IReadOrderRatingRepository readOrderRatingRepository, IWriteOrderRatingRepository writeOrderRatingRepository, IReadWorkerRepository readWorkerRepository, IWriteWorkerRepository writeWorkerRepository, IReadBankCardRepository readBankCardRepository, IWriteBankCardRepository writeBankCardRepository)
     {
         ReadCourierRepository = readCourierRepository;
         WriteCourierRepository = writeCourierRepository;
@@ -37,6 +38,8 @@ public class UnitOfWork : IUnitOfWork
         WriteOrderRatingRepository = writeOrderRatingRepository;
         ReadWorkerRepository = readWorkerRepository;
         WriteWorkerRepository = writeWorkerRepository;
+        ReadBankCardRepository = readBankCardRepository;
+        WriteBankCardRepository = writeBankCardRepository;
     }
 
     public IReadCourierRepository ReadCourierRepository { get; }
@@ -59,4 +62,6 @@ public class UnitOfWork : IUnitOfWork
     public IWriteOrderRatingRepository WriteOrderRatingRepository { get; }
     public IReadWorkerRepository ReadWorkerRepository { get; }
     public IWriteWorkerRepository WriteWorkerRepository { get; }
+    public IReadBankCardRepository ReadBankCardRepository { get; }
+    public IWriteBankCardRepository WriteBankCardRepository { get; }
 }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Application.Repositories.CourierCommentRepository
 {
-    public interface IReadCourierCommentRepository : IReadRepository<CourierComment>
+    public interface IReadCourierCommentRepository : IReadBankCardRepository<CourierComment>
     {
     }
 }

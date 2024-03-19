@@ -3,6 +3,6 @@ using Domain.Models;
 
 namespace Application.Repositories.FoodRepository;
 
-public interface IReadFoodRepository : IReadRepository<Food>
+public interface IReadFoodRepository : IReadBankCardRepository<Food>
 {
 }

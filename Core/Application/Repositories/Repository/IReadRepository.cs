@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 
 namespace Application.Repositories.Repository;
 
-public interface IReadRepository<T> where T : BaseEntity
+public interface IReadBankCardRepository<T> where T : BaseEntity
 {
     IEnumerable<T?> GetAll(bool tracking = true);
     Task<IEnumerable<T?>> GetAllAsync(bool tracking = true);

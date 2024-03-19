@@ -6,9 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Repositories.WorkerRepository
+namespace Application.Repositories.BankCardRepository
 {
-    public interface IReadWorkerRepository : IReadBankCardRepository<Worker>
+    public interface IWriteBankCardRepository : IWriteRepository<BankCard>
     {
+
     }
 }

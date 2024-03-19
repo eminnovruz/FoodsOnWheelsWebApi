@@ -2,6 +2,7 @@
 using Application.Models.DTOs.Courier;
 using Application.Models.DTOs.Restaurant;
 using Application.Repositories;
+using Application.Repositories.BankCardRepository;
 using Application.Repositories.CategoryRepository;
 using Application.Repositories.CourierCommentRepository;
 using Application.Repositories.CourierRepository;
@@ -23,6 +24,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Persistence.Repositories;
+using Persistence.Repositories.BankCardRepository;
 using Persistence.Repositories.CategoryRepository;
 using Persistence.Repositories.CourierCommentRepository;
 using Persistence.Repositories.CourierRepository;
@@ -166,6 +168,9 @@ public static class Extension
 
         services.AddScoped<IReadWorkerRepository, ReadWorkerRepository>();
         services.AddScoped<IWriteWorkerRepository, WriteWorkerRepository>();
+
+        services.AddScoped<IReadBankCardRepository,ReadBankCardRepository>();
+        services.AddScoped<IWriteBankCardRepository, WriteBankCardRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 

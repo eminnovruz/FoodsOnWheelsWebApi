@@ -1,4 +1,5 @@
-﻿using Application.Repositories.CategoryRepository;
+﻿using Application.Repositories.BankCardRepository;
+using Application.Repositories.CategoryRepository;
 using Application.Repositories.CourierCommentRepository;
 using Application.Repositories.CourierRepository;
 using Application.Repositories.FoodRepository;
@@ -31,6 +32,10 @@ public interface IUnitOfWork
     IWriteRestaurantCommentRepository WriteRestaurantCommentRepository { get; }
     IReadOrderRatingRepository ReadOrderRatingRepository { get; }
     IWriteOrderRatingRepository WriteOrderRatingRepository { get; }
-    IWriteWorkerRepository WriteWorkerRepository { get; }
     IReadWorkerRepository ReadWorkerRepository { get; }
+    IWriteWorkerRepository WriteWorkerRepository { get; }
+    IReadBankCardRepository ReadBankCardRepository { get; }
+    IWriteBankCardRepository WriteBankCardRepository { get; }
+
+
 }

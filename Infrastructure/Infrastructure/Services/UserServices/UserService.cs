@@ -1,4 +1,5 @@
-﻿using Application.Models.DTOs.Category;
+﻿using Application.Models.DTOs.BankCard;
+using Application.Models.DTOs.Category;
 using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Order;
 using Application.Models.DTOs.Restaurant;
@@ -7,6 +8,7 @@ using Application.Repositories;
 using Application.Services.IUserServices;
 using Domain.Models;
 using FluentValidation;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Infrastructure.Services.UserServices;
 
@@ -170,6 +172,11 @@ public class UserService : IUserService
                 OrderStatus = 0
             };
 
+            if (request.PayWithCard)
+            {
+                newOrder.PayedWithCard = request.PayWithCard;
+            }
+
             var result = await _unitOfWork.WriteOrderRepository.AddAsync(newOrder);
             await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
 
@@ -240,6 +247,97 @@ public class UserService : IUserService
     }
 
 
+
+    public async Task<bool> AddBankCard(AddBankCardDto cardDto)
+    {
+        var testCard = await _unitOfWork.ReadBankCardRepository.GetAsync(cardDto.CardNumber);
+        if (testCard is not null)
+            throw new ArgumentException();
+
+        var newCard = new BankCard { 
+            Id = Guid.NewGuid().ToString(),
+            UserId = cardDto.UserId,
+            CardNumber = cardDto.CardNumber,
+            CVV = cardDto.CVV,
+            ExpireDate = cardDto.ExpireDate,
+            CardOwnerFullName = cardDto.CardOwnerFullName,
+        };
+        var result =  await _unitOfWork.WriteBankCardRepository.AddAsync(newCard);
+        await _unitOfWork.WriteBankCardRepository.SaveChangesAsync();
+
+        return result;
+    }
+
+    public async Task<bool> RemoveBankCard(string cardId)
+    {
+        var card = await _unitOfWork.ReadBankCardRepository.GetAsync(cardId);
+        if (card is null)
+            throw new ArgumentNullException();
+
+        var result =  await _unitOfWork.WriteBankCardRepository.RemoveAsync(card.Id);
+        await _unitOfWork.WriteBankCardRepository.SaveChangesAsync();
+
+        return result;
+    }
+
+    public async Task<bool> UpdateBankCard(UpdateBankCardDto cardDto)
+    {
+        var card = await _unitOfWork.ReadBankCardRepository.GetAsync(cardDto.Id);
+        if (card is null)
+            throw new ArgumentNullException();
+
+        card.CVV = cardDto.CVV;
+        card.ExpireDate = cardDto.ExpireDate;
+        card.CardNumber = cardDto.CardNumber;
+        card.CardOwnerFullName = cardDto.CardOwnerFullName;
+
+        var result = await _unitOfWork.WriteBankCardRepository.UpdateAsync(card.Id);
+        await _unitOfWork.WriteBankCardRepository.SaveChangesAsync();
+
+        return result;
+    }
+
+    public async Task<GetBankCardDto> GetUserBankCard(string cardId)
+    {
+        var card = await _unitOfWork.ReadBankCardRepository.GetAsync(cardId);
+        if (card is null)
+            throw new ArgumentNullException();
+
+        var cardDto = new GetBankCardDto
+        {
+            UserId = card.UserId,
+            CardNumber = card.CardNumber,
+            CVV = card.CVV,
+            ExpireDate = card.ExpireDate,
+            CardOwnerFullName = card.CardOwnerFullName,
+        };
+        return cardDto;
+    }
+
+    public IEnumerable<GetBankCardDto> getAllUserBankCard(string userId)
+    {
+        var cards =  _unitOfWork.ReadBankCardRepository.GetWhere(x=> x.UserId == userId).ToList();
+        if (cards.Count == 0)
+            throw new ArgumentNullException();
+
+        var cardDtos = new List<GetBankCardDto>();
+        foreach (var item in cards)
+        {
+            if (item is not null)
+            {
+                cardDtos.Add(new GetBankCardDto
+                {
+                    UserId = item.UserId,
+                    CardNumber = item.CardNumber,
+                    CVV = item.CVV,
+                    ExpireDate = item.ExpireDate,
+                    CardOwnerFullName = item.CardOwnerFullName,
+                });
+            }
+        }    
+        
+        return cardDtos;
+    }
     public uint CalculateOrderAmountAsync(List<string> foodIds)
     {
         var foods = _unitOfWork.ReadFoodRepository.GetAll().ToList();

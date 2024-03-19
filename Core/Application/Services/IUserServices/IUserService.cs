@@ -1,4 +1,5 @@
-﻿using Application.Models.DTOs.Category;
+﻿using Application.Models.DTOs.BankCard;
+using Application.Models.DTOs.Category;
 using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Order;
 using Application.Models.DTOs.Restaurant;
@@ -23,4 +24,16 @@ public interface IUserService
     Task<bool> ReportOrder(ReportOrderDto request);
 
     Task<bool> MakeOrder(MakeOrderDto request);
+
+    Task<bool> AddBankCard(AddBankCardDto cardDto);
+    
+    Task<bool> RemoveBankCard(string cardId);
+    
+    Task<bool> UpdateBankCard(UpdateBankCardDto cardDto);
+    
+    Task<GetBankCardDto> GetUserBankCard(string cardId);
+    
+    IEnumerable<GetBankCardDto> getAllUserBankCard(string userId);
+
+
 }

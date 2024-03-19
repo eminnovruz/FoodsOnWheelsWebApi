@@ -3,6 +3,6 @@ using Domain.Models;
 
 namespace Application.Repositories.RestaurantRepository;
 
-public interface IReadRestaurantRepository : IReadRepository<Restaurant>
+public interface IReadRestaurantRepository : IReadBankCardRepository<Restaurant>
 {
 }

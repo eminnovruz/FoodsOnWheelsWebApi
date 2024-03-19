@@ -3,6 +3,6 @@ using Domain.Models;
 
 namespace Application.Repositories.CategoryRepository;
 
-public interface IReadCategoryRepository : IReadRepository<Category>
+public interface IReadCategoryRepository : IReadBankCardRepository<Category>
 {
 }

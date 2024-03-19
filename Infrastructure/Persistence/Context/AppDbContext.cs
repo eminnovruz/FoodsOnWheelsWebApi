@@ -22,6 +22,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Food>().ToContainer("Foods");
         modelBuilder.Entity<CourierComment>().ToContainer("CourierComments");
         modelBuilder.Entity<RestaurantComment>().ToContainer("RestaurantComments");
+        modelBuilder.Entity<BankCard>().ToContainer("BankCards");
 
 
         base.OnModelCreating(modelBuilder);
@@ -34,6 +35,7 @@ public class AppDbContext : DbContext
     public DbSet<Restaurant> Restaurants { get; set; }
     public DbSet<Food> Foods { get; set; }
     public DbSet<Category> Categories { get; set; }
+    public DbSet<BankCard> BankCards { get; set; }
     public DbSet<CourierComment> CourierComments { get; set; }
     public DbSet<RestaurantComment> RestaurantComments { get; set; }
 }

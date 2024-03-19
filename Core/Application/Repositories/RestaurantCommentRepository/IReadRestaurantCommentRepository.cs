@@ -2,7 +2,7 @@
 
 namespace Application.Repositories.RestaurantCommentRepository;
 
-public interface IReadRestaurantCommentRepository : IReadRepository<RestaurantComment>
+public interface IReadRestaurantCommentRepository : IReadBankCardRepository<RestaurantComment>
 {
 
 }
