@@ -7,7 +7,7 @@ namespace Application.Repositories.Repository;
 public interface IReadBankCardRepository<T> where T : BaseEntity
 {
     IEnumerable<T?> GetAll(bool tracking = true);
-    Task<IEnumerable<T?>> GetAllAsync(bool tracking = true);
+    
     IEnumerable<T?> GetWhere(Expression<Func<T, bool>> expression);
 
     Task<T?> GetAsync(string id);
