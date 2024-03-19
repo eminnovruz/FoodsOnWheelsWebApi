@@ -2,6 +2,7 @@
 using Application.Models.DTOs.Courier;
 using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Restaurant;
+using Application.Models.DTOs.User;
 using Application.Models.DTOs.Worker;
 using Application.Repositories;
 using Application.Services.IHelperServices;
@@ -488,5 +489,95 @@ public class WorkerService : IWorkerService
         });
 
         return workerDtos;
+    }
+
+    public async Task<bool> AddUser(AddUserDto dto)
+    {
+        if (dto == null)
+        {
+            Log.Error("Request is null ");
+            throw new ArgumentNullException("Request is null ");
+        }
+
+        User newUser = new User()
+        {
+            Name = dto.Name,
+            Surname = dto.Surname,
+            BirthDate = dto.BirthDate,
+            Email = dto.Email,
+            PhoneNumber = dto.PhoneNumber,
+            Id = Guid.NewGuid().ToString(),
+        };
+
+        var result = await _unitOfWork.WriteUserRepository.AddAsync(newUser);
+        await _unitOfWork.WriteUserRepository.SaveChangesAsync();
+        return result;
+    }
+
+    public async Task<bool> UpdateUser(UpdateUserDto dto)
+    {
+        var existingUser = await _unitOfWork.ReadUserRepository.GetAsync(dto.Id);
+
+        if (existingUser == null)
+        {
+            Log.Error("User not found with ID: {UserId}", dto.Id);
+            return false;
+        }
+
+        existingUser.Name = dto.Name;
+        existingUser.Surname = dto.Surname;
+        existingUser.BirthDate = dto.BirthDate;
+        existingUser.Email = dto.Email;
+        existingUser.PhoneNumber = dto.PhoneNumber;
+
+        var result = await _unitOfWork.WriteUserRepository.UpdateAsync(existingUser.Id);
+        await _unitOfWork.WriteUserRepository.SaveChangesAsync();
+
+        return result;
+    }
+
+    public async Task<bool> RemoveUser(string id)
+    {
+        var result = await _unitOfWork.WriteUserRepository.RemoveAsync(id);
+        await _unitOfWork.WriteUserRepository.SaveChangesAsync();
+        return result;
+    }
+
+    public async Task<GetUserProfileInfoDto> GetUserById(string id)
+    {
+        var user = await _unitOfWork.ReadUserRepository.GetAsync(id);
+
+        if (user == null)
+        {
+            Log.Error("User not found with ID: {UserId}", id);
+            return null;
+        }
+
+        var userDto = new GetUserProfileInfoDto
+        {
+            Name = user.Name,
+            Surname = user.Surname,
+            BirthDate = user.BirthDate,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
+        };
+
+        return userDto;
+    }
+
+    public async Task<IEnumerable<GetUserProfileInfoDto>> GetAllUsers()
+    {
+        var users = _unitOfWork.ReadUserRepository.GetAll().ToList();
+
+        var userDtos = users.Select(user => new GetUserProfileInfoDto
+        {
+            Name = user.Name,
+            Surname = user.Surname,
+            BirthDate = user.BirthDate,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
+        });
+
+        return userDtos;
     }
 }

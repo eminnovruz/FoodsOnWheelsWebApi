@@ -34,6 +34,4 @@ public interface IUserService
     Task<GetBankCardDto> GetUserBankCard(string cardId);
     
     IEnumerable<GetBankCardDto> getAllUserBankCard(string userId);
-
-
 }

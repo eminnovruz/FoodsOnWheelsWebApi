@@ -3,6 +3,7 @@ using Application.Models.DTOs.Courier;
 using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Order;
 using Application.Models.DTOs.Restaurant;
+using Application.Models.DTOs.User;
 using Application.Models.DTOs.Worker;
 using Application.Services.IUserServices;
 using Microsoft.AspNetCore.Mvc;
@@ -437,7 +438,92 @@ namespace WebApi.Controllers
                 return BadRequest(exception.Message);
             }
         }
+        #endregion
 
+
+        #region User
+        [HttpPost("addNewUser")]
+        public async Task<ActionResult<bool>> AddNewUser([FromBody] AddUserDto request)
+        {
+            try
+            {
+                var result = await _workerService.AddUser(request);
+                return Ok(result);
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occurred on [POST] AddNewUser");
+                return BadRequest(exception.Message);
+            }
+        }
+
+        [HttpPut("updateUser/{userId}")]
+        public async Task<ActionResult<bool>> UpdateUser([FromBody] UpdateUserDto request)
+        {
+            try
+            {
+                var result = await _workerService.UpdateUser(request);
+                return Ok(result);
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occurred on [PUT] UpdateUser");
+                return BadRequest(exception.Message);
+            }
+        }
+
+        [HttpDelete("removeUser/{userId}")]
+        public async Task<ActionResult<bool>> RemoveUser(string userId)
+        {
+            try
+            {
+                var result = await _workerService.RemoveUser(userId);
+                return Ok(result);
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occurred on [DELETE] RemoveUser");
+                return BadRequest(exception.Message);
+            }
+        }
+
+        [HttpGet("getUserById/{userId}")]
+        public async Task<ActionResult<GetUserProfileInfoDto>> GetUserById(string userId)
+        {
+            try
+            {
+                var user = await _workerService.GetUserById(userId);
+
+                if (user == null)
+                    return NotFound();
+
+                return Ok(user);
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occurred on [GET] GetUserById");
+                return BadRequest(exception.Message);
+            }
+        }
+
+        [HttpGet("getAllUsers")]
+        public async Task<ActionResult<IEnumerable<GetUserProfileInfoDto>>> GetAllUsers()
+        {
+            try
+            {
+                var users = await _workerService.GetAllUsers();
+
+                if (users == null || !users.Any())
+                    return NotFound();
+
+                return Ok(users);
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occurred on [GET] GetAllUsers");
+                return BadRequest(exception.Message);
+            }
+        }
         #endregion
     }
 }
