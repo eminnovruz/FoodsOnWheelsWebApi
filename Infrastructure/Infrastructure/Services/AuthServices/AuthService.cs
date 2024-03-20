@@ -21,10 +21,11 @@ public class AuthService : IAuthService
     public string LoginUser(UserLoginRequest request)
     {
         var users = _unitOfWork.ReadUserRepository.GetAll();
-
+        
         var specUser = users.FirstOrDefault(c => c.Email == request.Email);
         if (!_hashService.ConfirmPasswordHash(request.Password, specUser.PassHash, specUser.PassSalt))
             throw new("Wrong password!");
+        
         return _jwtService.GenerateSecurityToken(specUser.Id, specUser.Email);
     }
 
@@ -34,10 +35,10 @@ public class AuthService : IAuthService
 
         var specUser = users.FirstOrDefault(c => c.Email == request.Email);
         if (specUser is not null)
-        {
             throw new("This email has already exsist!");
-        }
+        
         _hashService.Create(request.Password, out byte[] passHash, out byte[] passSalt);
+       
         var newUser = new User()
         {
             Name = request.Name,

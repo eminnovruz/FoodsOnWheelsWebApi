@@ -22,9 +22,6 @@ public class UserService : IUserService
         _unitOfWork = unitOfWork;
         _orderValidator = orderValidator;
     }
-
-
-
     public IEnumerable<CategoryInfoDto> GetAllFoodCategories()
     {
         var categories = _unitOfWork.ReadCategoryRepository.GetAll().ToList();
@@ -71,7 +68,6 @@ public class UserService : IUserService
         return restaurantDtos;
     }
 
-
     public IEnumerable<FoodInfoDto> GetFoodsByCategory(string categoryId)
     {
         var allFoods = _unitOfWork.ReadFoodRepository.GetAll().ToList();
@@ -80,12 +76,8 @@ public class UserService : IUserService
 
         var foods = new List<Food>();
         foreach (var item in allFoods)
-        {
             if (item is not null && item.CategoryIds.Contains(categoryId))
-            {
                 foods.Add(item);
-            }
-        }
 
         var foodDtos = foods.Select(food => new FoodInfoDto
         {
@@ -100,10 +92,8 @@ public class UserService : IUserService
         if (foodDtos is null)
             throw new ArgumentNullException();
 
-
         return foodDtos;
     }
-
 
     public async Task<IEnumerable<FoodInfoDto>> GetFoodsByRestaurant(string restaurantId)
     {
@@ -153,7 +143,6 @@ public class UserService : IUserService
         };
     }
 
-
     public async Task<bool> MakeOrder(MakeOrderDto request)
     {
         if (_orderValidator.Validate(request).IsValid)
@@ -173,9 +162,7 @@ public class UserService : IUserService
             };
 
             if (request.PayWithCard)
-            {
                 newOrder.PayedWithCard = request.PayWithCard;
-            }
 
             var result = await _unitOfWork.WriteOrderRepository.AddAsync(newOrder);
             await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
@@ -183,12 +170,8 @@ public class UserService : IUserService
             return result;
         }
         else
-        {
             return false;
-        }
-
     }
-
 
     public async Task<bool> RateOrder(RateOrderDto request)
     {
@@ -221,7 +204,6 @@ public class UserService : IUserService
         order.OrderRatingId = orderRating.Id;
         order.OrderFinishTime = DateTime.Now;
 
-
         await _unitOfWork.WriteOrderRatingRepository.AddAsync(orderRating);
         await _unitOfWork.WriteOrderRatingRepository.SaveChangesAsync();
         bool result = await  _unitOfWork.WriteOrderRepository.UpdateAsync(order.Id);
@@ -229,7 +211,6 @@ public class UserService : IUserService
 
         return result;
     }
-
 
     public async Task<bool> ReportOrder(ReportOrderDto request)
     {
@@ -253,14 +234,11 @@ public class UserService : IUserService
 
         await _unitOfWork.WriteRestaurantCommentRepository.AddAsync(comment);
         await _unitOfWork.WriteRestaurantCommentRepository.SaveChangesAsync();
-
         await _unitOfWork.WriteRestaurantRepository.UpdateAsync(restaurant.Id);
         await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
 
         return true;
     }
-
-
 
     public async Task<bool> AddBankCard(AddBankCardDto cardDto)
     {
@@ -281,7 +259,6 @@ public class UserService : IUserService
 
         return result;
     }
-
     public async Task<bool> RemoveBankCard(string cardId)
     {
         var card = await _unitOfWork.ReadBankCardRepository.GetAsync(cardId);
@@ -358,15 +335,10 @@ public class UserService : IUserService
         if (foods.Count == 0)
             throw new ArgumentNullException();
 
-
         uint amount = 0;
         foreach (var item in foods)
-        {
             if (item is not null && foodIds.Contains(item.Id))
-            {
                 amount += item.Price;
-            }
-        }
 
         return amount;
     }

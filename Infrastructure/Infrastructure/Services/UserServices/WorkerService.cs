@@ -53,15 +53,14 @@ public class WorkerService : IWorkerService
 
                 var blobResult = _blobSerice.UploadFile(stream, fileName, contentType);
                 if (blobResult == false)
-                {
                     return false;
-                }
 
                 newRestaurant.ImageUrl = _blobSerice.GetSignedUrl(fileName);
             }
 
             var result = await _unitOfWork.WriteRestaurantRepository.AddAsync(newRestaurant);
             await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
+            
             return result;
         }
 
@@ -444,7 +443,6 @@ public class WorkerService : IWorkerService
         return result;
     }
 
-
     public async Task<bool> RemoveWorker(string id)
     {
         var result = await _unitOfWork.WriteWorkerRepository.RemoveAsync(id);
@@ -473,7 +471,6 @@ public class WorkerService : IWorkerService
 
         return workerDto;
     }
-
 
     public async Task<IEnumerable<GetWorkerDto>> GetAllWorkers()
     {

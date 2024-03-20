@@ -31,8 +31,8 @@ public class BlobService : IBlobService
         var serviceClient = new BlobServiceClient(_storageOptions.ConnectionString);
         var containerClient = serviceClient.GetBlobContainerClient(_storageOptions.ContainerName);
         var blobClient = containerClient.GetBlobClient(fileName);
-
         var response = await blobClient.DeleteIfExistsAsync();
+        
         return response.Value;
     }
 
@@ -41,7 +41,6 @@ public class BlobService : IBlobService
         var serviceClient = new BlobServiceClient(_storageOptions.ConnectionString);
         var contaionerClient = serviceClient.GetBlobContainerClient(_storageOptions.ContainerName);
         var blobClient = contaionerClient.GetBlobClient(fileName);
-
         var signedUrl = blobClient.GenerateSasUri(BlobSasPermissions.Read, DateTime.Now.AddMonths(1)).AbsoluteUri;
 
         return signedUrl;
@@ -60,6 +59,7 @@ public class BlobService : IBlobService
         var blobHttpHeaders = new BlobHttpHeaders { ContentType = contentType };
 
         blobClient.Upload(stream, blobHttpHeaders);
+
         return true;
     }
 
@@ -71,6 +71,7 @@ public class BlobService : IBlobService
         var blobHttpHeaders = new BlobHttpHeaders { ContentType = contentType };
 
         await blobClient.UploadAsync(stream, blobHttpHeaders);
+        
         return true;
     }
 }

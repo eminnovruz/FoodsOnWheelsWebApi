@@ -24,7 +24,6 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<RestaurantComment>().ToContainer("RestaurantComments");
         modelBuilder.Entity<BankCard>().ToContainer("BankCards");
 
-
         base.OnModelCreating(modelBuilder);
     }
 

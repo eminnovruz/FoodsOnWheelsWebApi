@@ -27,13 +27,11 @@ public class CourierService : ICourierService
         if (order is null)
             throw new ArgumentNullException();
 
-
         order.CourierId = request.CourierId;
         order.OrderStatus = OrderStatus.OnTheWheels;
 
         await _unitOfWork.WriteOrderRepository.UpdateAsync(order.Id);
         await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
-
 
         courier.ActiveOrderId = request.OrderId;
 
@@ -49,7 +47,6 @@ public class CourierService : ICourierService
         var order = await _unitOfWork.ReadOrderRepository.GetAsync(OrderId);
         if (order is null)
             throw new ArgumentNullException();
-
 
         var orderInfo = new OrderInfoDto
         {
@@ -111,6 +108,7 @@ public class CourierService : ICourierService
                     UserId = neworder.UserId,
                 });
         }
+       
         return newOrdersDto;
     }
 
@@ -141,7 +139,6 @@ public class CourierService : ICourierService
         }
 
         return PastOrders;
-
     }
 
     public async Task<OrderInfoDto> GetPastOrderInfoById(string PastOrderId)
@@ -161,6 +158,7 @@ public class CourierService : ICourierService
             RestaurantId = pastOrder.RestaurantId,
             Rate = pastOrder.Amount,
         };
+        
         return order;
     }
 

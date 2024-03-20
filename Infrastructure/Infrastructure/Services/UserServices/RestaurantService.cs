@@ -22,11 +22,6 @@ namespace Infrastructure.Services.UserServices
             _blobSerice = blobSerice;
         }
 
-
-
-        #region ADD METOD
-
-
         public async Task<bool> AddCategory(AddCategoryRequest request)
         {
             var categoryTest = _unitOfWork.ReadCategoryRepository.GetWhere(x => x.CategoryName.ToLower() == request.CategoryName.ToLower()).ToList();
@@ -39,7 +34,6 @@ namespace Infrastructure.Services.UserServices
                 CategoryName = request.CategoryName,
                 FoodIds = request.FoodIds,
             };
-
 
             if (request.FoodIds.Count != 0)
             {
@@ -66,7 +60,6 @@ namespace Infrastructure.Services.UserServices
             return true;
         }
 
-
         public async Task<bool> AddFood(AddFoodRequest request)
         {
             var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(request.RestaurantId);
@@ -83,20 +76,15 @@ namespace Infrastructure.Services.UserServices
                 RestaurantId = request.RestaurantId
             };
 
-
             var form = request.File;
             using (var stream = form.OpenReadStream())
             {
                 var fileName = food.Id + "-" + food.Name + ".jpg";
                 var contentType = form.ContentType;
 
-
                 var blobResult = await _blobSerice.UploadFileAsync(stream, fileName, contentType);
                 if (blobResult is false)
-                {
                     return false;
-                }
-
 
                 food.ImageUrl = _blobSerice.GetSignedUrl(fileName);
             }
@@ -115,17 +103,15 @@ namespace Infrastructure.Services.UserServices
             }
 
             restaurant.FoodIds.Add(food.Id);
+           
             await _unitOfWork.WriteRestaurantRepository.UpdateAsync(restaurant.Id);
             await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
-
-
             await _unitOfWork.WriteFoodRepository.AddAsync(food);
             await _unitOfWork.WriteFoodRepository.SaveChangesAsync();
+            
             return true;
         }
         
-
-
         public async Task<bool> InLastDecidesSituation(InLastSituationOrderDto orderDto)
         {
             var order = await _unitOfWork.ReadOrderRepository.GetAsync(orderDto.OrderId);
@@ -143,18 +129,11 @@ namespace Infrastructure.Services.UserServices
             return true;
         }
 
-        #endregion
-
-
-        #region GET METOD
-
-
         public IEnumerable<OrderInfoDto> GetAllOrders(string resturantId)
         {
             var orders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.RestaurantId == resturantId).ToList();
             if (orders.Count == 0)
                 throw new InvalidDataException("There are no orders");
-
 
             var ordersDto = new List<OrderInfoDto>();
             foreach (var order in orders)
@@ -179,7 +158,6 @@ namespace Infrastructure.Services.UserServices
 
             return ordersDto;
         }
-
 
         public IEnumerable<OrderInfoDto> WaitingOrders(string resturantId)
         {
@@ -211,7 +189,6 @@ namespace Infrastructure.Services.UserServices
             return waitingOrdersDto;
         }
 
-
         public async Task<RestaurantInfoDto> GetRestaurantInfo(string Id)
         {
             var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(Id);
@@ -228,17 +205,13 @@ namespace Infrastructure.Services.UserServices
                 Rating = restaurant.Rating,
             };
 
-
             return restaurantDto;
         }
-
-
         public IEnumerable<OrderInfoDto> GetActiveOrders(string Id)
         {
             var orders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.RestaurantId == Id).ToList();
             if (orders.Count == 0)
                 throw new InvalidDataException("There are no orders");
-
 
             var activeOrders = new List<OrderInfoDto>();
             foreach (var order in orders)
@@ -258,6 +231,7 @@ namespace Infrastructure.Services.UserServices
                     });
                 }
             }
+
             if (activeOrders.Count == 0)
                 throw new ArgumentNullException("There are no ongoing orders at the moment");
 
@@ -297,13 +271,11 @@ namespace Infrastructure.Services.UserServices
             return restaurantOrders;
         }
 
-
         public IEnumerable<OrderInfoDto> GetPastOrderInfoById(string Id)
         {
             var orders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.RestaurantId == Id).ToList();
             if (orders.Count == 0)
                 throw new InvalidDataException("There are no orders");
-
 
             var pastOrders = new List<OrderInfoDto>();
             foreach (var order in orders)
@@ -330,12 +302,6 @@ namespace Infrastructure.Services.UserServices
             return pastOrders;
         }
 
-
-        #endregion
-
-
-        #region UPDATE
-
         public async Task<bool> UpdateStatusOrder(UpdateOrderStatusDto statusDto)
         {
             var order = await _unitOfWork.ReadOrderRepository.GetAsync(statusDto.OrderId);
@@ -349,12 +315,6 @@ namespace Infrastructure.Services.UserServices
             return true;
         }
 
-        #endregion
-        
-        
-        #region DELETE METOD
-
-
         public async Task<bool> RemoveFood(string Id)
         {
             var food = await _unitOfWork.ReadFoodRepository.GetAsync(Id);
@@ -364,7 +324,6 @@ namespace Infrastructure.Services.UserServices
             var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(food.RestaurantId);
             if (restaurant is null)
                 throw new ArgumentNullException("Wrong Restaurant");
-
 
             var categorys = _unitOfWork.ReadCategoryRepository.GetAll().ToList();
             if (categorys is null || categorys.Count == 0)
@@ -380,18 +339,12 @@ namespace Infrastructure.Services.UserServices
             }
 
             await _blobSerice.DeleteFileAsync(food.Id + "-" + food.Name + ".jpg");
-
             restaurant.FoodIds.Remove(food.Id);
             await _unitOfWork.WriteRestaurantRepository.UpdateAsync(restaurant.Id);
             await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
-
-
             await _unitOfWork.WriteFoodRepository.RemoveAsync(food.Id);
             await _unitOfWork.WriteFoodRepository.SaveChangesAsync();
             return true;
         }
-
-
-        #endregion
     }
 }
