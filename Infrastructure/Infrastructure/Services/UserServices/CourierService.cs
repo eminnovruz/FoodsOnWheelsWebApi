@@ -19,12 +19,14 @@ public class CourierService : ICourierService
 
     public async Task<bool> AcceptOrder(AcceptOrderFromCourierDto request)
     {
+        var courier = await _unitOfWork.ReadCourierRepository.GetAsync(request.CourierId);
+        if (courier is null || courier.ActiveOrderId != string.Empty)
+            throw new ArgumentNullException();
+
         var order = await _unitOfWork.ReadOrderRepository.GetAsync(request.OrderId);
         if (order is null)
             throw new ArgumentNullException();
-        var courier = await _unitOfWork.ReadCourierRepository.GetAsync(request.CourierId);
-        if (courier is null)
-            throw new ArgumentNullException();
+
 
         order.CourierId = request.CourierId;
         order.OrderStatus = OrderStatus.OnTheWheels;

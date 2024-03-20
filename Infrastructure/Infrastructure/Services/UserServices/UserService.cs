@@ -193,8 +193,11 @@ public class UserService : IUserService
     public async Task<bool> RateOrder(RateOrderDto request)
     {
         var order = await _unitOfWork.ReadOrderRepository.GetAsync(request.OrderId);
-
         if (order is null)
+            throw new ArgumentNullException();
+
+        var courier = await _unitOfWork.ReadCourierRepository.GetAsync(order.CourierId);
+        if (courier is null)
             throw new ArgumentNullException();
 
         var orderRating = new OrderRating
@@ -203,6 +206,17 @@ public class UserService : IUserService
             Content = request.Content,
             Rate = request.Rate,
         };
+
+        var courierComment = new CourierComment
+        {
+            Id = Guid.NewGuid().ToString(),
+            Rate = request.CourierRate,
+            CourierId = order.CourierId,
+            CommentDate = DateTime.Now,
+            Content = request.CourierContent,
+            OrderId = order.Id,
+        };
+
 
         order.OrderRatingId = orderRating.Id;
         order.OrderFinishTime = DateTime.Now;
