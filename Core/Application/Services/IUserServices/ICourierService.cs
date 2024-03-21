@@ -8,10 +8,10 @@ public interface ICourierService
 {
     Task<bool> AcceptOrder(AcceptOrderFromCourierDto request);
     Task<bool> RejectOrder(RejectOrderDto orderDto);
-    List<OrderInfoDto> GetNewOrder();
+    List<InfoOrderDto> GetNewOrder();
     Task<GetProfileInfoDto> GetProfileInfo(string CourierId);
-    Task<IEnumerable<OrderInfoDto>> GetOrderHistory(string CourierId);
-    Task<OrderInfoDto> GetActiveOrderInfo(string OrderId);
+    Task<IEnumerable<InfoOrderDto>> GetOrderHistory(string CourierId);
+    Task<InfoOrderDto> GetActiveOrderInfo(string OrderId);
     Task<IEnumerable<GetCommentDto>> GetAllComments(string CourierId);
-    Task<OrderInfoDto> GetPastOrderInfoById(string PastOrderId);
+    Task<InfoOrderDto> GetPastOrderInfoById(string PastOrderId);
 }

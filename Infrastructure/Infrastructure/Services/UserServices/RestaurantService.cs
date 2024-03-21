@@ -8,6 +8,7 @@ using Application.Services.IUserServices;
 using Azure.Core;
 using Domain.Models;
 using Domain.Models.Enums;
+using System.Linq;
 
 namespace Infrastructure.Services.UserServices
 {
@@ -129,49 +130,19 @@ namespace Infrastructure.Services.UserServices
             return true;
         }
 
-        public IEnumerable<OrderInfoDto> GetAllOrders(string resturantId)
-        {
-            var orders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.RestaurantId == resturantId).ToList();
-            if (orders.Count == 0)
-                throw new InvalidDataException("There are no orders");
-
-            var ordersDto = new List<OrderInfoDto>();
-            foreach (var order in orders)
-            {
-                if (order is not null)
-                {
-                    ordersDto.Add(new OrderInfoDto
-                    {
-                        Id = order.Id,
-                        RestaurantId = order.RestaurantId,
-                        OrderDate = order.OrderDate,
-                        PayedWithCard = order.PayedWithCard,
-                        FoodIds = order.OrderedFoodIds,
-                        UserId = order.UserId,
-                        Rate = order.Amount,
-                        OrderStatus = order.OrderStatus
-                    });
-                }
-            }
-            if (orders.Count == 0)
-                throw new ArgumentNullException("There are no ongoing orders at the moment");
-
-            return ordersDto;
-        }
-
-        public IEnumerable<OrderInfoDto> WaitingOrders(string resturantId)
+        public IEnumerable<InfoOrderDto> WaitingOrders(string resturantId)
         {
             var orders = _unitOfWork.ReadOrderRepository.GetWhere(x=> x.RestaurantId == resturantId && x.OrderStatus == OrderStatus.Waiting).ToList();
             if (orders.Count == 0)
                 throw new ArgumentNullException("There are no orders");
 
-            var waitingOrdersDto = new List<OrderInfoDto>();
+            var waitingOrdersDto = new List<InfoOrderDto>();
 
             foreach (var item in orders)
             {
                 if (item is not null)
                 {
-                    waitingOrdersDto.Add(new OrderInfoDto
+                    waitingOrdersDto.Add(new InfoOrderDto
                     {
                         Id = item.Id,
                         OrderStatus = item.OrderStatus,
@@ -187,6 +158,42 @@ namespace Infrastructure.Services.UserServices
             }
 
             return waitingOrdersDto;
+        }
+
+        public async Task<IEnumerable<InfoOrderDto>> GetAllOrders(string resturantId)
+        {
+            var orders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.RestaurantId == resturantId).ToList();
+            if (orders.Count == 0)
+                throw new InvalidDataException("There are no orders");
+
+            var ordersDto = new List<InfoOrderDto>();
+            foreach (var order in orders)
+            {
+                if (order is not null)
+                {
+                    var rateOrder = await _unitOfWork.ReadOrderRatingRepository.GetAsync(order.OrderRatingId);
+                    byte rating = 0;
+                    if (rateOrder is not null)
+                        rating = rateOrder.Rate;
+                    
+                    ordersDto.Add(new InfoOrderDto
+                    {
+                        Id = order.Id,
+                        RestaurantId = order.RestaurantId,
+                        OrderDate = order.OrderDate,
+                        PayedWithCard = order.PayedWithCard,
+                        FoodIds = order.OrderedFoodIds,
+                        UserId = order.UserId,
+                        Amount = order.Amount,
+                        OrderStatus = order.OrderStatus,
+                        Rate = rating,
+                    });
+                }
+            }
+            if (orders.Count == 0)
+                throw new ArgumentNullException("There are orders at the moment");
+
+            return ordersDto;
         }
 
         public async Task<RestaurantInfoDto> GetRestaurantInfo(string Id)
@@ -207,18 +214,19 @@ namespace Infrastructure.Services.UserServices
 
             return restaurantDto;
         }
-        public IEnumerable<OrderInfoDto> GetActiveOrders(string Id)
+        
+        public IEnumerable<InfoOrderDto> GetActiveOrders(string Id)
         {
             var orders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.RestaurantId == Id).ToList();
             if (orders.Count == 0)
                 throw new InvalidDataException("There are no orders");
 
-            var activeOrders = new List<OrderInfoDto>();
+            var activeOrders = new List<InfoOrderDto>();
             foreach (var order in orders)
             {
                 if (order is not null && order.OrderFinishTime == default)
                 {
-                    activeOrders.Add(new OrderInfoDto
+                    activeOrders.Add(new InfoOrderDto
                     {
                         Id = order.Id,
                         RestaurantId = order.RestaurantId,
@@ -226,7 +234,7 @@ namespace Infrastructure.Services.UserServices
                         PayedWithCard = order.PayedWithCard,
                         FoodIds = order.OrderedFoodIds,
                         UserId = order.UserId,
-                        Rate = order.Amount,
+                        Amount = order.Amount,
                         OrderStatus = order.OrderStatus
                     });
                 }
@@ -238,19 +246,19 @@ namespace Infrastructure.Services.UserServices
             return activeOrders;
         }
 
-
-        public IEnumerable<OrderInfoDto> GetOrderHistory(string Id)
+        public async Task<IEnumerable<InfoOrderDto>> GetOrderHistory(string Id)
         {
             var orders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.RestaurantId == Id).ToList();
             if (orders.Count == 0)
                 throw new InvalidDataException("There are no orders");
 
-            var restaurantOrders = new List<OrderInfoDto>();
+            var restaurantOrders = new List<InfoOrderDto>();
             foreach (var order in orders)
             {
                 if (order is not null)
                 {
-                    restaurantOrders.Add(new OrderInfoDto
+                    var rateOrder = await _unitOfWork.ReadOrderRatingRepository.GetAsync(order.OrderRatingId);
+                    restaurantOrders.Add(new InfoOrderDto
                     {
                         Id = order.Id,
                         RestaurantId = order.RestaurantId,
@@ -258,9 +266,9 @@ namespace Infrastructure.Services.UserServices
                         PayedWithCard = order.PayedWithCard,
                         FoodIds = order.OrderedFoodIds,
                         UserId = order.UserId,
-                        Rate = order.Amount,
-                        OrderStatus = order.OrderStatus
-
+                        Amount = order.Amount,
+                        OrderStatus = order.OrderStatus,
+                        Rate = rateOrder.Rate
                     });
                 }
             }
@@ -271,34 +279,30 @@ namespace Infrastructure.Services.UserServices
             return restaurantOrders;
         }
 
-        public IEnumerable<OrderInfoDto> GetPastOrderInfoById(string Id)
+        public async Task<InfoOrderDto> GetPastOrderInfoById(string orderId)
         {
-            var orders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.RestaurantId == Id).ToList();
-            if (orders.Count == 0)
-                throw new InvalidDataException("There are no orders");
+            var order = await _unitOfWork.ReadOrderRepository.GetAsync(orderId);
+            if (order is null)
+                throw new InvalidDataException("There are no order");
 
-            var pastOrders = new List<OrderInfoDto>();
-            foreach (var order in orders)
+            var rateOrder = await _unitOfWork.ReadOrderRatingRepository.GetAsync(order.OrderRatingId);
+            if (rateOrder is null)
+                throw new InvalidDataException("There are no order");
+
+
+            var pastOrders = new InfoOrderDto
             {
-                if (order is not null && order.OrderFinishTime != default)
-                {
-                    pastOrders.Add(new OrderInfoDto
-                    {
-                        Id = order.Id,
-                        RestaurantId = order.RestaurantId,
-                        OrderDate = order.OrderDate,
-                        PayedWithCard = order.PayedWithCard,
-                        FoodIds = order.OrderedFoodIds,
-                        UserId = order.UserId,
-                        Rate = order.Amount,
-                        OrderStatus = order.OrderStatus
-
-                    });
-                }
-            }
-            if (pastOrders.Count == 0)
-                throw new ArgumentNullException("There are no past orders");
-
+                Id = order.Id,
+                RestaurantId = order.RestaurantId,
+                OrderDate = order.OrderDate,
+                PayedWithCard = order.PayedWithCard,
+                FoodIds = order.OrderedFoodIds,
+                UserId = order.UserId,
+                Amount = order.Amount,
+                OrderStatus = order.OrderStatus,
+                Rate = rateOrder.Rate 
+            };
+          
             return pastOrders;
         }
 
@@ -345,6 +349,43 @@ namespace Infrastructure.Services.UserServices
             await _unitOfWork.WriteFoodRepository.RemoveAsync(food.Id);
             await _unitOfWork.WriteFoodRepository.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<bool> UpdateRestaurantRaiting(string resturantId)
+        {
+
+            var resturant = await _unitOfWork.ReadRestaurantRepository.GetAsync(resturantId);
+            if (resturant is null)
+                throw new ArgumentNullException();
+
+            var comments = _unitOfWork.ReadRestaurantCommentRepository.GetWhere(x => x.RestaurantId == resturantId);
+            var orders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.RestaurantId == resturantId);
+            if (orders is null)
+                return false;
+
+            var ordersRaiting = new List<int>();
+            foreach (var order in orders)
+            {
+                if (order is not null)
+                {
+                    var orderRaiting = await _unitOfWork.ReadOrderRatingRepository.GetAsync(order.OrderRatingId);
+                    if (orderRaiting is not null)
+                        ordersRaiting.Add(orderRaiting.Rate);
+                }
+            }
+
+            var averageComments = comments.Average(x => x?.Rating);
+            var averageOrders = ordersRaiting.Average();
+
+            var average = (averageComments + averageOrders) / 2;
+
+            resturant.Rating = Convert.ToUInt32(average);
+
+            var result = await _unitOfWork.WriteRestaurantRepository.UpdateAsync(resturant.Id);
+            await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
+
+            return result;
+
         }
     }
 }

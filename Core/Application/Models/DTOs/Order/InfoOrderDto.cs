@@ -2,7 +2,7 @@
 
 namespace Application.Models.DTOs.Order;
 
-public class OrderInfoDto
+public class InfoOrderDto
 {
     public string Id { get; set; }
     public DateTime OrderDate { get; set; }
@@ -12,5 +12,5 @@ public class OrderInfoDto
     public string UserId { get; set; }
     public OrderStatus OrderStatus { get; set; }
     public uint Amount { get; set; }
-    public uint Rate { get; set; }
+    public byte Rate { get; set; }
 }

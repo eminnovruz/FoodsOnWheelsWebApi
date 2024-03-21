@@ -22,31 +22,23 @@ public class UserService : IUserService
         _unitOfWork = unitOfWork;
         _orderValidator = orderValidator;
     }
-    public IEnumerable<CategoryInfoDto> GetAllFoodCategories()
+    public async Task<GetUserProfileInfoDto> GetProfileInfo(string userId)
     {
-        var categories = _unitOfWork.ReadCategoryRepository.GetAll().ToList();
+        var user = await _unitOfWork.ReadUserRepository.GetAsync(userId);
 
-        if (categories.Count == 0)
-            throw new ArgumentNullException();
+        if (user is null)
+            throw new ArgumentNullException("User is not Found");
 
-        List<CategoryInfoDto> dtos = new List<CategoryInfoDto>();
-        foreach (var item in categories)
+        return new GetUserProfileInfoDto
         {
-            if (item is not null)
-            {
-                var dto = new CategoryInfoDto()
-                {
-                    CategoryName = item.CategoryName,
-                    FoodIds = item.FoodIds,
-                    Id = item.Id
-                };
-                dtos.Add(dto);
-            }
-        }
-
-        return dtos;
+            Name = user.Name,
+            Surname = user.Surname,
+            BirthDate = user.BirthDate,
+            Email = user.Email,
+            OrderIds = user.OrderIds,
+            PhoneNumber = user.PhoneNumber,
+        };
     }
-
 
     public IEnumerable<RestaurantInfoDto> GetAllRestaurants()
     {
@@ -124,23 +116,29 @@ public class UserService : IUserService
         return dtos;
     }
 
-
-    public async Task<GetUserProfileInfoDto> GetProfileInfo(string userId)
+    public IEnumerable<CategoryInfoDto> GetAllFoodCategories()
     {
-        var user = await _unitOfWork.ReadUserRepository.GetAsync(userId);
+        var categories = _unitOfWork.ReadCategoryRepository.GetAll().ToList();
 
-        if (user is null)
-            throw new ArgumentNullException("User is not Found");
+        if (categories.Count == 0)
+            throw new ArgumentNullException();
 
-        return new GetUserProfileInfoDto
+        List<CategoryInfoDto> dtos = new List<CategoryInfoDto>();
+        foreach (var item in categories)
         {
-            Name = user.Name,
-            Surname = user.Surname,
-            BirthDate = user.BirthDate,
-            Email = user.Email,
-            OrderIds = user.OrderIds,
-            PhoneNumber = user.PhoneNumber,
-        };
+            if (item is not null)
+            {
+                var dto = new CategoryInfoDto()
+                {
+                    CategoryName = item.CategoryName,
+                    FoodIds = item.FoodIds,
+                    Id = item.Id
+                };
+                dtos.Add(dto);
+            }
+        }
+
+        return dtos;
     }
 
     public async Task<bool> MakeOrder(MakeOrderDto request)
@@ -204,9 +202,20 @@ public class UserService : IUserService
         order.OrderRatingId = orderRating.Id;
         order.OrderFinishTime = DateTime.Now;
 
+        courier.ActiveOrderId = string.Empty;
+        courier.CourierCommentIds.Add(courierComment.Id);
+
+
+        await _unitOfWork.WriteCourierCommentRepository.AddAsync(courierComment);
+        await _unitOfWork.WriteCourierCommentRepository.SaveChangesAsync();
+
+        await _unitOfWork.WriteCourierRepository.UpdateAsync(courier.Id);
+        await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
+
         await _unitOfWork.WriteOrderRatingRepository.AddAsync(orderRating);
         await _unitOfWork.WriteOrderRatingRepository.SaveChangesAsync();
-        bool result = await  _unitOfWork.WriteOrderRepository.UpdateAsync(order.Id);
+
+        bool result = await _unitOfWork.WriteOrderRepository.UpdateAsync(order.Id);
         await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
 
         return result;
@@ -221,10 +230,10 @@ public class UserService : IUserService
 
         var comment = new RestaurantComment
         {
+            Id = Guid.NewGuid().ToString(),
             CommentDate = DateTime.Now,
             ContactWithMe = request.ContactWithMe,
             Content = request.Content,
-            Id = Guid.NewGuid().ToString(),
             OrderId = request.OrderId,
             Rating = request.Rate,
             RestaurantId = request.RestaurantId
@@ -240,10 +249,14 @@ public class UserService : IUserService
         return true;
     }
 
+    #region BankCard
     public async Task<bool> AddBankCard(AddBankCardDto cardDto)
     {
         var testCard = await _unitOfWork.ReadBankCardRepository.GetAsync(cardDto.CardNumber);
         if (testCard is not null)
+            throw new ArgumentException();
+        var user = await _unitOfWork.ReadUserRepository.GetAsync(cardDto.UserId);
+        if (user is null)
             throw new ArgumentException();
 
         var newCard = new BankCard { 
@@ -254,16 +267,32 @@ public class UserService : IUserService
             ExpireDate = cardDto.ExpireDate,
             CardOwnerFullName = cardDto.CardOwnerFullName,
         };
+
+        user.BankCardsId.Add(newCard.Id);
+
+        await _unitOfWork.WriteUserRepository.UpdateAsync(user.Id);
+        await _unitOfWork.WriteUserRepository.SaveChangesAsync();
+
         var result =  await _unitOfWork.WriteBankCardRepository.AddAsync(newCard);
         await _unitOfWork.WriteBankCardRepository.SaveChangesAsync();
 
         return result;
     }
+
     public async Task<bool> RemoveBankCard(string cardId)
     {
         var card = await _unitOfWork.ReadBankCardRepository.GetAsync(cardId);
         if (card is null)
             throw new ArgumentNullException();
+
+        var user = await _unitOfWork.ReadUserRepository.GetAsync(card.UserId);
+        if (user is null)
+            throw new ArgumentException();
+
+        user.BankCardsId.Remove(cardId);
+
+        await _unitOfWork.WriteUserRepository.UpdateAsync(user.Id);
+        await _unitOfWork.WriteUserRepository.SaveChangesAsync();
 
         var result =  await _unitOfWork.WriteBankCardRepository.RemoveAsync(card.Id);
         await _unitOfWork.WriteBankCardRepository.SaveChangesAsync();
@@ -305,7 +334,7 @@ public class UserService : IUserService
         return cardDto;
     }
 
-    public IEnumerable<GetBankCardDto> getAllUserBankCard(string userId)
+    public IEnumerable<GetBankCardDto> GetAllUserBankCard(string userId)
     {
         var cards =  _unitOfWork.ReadBankCardRepository.GetWhere(x=> x.UserId == userId).ToList();
         if (cards.Count == 0)
@@ -329,6 +358,8 @@ public class UserService : IUserService
         
         return cardDtos;
     }
+    #endregion
+
     public uint CalculateOrderAmountAsync(List<string> foodIds)
     {
         var foods = _unitOfWork.ReadFoodRepository.GetAll().ToList();
@@ -341,5 +372,27 @@ public class UserService : IUserService
                 amount += item.Price;
 
         return amount;
+    }
+
+    public async Task<bool> RemoveProfile(string userId)
+    {
+        var user = await _unitOfWork.ReadUserRepository.GetAsync(userId);
+        if (user is  null)
+            throw new ArgumentNullException();
+
+        var bankCard = _unitOfWork.ReadBankCardRepository.GetWhere(x=> x.UserId == userId);
+        foreach (var item in bankCard)
+        {
+            if (item is not null)
+                await _unitOfWork.WriteBankCardRepository.RemoveAsync(item.Id);
+        }
+        await _unitOfWork.WriteUserRepository.RemoveAsync(userId);
+        
+        
+        await _unitOfWork.WriteBankCardRepository.SaveChangesAsync();
+        await _unitOfWork.WriteUserRepository.SaveChangesAsync();
+
+        return true;
+
     }
 }

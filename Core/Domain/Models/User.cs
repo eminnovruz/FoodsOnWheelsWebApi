@@ -10,6 +10,6 @@ public class User : BaseEntity
     public byte[] PassHash { get; set; }
     public byte[] PassSalt { get; set; }
     public DateTime BirthDate { get; set; }
-    public List<string> OrderIds { get; set; }
     public List<string> BankCardsId { get;}
+    public List<string> OrderIds { get; set; }
 }

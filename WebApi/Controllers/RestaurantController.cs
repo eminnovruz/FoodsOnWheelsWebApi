@@ -77,7 +77,7 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("getActiveOrders")]
-        public ActionResult<List<OrderInfoDto>> GetActiveOrders([FromQuery]string Id)
+        public ActionResult<List<InfoOrderDto>> GetActiveOrders([FromQuery]string Id)
         {
             try
             {
@@ -91,7 +91,7 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("getOrderHistory")]
-        public ActionResult<List<OrderInfoDto>> GetOrderHistory(string Id)
+        public ActionResult<List<InfoOrderDto>> GetOrderHistory(string Id)
         {
             try
             {
@@ -105,7 +105,7 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("getPastOrderInfoById")]
-        public ActionResult<List<OrderInfoDto>> GetPastOrderInfoById(string Id)
+        public ActionResult<List<InfoOrderDto>> GetPastOrderInfoById(string Id)
         {
             try
             {
@@ -119,7 +119,7 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("waitingOrders")]
-        public ActionResult<IEnumerable<OrderInfoDto>> WaitingOrders(string resturantId)
+        public ActionResult<IEnumerable<InfoOrderDto>> WaitingOrders(string resturantId)
         {
             try
             {

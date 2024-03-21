@@ -496,6 +496,7 @@ public class WorkerService : IWorkerService
             throw new ArgumentNullException("Request is null ");
         }
 
+        var list = new List<string>();
         User newUser = new User()
         {
             Name = dto.Name,

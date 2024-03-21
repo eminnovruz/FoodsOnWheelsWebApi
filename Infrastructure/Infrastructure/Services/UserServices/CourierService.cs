@@ -41,21 +41,20 @@ public class CourierService : ICourierService
         return true;
     }
 
-
-    public async Task<OrderInfoDto> GetActiveOrderInfo(string OrderId)
+    public async Task<InfoOrderDto> GetActiveOrderInfo(string OrderId)
     {
         var order = await _unitOfWork.ReadOrderRepository.GetAsync(OrderId);
         if (order is null)
             throw new ArgumentNullException();
 
-        var orderInfo = new OrderInfoDto
+        var orderInfo = new InfoOrderDto
         {
             Id = order.Id,
             RestaurantId = order.RestaurantId,
             FoodIds = order.OrderedFoodIds,
             OrderDate = order.OrderDate,
             PayedWithCard = order.PayedWithCard,
-            Rate = order.Amount,
+            Amount = order.Amount,
             UserId = order.UserId,
             OrderStatus = order.OrderStatus
         };
@@ -87,24 +86,24 @@ public class CourierService : ICourierService
         return commentDtos;
     }
 
-    public List<OrderInfoDto> GetNewOrder()
+    public List<InfoOrderDto> GetNewOrder()
     {
         var neworders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.CourierId == default).ToList();
         if (neworders is null)
             throw new ArgumentNullException();
 
-        var newOrdersDto = new List<OrderInfoDto>();
+        var newOrdersDto = new List<InfoOrderDto>();
         foreach (var neworder in neworders)
         {
             if (neworder is not null)
-                newOrdersDto.Add(new OrderInfoDto
+                newOrdersDto.Add(new InfoOrderDto
                 {
                     Id = neworder.Id,
                     RestaurantId = neworder.RestaurantId,
                     FoodIds = neworder.OrderedFoodIds,
                     OrderDate = neworder.OrderDate,
                     PayedWithCard = neworder.PayedWithCard,
-                    Rate = neworder.Amount,
+                    Amount = neworder.Amount,
                     UserId = neworder.UserId,
                 });
         }
@@ -112,10 +111,10 @@ public class CourierService : ICourierService
         return newOrdersDto;
     }
 
-    public async Task<IEnumerable<OrderInfoDto>> GetOrderHistory(string CourierId)
+    public async Task<IEnumerable<InfoOrderDto>> GetOrderHistory(string courierId)
     {
-        Courier? courier = await _unitOfWork.ReadCourierRepository.GetAsync(CourierId);
-        List<OrderInfoDto> PastOrders = new List<OrderInfoDto>();
+        Courier? courier = await _unitOfWork.ReadCourierRepository.GetAsync(courierId);
+        List<InfoOrderDto> PastOrders = new List<InfoOrderDto>();
 
         if (courier is null)
             throw new NullReferenceException();
@@ -124,31 +123,43 @@ public class CourierService : ICourierService
         foreach (var item in courier.OrderIds)
         {
             var order = await _unitOfWork.ReadOrderRepository.GetAsync(item);
-
             if (order is not null)
-                PastOrders.Add(new OrderInfoDto
+            {
+                var rateOrder = await _unitOfWork.ReadOrderRatingRepository.GetAsync(order.OrderRatingId);
+                if (rateOrder is null)
+                    throw new InvalidDataException("There are no order");
+
+                PastOrders.Add(new InfoOrderDto
                 {
                     Id = order.Id,
                     OrderDate = order.OrderDate,
                     FoodIds = order.OrderedFoodIds,
-                    PayedWithCard = true,
-                    Rate = 0,
+                    PayedWithCard = order.PayedWithCard,
+                    Rate = rateOrder.Rate,
                     UserId = order.UserId,
                     RestaurantId = order.RestaurantId,
+                    Amount = order.Amount
                 });
+            }
         }
 
         return PastOrders;
     }
 
-    public async Task<OrderInfoDto> GetPastOrderInfoById(string PastOrderId)
+    public async Task<InfoOrderDto> GetPastOrderInfoById(string pastOrderId)
     {
-        var pastOrder = await _unitOfWork.ReadOrderRepository.GetAsync(PastOrderId);
+        var pastOrder = await _unitOfWork.ReadOrderRepository.GetAsync(pastOrderId);
 
         if (pastOrder is null || pastOrder.OrderFinishTime == default)
             throw new ArgumentNullException();
 
-        var order = new OrderInfoDto
+        var rateOrder = await _unitOfWork.ReadOrderRatingRepository.GetAsync(pastOrder.OrderRatingId);
+        if (rateOrder is null)
+            throw new InvalidDataException("There are no order");
+
+
+
+        var order = new InfoOrderDto
         {
             OrderDate = pastOrder.OrderDate,
             FoodIds = pastOrder.OrderedFoodIds,
@@ -156,15 +167,16 @@ public class CourierService : ICourierService
             Id = pastOrder.Id,
             UserId = pastOrder.UserId,
             RestaurantId = pastOrder.RestaurantId,
-            Rate = pastOrder.Amount,
+            Amount = pastOrder.Amount,
+            Rate = rateOrder.Rate,
         };
         
         return order;
     }
 
-    public async Task<GetProfileInfoDto> GetProfileInfo(string CourierId)
+    public async Task<GetProfileInfoDto> GetProfileInfo(string courierId)
     {
-        Courier? courier = await _unitOfWork.ReadCourierRepository.GetAsync(CourierId);
+        Courier? courier = await _unitOfWork.ReadCourierRepository.GetAsync(courierId);
 
         if (courier is null)
             throw new NullReferenceException();
@@ -198,5 +210,28 @@ public class CourierService : ICourierService
         await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
 
         return true;
+    }
+
+    public async Task<bool> UpdateRaitingCourier(string courierId)
+    {
+        var courier = await _unitOfWork.ReadCourierRepository.GetAsync(courierId);
+        if (courier is null)
+            throw new ArgumentNullException();
+
+        var average = new List<int>();
+        foreach (var item in courier.CourierCommentIds)
+        {
+            var comment = await _unitOfWork.ReadCourierCommentRepository.GetAsync(item);
+            if (comment is not null)
+            {
+                average.Add(Convert.ToInt32(comment.Rate));
+            }
+        }
+        courier.Rating = Convert.ToInt32(average.Average());
+
+        var result = await _unitOfWork.WriteCourierRepository.UpdateAsync(courier.Id);
+        await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
+
+        return result;
     }
 }

@@ -1,9 +1,11 @@
-﻿using Application.Models.DTOs.Category;
+﻿using Application.Models.DTOs.BankCard;
+using Application.Models.DTOs.Category;
 using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Order;
 using Application.Models.DTOs.Restaurant;
 using Application.Models.DTOs.User;
 using Application.Services.IUserServices;
+using Azure.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
@@ -21,6 +23,8 @@ namespace WebApi.Controllers
             _userService = userService;
         }
 
+        #region GET
+        
         [HttpGet("getAllRestaurants")]
         public ActionResult<RestaurantInfoDto> GetAllRestaurants()
         {
@@ -91,6 +95,39 @@ namespace WebApi.Controllers
             }
         }
 
+
+        [HttpGet("getUserBankCard")]
+        public async Task<ActionResult<GetBankCardDto>> GetUserBankCard(string cardId)
+        {
+            try
+            {
+                return Ok(await _userService.GetUserBankCard(cardId));
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [GET] GetUserBankCard");
+                return BadRequest(exception.Message);
+            }
+        }
+
+
+        [HttpGet("getAllUserBankCard")]
+        public ActionResult<IEnumerable<GetBankCardDto>> GetAllUserBankCard(string userId)
+        {
+            try
+            {
+                return Ok(_userService.GetAllUserBankCard(userId));
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [GET] GetUserBankCard");
+                return BadRequest(exception.Message);
+            }
+        }
+        #endregion
+
+        #region POST
+
         [HttpPost("rateOrder")]
         public async Task<ActionResult<bool>> RateOrder(RateOrderDto request)
         {
@@ -119,6 +156,30 @@ namespace WebApi.Controllers
             }
         }
 
+
+        #endregion
+
+        #region UPDATE
+
+        [HttpPost("updateBankCard")]
+        public async Task<ActionResult<bool>> UpdateBankCard(UpdateBankCardDto cardDto)
+        {
+            try
+            {
+                return Ok(await _userService.UpdateBankCard(cardDto));
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [POST] UpdateBankCard");
+                return BadRequest(exception.Message);
+            }
+        }
+
+
+        #endregion
+
+
+        #region ADD
         [HttpPost("makeOrder")]
         public async Task<ActionResult<bool>> MakeOrder(MakeOrderDto request)
         {
@@ -132,5 +193,57 @@ namespace WebApi.Controllers
                 return BadRequest(exception.Message);
             }
         }
+
+        
+        [HttpPost("addBankCard")]
+        public async Task<ActionResult<bool>> AddBankCard(AddBankCardDto cardDto)
+        {
+            try
+            {
+                return Ok(await _userService.AddBankCard(cardDto));
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [POST] AddBankCard");
+                return BadRequest(exception.Message);
+            }
+        }
+
+
+        #endregion
+
+
+        #region REMOVE
+
+        [HttpDelete("removeBankCard")]
+        public async Task<ActionResult<bool>> RemoveBankCard(string cardId)
+        {
+            try
+            {
+                return Ok(await _userService.RemoveBankCard(cardId));
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [DELETE] RemoveBankCard");
+                return BadRequest(exception.Message);
+            }
+        }
+
+        [HttpDelete("RemoveProfile")]
+        public async Task<ActionResult<bool>> RemoveProfile(string userId)
+        {
+            try
+            {
+                return Ok(await _userService.RemoveProfile(userId));
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [DELETE] RemoveProfile");
+                return BadRequest(exception.Message);
+            }
+
+        }
+
+        #endregion 
     }
 }

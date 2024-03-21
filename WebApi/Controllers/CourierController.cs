@@ -39,7 +39,7 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("viewOrderHistory")]
-        public async Task<ActionResult<IEnumerable<OrderInfoDto>>> ViewOrderHistory(string courierId)
+        public async Task<ActionResult<IEnumerable<InfoOrderDto>>> ViewOrderHistory(string courierId)
         {
             try
             {
