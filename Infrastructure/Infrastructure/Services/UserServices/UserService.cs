@@ -145,6 +145,10 @@ public class UserService : IUserService
     {
         if (_orderValidator.Validate(request).IsValid)
         {
+            var user = await _unitOfWork.ReadUserRepository.GetAsync(request.UserId);
+            if (user is null)
+                throw new ArgumentNullException();
+
             var newOrder = new Order()
             {
                 Amount = CalculateOrderAmountAsync(request.FoodIds),
@@ -160,7 +164,14 @@ public class UserService : IUserService
             };
 
             if (request.PayWithCard)
+            {
                 newOrder.PayedWithCard = request.PayWithCard;
+            }
+
+            user.OrderIds.Add(newOrder.Id);
+
+            await _unitOfWork.WriteUserRepository.UpdateAsync(user.Id);
+            await _unitOfWork.WriteUserRepository.SaveChangesAsync();
 
             var result = await _unitOfWork.WriteOrderRepository.AddAsync(newOrder);
             await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
@@ -197,7 +208,6 @@ public class UserService : IUserService
             Content = request.CourierContent,
             OrderId = order.Id,
         };
-
 
         order.OrderRatingId = orderRating.Id;
         order.OrderFinishTime = DateTime.Now;
