@@ -27,7 +27,7 @@ namespace WebApi.Controllers
                 var user = await _courierService.GetProfileInfo(courierId);
             
                 if (user is null)
-                    return BadRequest($"Cannot find user - {courierId}. Maybe deleted or missing");
+                    return BadRequest($"Cannot find user - {courierId}. Maybe deleted or missing.");
             
                 return Ok(user);
             }
@@ -53,9 +53,5 @@ namespace WebApi.Controllers
                 return BadRequest(exception.Message);
             }
         }
-
-
-
-
     }
 }

@@ -31,9 +31,7 @@ namespace WebApi.Controllers
 
                 User user = users.FirstOrDefault(req => req?.Email == request.Email)!;
                 if (user is null)
-                {
                     return NotFound("You haven't an account!");
-                }
 
                 var token =  _authService.LoginUser(request);
                 Log.Information($"{user.Name} Logged in");
@@ -53,7 +51,7 @@ namespace WebApi.Controllers
             {
                 if (await _authService.RegisterUser(request))
                 {
-                    Log.Information($"{request.Email} registered");
+                    Log.Information($"{request.Email} registered.");
                     return Ok("Successfully Registered!");
                 }
                 throw new Exception("Something get wrong!");

@@ -49,7 +49,6 @@ namespace WebApi.Controllers
             }
         }
         
-
         [HttpGet("getFoodsByCategory")]
         public ActionResult<FoodInfoDto> GetFoodsByCategory(string categoryId)
         {
@@ -64,14 +63,12 @@ namespace WebApi.Controllers
             }
         }
 
-
         [HttpGet("getFoodsByRestaurant")]
         public async Task<ActionResult<IEnumerable<FoodInfoDto>>> GetFoodsByRestaurant(string restaurantId)
         {
             try
             {
                 return Ok(await _userService.GetFoodsByRestaurant(restaurantId));
-                
             }
             catch (Exception exception)
             {
@@ -79,7 +76,6 @@ namespace WebApi.Controllers
                 return BadRequest(exception.Message);
             }
         }
-
 
         [HttpGet("getProfileInfo")]
         public async Task<ActionResult<GetUserProfileInfoDto>> GetProfileInfo(string userId)
@@ -95,7 +91,6 @@ namespace WebApi.Controllers
             }
         }
 
-
         [HttpPost("rateOrder")]
         public async Task<ActionResult<bool>> RateOrder(RateOrderDto request)
         {
@@ -109,7 +104,6 @@ namespace WebApi.Controllers
                 return BadRequest(exception.Message);
             }
         }
-
 
         [HttpPost("reportOrder")]
         public async Task<ActionResult<bool>> ReportOrder(ReportOrderDto request)

@@ -13,6 +13,6 @@ public class MakeOrderDtoValidator : AbstractValidator<MakeOrderDto>
 
         RuleFor(x => x.RestaurantId)
             .NotEmpty()
-            .WithMessage("restaurant id must be provided");
+            .WithMessage("Restaurant id must be provided.");
     }
 }

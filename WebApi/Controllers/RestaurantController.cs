@@ -13,19 +13,12 @@ namespace WebApi.Controllers
     [ApiController]
     public class RestaurantController : ControllerBase
     {
-
         private readonly IRestaurantService restaurantService;
 
         public RestaurantController(IRestaurantService restaurantService)
         {
             this.restaurantService = restaurantService;
         }
-
-
-
-
-        #region ADD METOD
-
 
         [HttpPost("addCategory")]
         public async Task<ActionResult<bool>> AddCategory(AddCategoryRequest request) 
@@ -41,7 +34,6 @@ namespace WebApi.Controllers
             }
         }
 
-
         [HttpPost("addFood")]
         public async Task<ActionResult<bool>> AddFood([FromForm]AddFoodRequest request)
         {
@@ -56,7 +48,6 @@ namespace WebApi.Controllers
             }
         }
 
-
         [HttpPost("inLastDecidesSituation")]
         public async Task<ActionResult<bool>> InLastDecidesSituation(InLastSituationOrderDto orderDto)
         {
@@ -70,15 +61,6 @@ namespace WebApi.Controllers
                 return BadRequest(exception.Message);
             }
         }
-        #endregion
-
-
-
-
-
-        #region GET METOD
-
-
 
         [HttpGet("getRestaurantInfo")]
         public async Task<ActionResult<RestaurantInfoDto>> GetRestaurantInfo([FromQuery]string Id)
@@ -94,7 +76,6 @@ namespace WebApi.Controllers
             }
         }
 
-
         [HttpGet("getActiveOrders")]
         public ActionResult<List<OrderInfoDto>> GetActiveOrders([FromQuery]string Id)
         {
@@ -107,9 +88,7 @@ namespace WebApi.Controllers
                 Log.Error($"Error occured on [GET] GetActiveOrders : {exception.Message}");
                 return BadRequest(exception.Message);
             }
-
         }
-
 
         [HttpGet("getOrderHistory")]
         public ActionResult<List<OrderInfoDto>> GetOrderHistory(string Id)
@@ -125,7 +104,6 @@ namespace WebApi.Controllers
             }
         }
 
-
         [HttpGet("getPastOrderInfoById")]
         public ActionResult<List<OrderInfoDto>> GetPastOrderInfoById(string Id)
         {
@@ -139,7 +117,6 @@ namespace WebApi.Controllers
                 return BadRequest(exception.Message);
             }
         }
-
 
         [HttpGet("waitingOrders")]
         public ActionResult<IEnumerable<OrderInfoDto>> WaitingOrders(string resturantId)
@@ -155,13 +132,6 @@ namespace WebApi.Controllers
             }
         }
 
-
-        #endregion
-
-
-
-        #region UPDATE
-
         [HttpPost("updateStatusOrder")]
         public async Task<ActionResult<bool>> UpdateStatusOrder(UpdateOrderStatusDto statusDto)
         {
@@ -176,13 +146,6 @@ namespace WebApi.Controllers
             }
         }
 
-        #endregion
-
-
-
-        #region DELETE METOD
-
-
         [HttpDelete("removeFood")]
         public async Task<ActionResult<bool>> RemoveFood(string Id)
         {
@@ -196,8 +159,5 @@ namespace WebApi.Controllers
                 return BadRequest(exception.Message);
             }
         }
-
-
-        #endregion
     }
 }
