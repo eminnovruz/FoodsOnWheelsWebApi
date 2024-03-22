@@ -311,6 +311,8 @@ namespace Infrastructure.Services.UserServices
             var order = await _unitOfWork.ReadOrderRepository.GetAsync(statusDto.OrderId);
             if (order == null)
                 throw new ArgumentNullException("There are no orders");
+            if (order.OrderStatus == OrderStatus.Waiting)
+                throw new ArgumentException("");
 
             order.OrderStatus = statusDto.OrderStatus;
 

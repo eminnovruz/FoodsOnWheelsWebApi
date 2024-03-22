@@ -49,6 +49,7 @@ public class AuthService : IAuthService
             Email = request.Email,
             Id = Guid.NewGuid().ToString(),
             OrderIds = new List<string>(),
+            BankCardsId = new List<string>(),
             PhoneNumber = request.PhoneNumber
         };
 

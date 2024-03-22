@@ -1,12 +1,15 @@
-﻿using Application.Models.DTOs.Category;
+﻿using Application.Models.DTOs.Auth;
+using Application.Models.DTOs.Category;
 using Application.Models.DTOs.Courier;
 using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Restaurant;
 using Application.Models.DTOs.User;
 using Application.Models.DTOs.Worker;
 using Application.Repositories;
+using Application.Services.IAuthServices;
 using Application.Services.IHelperServices;
 using Application.Services.IUserServices;
+using Azure.Core;
 using Domain.Models;
 using FluentValidation;
 using Serilog;
@@ -16,13 +19,15 @@ namespace Infrastructure.Services.UserServices;
 
 public class WorkerService : IWorkerService
 {
+    private readonly IPassHashService _hashService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IValidator<AddRestaurantDto> _restarurantValidator;
     private readonly IValidator<AddCourierDto> _courierValidator;
     private readonly IBlobService _blobSerice;
 
-    public WorkerService(IUnitOfWork unitOfWork, IValidator<AddRestaurantDto> restarurantValidator, IValidator<AddCourierDto> courierValidator, IBlobService blobSerice)
+    public WorkerService(IPassHashService hashService, IUnitOfWork unitOfWork, IValidator<AddRestaurantDto> restarurantValidator, IValidator<AddCourierDto> courierValidator, IBlobService blobSerice)
     {
+        _hashService = hashService;
         _unitOfWork = unitOfWork;
         _restarurantValidator = restarurantValidator;
         _courierValidator = courierValidator;
@@ -488,22 +493,28 @@ public class WorkerService : IWorkerService
         return workerDtos;
     }
 
-    public async Task<bool> AddUser(AddUserDto dto)
+    public async Task<bool> AddUser(UserRegisterRequest dto)
     {
-        if (dto == null)
-        {
-            Log.Error("Request is null ");
-            throw new ArgumentNullException("Request is null ");
-        }
+        var users = _unitOfWork.ReadUserRepository.GetAll();
 
-        User newUser = new User()
+        var specUser = users.FirstOrDefault(c => c.Email == dto.Email);
+        if (specUser is not null)
+            throw new("This email has already exsist!");
+
+        _hashService.Create(dto.Password, out byte[] passHash, out byte[] passSalt);
+
+        var newUser = new User()
         {
             Name = dto.Name,
             Surname = dto.Surname,
+            PassHash = passHash,
+            PassSalt = passSalt,
             BirthDate = dto.BirthDate,
             Email = dto.Email,
-            PhoneNumber = dto.PhoneNumber,
             Id = Guid.NewGuid().ToString(),
+            BankCardsId = new List<string>(),
+            OrderIds = new List<string>(),
+            PhoneNumber = dto.PhoneNumber
         };
 
         var result = await _unitOfWork.WriteUserRepository.AddAsync(newUser);

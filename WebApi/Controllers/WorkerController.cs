@@ -1,4 +1,5 @@
-﻿using Application.Models.DTOs.Category;
+﻿using Application.Models.DTOs.Auth;
+using Application.Models.DTOs.Category;
 using Application.Models.DTOs.Courier;
 using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Order;
@@ -443,7 +444,7 @@ namespace WebApi.Controllers
 
         #region User
         [HttpPost("addNewUser")]
-        public async Task<ActionResult<bool>> AddNewUser([FromBody] AddUserDto request)
+        public async Task<ActionResult<bool>> AddNewUser([FromBody] UserRegisterRequest request)
         {
             try
             {

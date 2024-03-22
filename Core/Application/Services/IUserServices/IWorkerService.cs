@@ -1,4 +1,5 @@
-﻿using Application.Models.DTOs.Category;
+﻿using Application.Models.DTOs.Auth;
+using Application.Models.DTOs.Category;
 using Application.Models.DTOs.Courier;
 using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Restaurant;
@@ -35,7 +36,7 @@ public interface IWorkerService
     Task<bool> RemoveWorker(string id);
     Task<GetWorkerDto> GetWorkerById(string id);
     Task<IEnumerable<GetWorkerDto>> GetAllWorkers();
-    Task<bool> AddUser(AddUserDto dto);
+    Task<bool> AddUser(UserRegisterRequest dto);
     Task<bool> UpdateUser(UpdateUserDto dto);
     Task<bool> RemoveUser(string id);
     Task<GetUserProfileInfoDto> GetUserById(string id);
