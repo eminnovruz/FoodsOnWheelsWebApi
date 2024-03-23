@@ -202,6 +202,8 @@ namespace Infrastructure.Services.UserServices
             if (restaurant is null)
                 throw new ArgumentNullException("Wrong Restaurant");
 
+            await UpdateRestaurantRaiting(Id);
+
             RestaurantInfoDto restaurantDto = new RestaurantInfoDto
             {
                 Id = Id,
@@ -353,16 +355,16 @@ namespace Infrastructure.Services.UserServices
             return true;
         }
 
-        public async Task<bool> UpdateRestaurantRaiting(string resturantId)
+        private async Task<bool> UpdateRestaurantRaiting(string resturantId)
         {
 
             var resturant = await _unitOfWork.ReadRestaurantRepository.GetAsync(resturantId);
             if (resturant is null)
                 throw new ArgumentNullException();
 
-            var comments = _unitOfWork.ReadRestaurantCommentRepository.GetWhere(x => x.RestaurantId == resturantId);
-            var orders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.RestaurantId == resturantId);
-            if (orders is null)
+            var comments = _unitOfWork.ReadRestaurantCommentRepository.GetWhere(x => x.RestaurantId == resturantId).ToList();
+            var orders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.RestaurantId == resturantId).ToList();
+            if (orders.Count == 0)
                 return false;
 
             var ordersRaiting = new List<int>();
@@ -375,13 +377,21 @@ namespace Infrastructure.Services.UserServices
                         ordersRaiting.Add(orderRaiting.Rate);
                 }
             }
-
-            var averageComments = comments.Average(x => x?.Rating);
             var averageOrders = ordersRaiting.Average();
+            
+            if (comments.Count != 0)
+            {
+                var averageComments = comments.Average(x => x?.Rating);
+                var average =  (averageComments + averageOrders) / 2;
+                resturant.Rating = Convert.ToUInt32(average);
+            }
+            else
+            {
+                var average = averageOrders;
+                resturant.Rating = Convert.ToUInt32(average);
+            } 
 
-            var average = (averageComments + averageOrders) / 2;
 
-            resturant.Rating = Convert.ToUInt32(average);
 
             var result = await _unitOfWork.WriteRestaurantRepository.UpdateAsync(resturant.Id);
             await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();

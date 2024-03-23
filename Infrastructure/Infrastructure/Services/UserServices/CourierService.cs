@@ -181,6 +181,8 @@ public class CourierService : ICourierService
         if (courier is null)
             throw new NullReferenceException();
 
+        await UpdateRaitingCourier(courierId);
+
         GetProfileInfoDto dto = new GetProfileInfoDto()
         {
             Name = courier.Name,
@@ -212,7 +214,7 @@ public class CourierService : ICourierService
         return true;
     }
 
-    public async Task<bool> UpdateRaitingCourier(string courierId)
+    private async Task<bool> UpdateRaitingCourier(string courierId)
     {
         var courier = await _unitOfWork.ReadCourierRepository.GetAsync(courierId);
         if (courier is null)
@@ -227,7 +229,12 @@ public class CourierService : ICourierService
                 average.Add(Convert.ToInt32(comment.Rate));
             }
         }
-        courier.Rating = Convert.ToInt32(average.Average());
+
+        if (average.Count == 0)
+            courier.Rating = 0;
+        else 
+            courier.Rating = Convert.ToInt32(average.Average());
+
 
         var result = await _unitOfWork.WriteCourierRepository.UpdateAsync(courier.Id);
         await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
