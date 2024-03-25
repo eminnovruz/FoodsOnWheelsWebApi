@@ -2,6 +2,7 @@
 
 namespace Domain.Models;
 
+
 public class OrderRating : BaseEntity
 {
     public byte Rate { get; set; }

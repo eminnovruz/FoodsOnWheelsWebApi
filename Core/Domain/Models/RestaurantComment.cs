@@ -1,5 +1,6 @@
 ﻿using Domain.Models.Common;
 
+
 public class RestaurantComment : BaseEntity
 {
     public string RestaurantId { get; set; }

@@ -1,6 +1,7 @@
 ﻿using Domain.Models.Common;
 using Domain.Models.Enums;
 
+
 namespace Domain.Models;
 
 public class Order : BaseEntity

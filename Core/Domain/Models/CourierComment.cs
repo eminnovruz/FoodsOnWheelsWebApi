@@ -9,4 +9,8 @@ public class CourierComment : BaseEntity
     public DateTime CommentDate { get; set; }
     public string OrderId { get; set; }
     public uint Rate { get; set; }
+
+
+
+
 }

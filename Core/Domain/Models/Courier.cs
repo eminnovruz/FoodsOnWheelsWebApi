@@ -2,6 +2,7 @@
 
 namespace Domain.Models;
 
+
 public class Courier : BaseEntity
 {
     public string Name { get; set; }

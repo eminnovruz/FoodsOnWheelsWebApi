@@ -10,4 +10,5 @@ public class Food : BaseEntity
     public List<string> CategoryIds { get; set; }
     public string RestaurantId { get; set; }
     public string ImageUrl { get; set; }
+
 }
