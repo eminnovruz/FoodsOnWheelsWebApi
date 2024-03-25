@@ -11,8 +11,10 @@ using Application.Services.IHelperServices;
 using Application.Services.IUserServices;
 using Azure.Core;
 using Domain.Models;
+using Domain.Models.Enums;
 using FluentValidation;
 using Serilog;
+using System.Diagnostics.Metrics;
 using System.Net.WebSockets;
 
 namespace Infrastructure.Services.UserServices;
@@ -72,6 +74,7 @@ public class WorkerService : IWorkerService
         return false;
     }
 
+
     public async Task<bool> UptadeRestaurant(UpdateRestaurantDto dto)
     {
         var existingRestaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(dto.Id);
@@ -91,21 +94,52 @@ public class WorkerService : IWorkerService
         return result;
     }
 
+
     public async Task<bool> RemoveRestaurant(string restaurantId)
     {
+        var resturant = await _unitOfWork.ReadRestaurantRepository.GetAsync(restaurantId);
+        if (resturant is null)
+            throw new ArgumentNullException("wrong Resturant");
+
+        foreach (var item in resturant.CommentIds)
+            await _unitOfWork.WriteRestaurantCommentRepository.RemoveAsync(item);
+
+        await _unitOfWork.WriteRestaurantCommentRepository.SaveChangesAsync();
+
+        
+        foreach (var item in resturant.OrderIds)
+        {
+            var order =await _unitOfWork.ReadOrderRepository.GetAsync(item);
+            if (order is not null)
+            {
+                if (order.OrderStatus == OrderStatus.Preparing)
+                    throw new ArgumentException("Currently, it is not possible to delete the restaurant because the order is being prepared");
+
+                await _unitOfWork.WriteOrderRatingRepository.RemoveAsync(order.OrderRatingId);
+                await _unitOfWork.WriteOrderRepository.RemoveAsync(item);
+            }
+
+        }
+
+        await _unitOfWork.WriteOrderRatingRepository.SaveChangesAsync();
+        await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
+
+        foreach (var item in resturant.FoodIds)
+            await RemoveFood(item);
+
         var result = await _unitOfWork.WriteRestaurantRepository.RemoveAsync(restaurantId);
+        await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
         return result;
     }
+
 
     public async Task<RestaurantInfoDto> GetRestaurantById(string id)
     {
         var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(id);
 
         if (restaurant == null)
-        {
-            Log.Error("Restaurant not found with ID: {RestaurantId}", id);
-            return null;
-        }
+            throw new ArgumentNullException("Restaurant not found");
+            
 
         var restaurantDto = new RestaurantInfoDto
         {
@@ -118,9 +152,12 @@ public class WorkerService : IWorkerService
         return restaurantDto;
     }
 
-    public async Task<IEnumerable<RestaurantInfoDto>> GetAllRestaurants() // check
+    public IEnumerable<RestaurantInfoDto> GetAllRestaurants()
     {
-        var restaurants = _unitOfWork.ReadRestaurantRepository.GetAll();
+        var restaurants = _unitOfWork.ReadRestaurantRepository.GetAll().ToList();
+        if (restaurants.Count == 0)
+            throw new ArgumentNullException("Restaurants not found");
+
         var restaurantDtos = restaurants.Select(item => new RestaurantInfoDto
         {
             Description = item.Description,
@@ -147,6 +184,7 @@ public class WorkerService : IWorkerService
                 Id = Guid.NewGuid().ToString(),
                 OrderIds = new List<string>(),
                 PhoneNumber = dto.PhoneNumber,
+                ActiveOrderId = string.Empty,
                 Rating = 0,
             };
 
@@ -155,8 +193,7 @@ public class WorkerService : IWorkerService
             return result;
         }
 
-        Log.Error("Validation Error in [WORKER-SERVICE]AddCourier");
-        return false;
+        throw new ArgumentNullException("Validation Error in [WORKER-SERVICE]AddCourier");
     }
 
     public async Task<bool> UpdateCourier(UpdateCourierDto dto)
@@ -164,10 +201,7 @@ public class WorkerService : IWorkerService
         var existingCourier = await _unitOfWork.ReadCourierRepository.GetAsync(dto.Id);
 
         if (existingCourier == null)
-        {
-            Log.Error("Courier not found with ID: {CourierId}", dto.Id);
-            return false;
-        }
+            throw new ArgumentNullException("Courier not found");
 
         existingCourier.Name = dto.Name;
         existingCourier.Surname = dto.Surname;
@@ -183,6 +217,18 @@ public class WorkerService : IWorkerService
 
     public async Task<bool> RemoveCourier(string courierId)
     {
+
+        var courier = await _unitOfWork.ReadCourierRepository.GetAsync(courierId);
+        if (courier is null)
+            throw new ArgumentNullException("Courier not found");
+
+        if (courier.ActiveOrderId != string.Empty)
+            throw new ArgumentException("The courier is currently making an order. Delete is not possible");
+
+        foreach (var item in courier.CourierCommentIds)
+            await _unitOfWork.WriteCourierCommentRepository.RemoveAsync(item);
+        await _unitOfWork.WriteCourierCommentRepository.SaveChangesAsync();
+
         var result = await _unitOfWork.WriteCourierRepository.RemoveAsync(courierId);
         await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
         return result;
@@ -192,16 +238,19 @@ public class WorkerService : IWorkerService
     {
         var courier = await _unitOfWork.ReadCourierRepository.GetAsync(id);
 
-        if (courier == null)
-        {
-            Log.Error("Courier not found with ID: {CourierId}", id);
-            return null; 
-        }
+        if (courier is null)
+            throw new ArgumentNullException("Courier not found");
 
         var summaryCourierDto = new SummaryCourierDto
         {
-            CourierId = courier.Id,
-            CourierName = courier.Name,
+            Id = courier.Id,
+            Name = courier.Name,
+            Surname = courier.Surname,
+            Email = courier.Email,
+            PhoneNumber = courier.PhoneNumber,
+            BirthDate = courier.BirthDate,
+            Rating = courier.Rating,
+            OrderSize = courier.OrderIds.Count,
         };
 
         return summaryCourierDto;
@@ -210,11 +259,13 @@ public class WorkerService : IWorkerService
     public async Task<IEnumerable<SummaryCourierDto>> GetAllCouriers() // check
     {
         var couriers = _unitOfWork.ReadCourierRepository.GetAll().ToList();
+        if (couriers.Count == 0)
+            throw new ArgumentNullException("Courier not found");
 
         var courierDtos = couriers.Select(item => new SummaryCourierDto
         {
-            CourierName = item.Name,
-            CourierId = item.Id,
+            Name = item.Name,
+            Id = item.Id,
         }).ToList();
 
         return courierDtos;
@@ -297,9 +348,35 @@ public class WorkerService : IWorkerService
 
     public async Task<bool> RemoveFood(string Id)
     {
-        var result = await _unitOfWork.WriteFoodRepository.RemoveAsync(Id);
+        var food = await _unitOfWork.ReadFoodRepository.GetAsync(Id);
+        if (food is null)
+            throw new ArgumentNullException("Wrong Food");
+
+        var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(food.RestaurantId);
+        if (restaurant is null)
+            throw new ArgumentNullException("Wrong Restaurant");
+
+        var categorys = _unitOfWork.ReadCategoryRepository.GetAll().ToList();
+        if (categorys is null || categorys.Count == 0)
+            throw new ArgumentNullException("Categorys Is Not Found");
+        foreach (var item in food.CategoryIds)
+        {
+            var category = categorys.FirstOrDefault(x => item == x.Id);
+            if (category is null)
+                throw new ArgumentNullException("Category Id Is Not Found");
+            category.FoodIds.Remove(food.Id);
+            await _unitOfWork.WriteCategoryRepository.UpdateAsync(category.Id);
+            await _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
+        }
+
+        await _blobSerice.DeleteFileAsync(food.Id + "-" + food.Name + ".jpg");
+        restaurant.FoodIds.Remove(food.Id);
+        await _unitOfWork.WriteRestaurantRepository.UpdateAsync(restaurant.Id);
+        await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
+        await _unitOfWork.WriteFoodRepository.RemoveAsync(food.Id);
         await _unitOfWork.WriteFoodRepository.SaveChangesAsync();
-        return result;
+
+        return true;
     }
 
     public async Task<FoodInfoDto> GetFoodById(string id)

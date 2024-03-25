@@ -2,6 +2,12 @@
 
 public class SummaryCourierDto
 {
-    public string CourierId { get; set; }
-    public string CourierName { get; set; }
+    public string Id { get; set; }
+    public string Name { get; set; }
+    public string Surname { get; set; }
+    public string Email { get; set; }
+    public string PhoneNumber { get; set; }
+    public DateTime BirthDate { get; set; }
+    public int Rating { get; set; }
+    public int OrderSize { get; set; }
 }

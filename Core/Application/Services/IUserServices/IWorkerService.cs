@@ -15,7 +15,7 @@ public interface IWorkerService
     Task<bool> UptadeRestaurant(UpdateRestaurantDto dto);
     Task<bool> RemoveRestaurant(string restaurantId);
     Task<RestaurantInfoDto> GetRestaurantById(string id);
-    Task<IEnumerable<RestaurantInfoDto>> GetAllRestaurants();
+    IEnumerable<RestaurantInfoDto> GetAllRestaurants();
     Task<bool> AddCourier(AddCourierDto dto);
     Task<bool> UpdateCourier(UpdateCourierDto dto);
     Task<bool> RemoveCourier(string courierId);

@@ -9,5 +9,6 @@ public class Restaurant : BaseEntity
     public uint Rating { get; set; }
     public List<string> FoodIds { get; set; }
     public List<string> CommentIds { get; set; }
+    public List<string> OrderIds { get; set; }
     public string ImageUrl { get; set; }
 }

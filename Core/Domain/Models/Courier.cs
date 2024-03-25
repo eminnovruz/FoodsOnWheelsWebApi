@@ -9,6 +9,8 @@ public class Courier : BaseEntity
     public string Email { get; set; }
     public string PhoneNumber { get; set; }
     public DateTime BirthDate { get; set; }
+    public byte[] PassHash { get; set; }
+    public byte[] PassSalt { get; set; }
     public string ActiveOrderId {  get; set; }
     public List<string> OrderIds { get; set; }
     public List<string> CourierCommentIds { get; set; }
