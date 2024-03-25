@@ -14,12 +14,11 @@ namespace Infrastructure.Services.UserServices;
 public class UserService : IUserService
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IValidator<MakeOrderDto> _orderValidator;
 
-    public UserService(IUnitOfWork unitOfWork, IValidator<MakeOrderDto> orderValidator)
+
+    public UserService(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
-        _orderValidator = orderValidator;
     }
 
 
@@ -149,43 +148,40 @@ public class UserService : IUserService
 
     public async Task<bool> MakeOrder(MakeOrderDto request)
     {
-        if (_orderValidator.Validate(request).IsValid)
+
+        var user = await _unitOfWork.ReadUserRepository.GetAsync(request.UserId);
+        if (user is null)
+            throw new ArgumentNullException("User not found");
+
+        var newOrder = new Order()
         {
-            var user = await _unitOfWork.ReadUserRepository.GetAsync(request.UserId);
-            if (user is null)
-                throw new ArgumentNullException("User not found");
+            Amount = CalculateOrderAmountAsync(request.FoodIds),
+            CourierId = "",
+            Id = Guid.NewGuid().ToString(),
+            IsActivated = false,
+            OrderDate = DateTime.Now,
+            OrderedFoodIds = request.FoodIds,
+            UserId = request.UserId,
+            OrderRatingId = "",
+            RestaurantId = request.RestaurantId,
+            OrderStatus = 0
+        };
 
-            var newOrder = new Order()
-            {
-                Amount = CalculateOrderAmountAsync(request.FoodIds),
-                CourierId = "",
-                Id = Guid.NewGuid().ToString(),
-                IsActivated = false,
-                OrderDate = DateTime.Now,
-                OrderedFoodIds = request.FoodIds,
-                UserId = request.UserId,
-                OrderRatingId = "",
-                RestaurantId = request.RestaurantId,
-                OrderStatus = 0
-            };
-
-            if (request.PayWithCard)
-            {
-                newOrder.PayedWithCard = request.PayWithCard;
-            }
-
-            user.OrderIds.Add(newOrder.Id);
-
-            await _unitOfWork.WriteUserRepository.UpdateAsync(user.Id);
-            await _unitOfWork.WriteUserRepository.SaveChangesAsync();
-
-            var result = await _unitOfWork.WriteOrderRepository.AddAsync(newOrder);
-            await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
-
-            return result;
+        if (request.PayWithCard)
+        {
+            newOrder.PayedWithCard = request.PayWithCard;
         }
-        else
-            return false;
+
+        user.OrderIds.Add(newOrder.Id);
+
+        await _unitOfWork.WriteUserRepository.UpdateAsync(user.Id);
+        await _unitOfWork.WriteUserRepository.SaveChangesAsync();
+
+        var result = await _unitOfWork.WriteOrderRepository.AddAsync(newOrder);
+        await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
+
+        return result;
+
     }
 
     public async Task<bool> RateOrder(RateOrderDto request)

@@ -20,16 +20,12 @@ public class WorkerService : IWorkerService
 {
     private readonly IPassHashService _hashService;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IValidator<AddRestaurantDto> _restarurantValidator;
-    private readonly IValidator<AddCourierDto> _courierValidator;
     private readonly IBlobService _blobSerice;
 
-    public WorkerService(IPassHashService hashService, IUnitOfWork unitOfWork, IValidator<AddRestaurantDto> restarurantValidator, IValidator<AddCourierDto> courierValidator, IBlobService blobSerice)
+    public WorkerService(IPassHashService hashService, IUnitOfWork unitOfWork, IBlobService blobSerice)
     {
         _hashService = hashService;
         _unitOfWork = unitOfWork;
-        _restarurantValidator = restarurantValidator;
-        _courierValidator = courierValidator;
         _blobSerice = blobSerice;
     }
 
@@ -37,40 +33,34 @@ public class WorkerService : IWorkerService
     #region Restaurant
     public async Task<bool> AddRestaurant(AddRestaurantDto request)
     {
-        var isValid = _restarurantValidator.Validate(request);
 
-        if (isValid.IsValid)
+        var newRestaurant = new Restaurant()
         {
-            var newRestaurant = new Restaurant()
-            {
-                Name = request.Name,
-                Description = request.Description,
-                CommentIds = new List<string>(),
-                FoodIds = new List<string>(),
-                Id = Guid.NewGuid().ToString(),
-                Rating = 0,
-            };
+            Name = request.Name,
+            Description = request.Description,
+            CommentIds = new List<string>(),
+            FoodIds = new List<string>(),
+            Id = Guid.NewGuid().ToString(),
+            Rating = 0,
+        };
 
-            var form = request.File;
-            using (var stream = form.OpenReadStream())
-            {
-                var fileName = Guid.NewGuid().ToString() + "-" + newRestaurant.Name + ".jpg";
-                var contentType = form.ContentType;
+        var form = request.File;
+        using (var stream = form.OpenReadStream())
+        {
+            var fileName = Guid.NewGuid().ToString() + "-" + newRestaurant.Name + ".jpg";
+            var contentType = form.ContentType;
 
-                var blobResult = _blobSerice.UploadFile(stream, fileName, contentType);
-                if (blobResult == false)
-                    return false;
+            var blobResult = _blobSerice.UploadFile(stream, fileName, contentType);
+            if (blobResult == false)
+                return false;
 
-                newRestaurant.ImageUrl = _blobSerice.GetSignedUrl(fileName);
-            }
-
-            var result = await _unitOfWork.WriteRestaurantRepository.AddAsync(newRestaurant);
-            await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
-            
-            return result;
+            newRestaurant.ImageUrl = _blobSerice.GetSignedUrl(fileName);
         }
 
-        return false;
+        var result = await _unitOfWork.WriteRestaurantRepository.AddAsync(newRestaurant);
+        await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
+
+        return result;
     }
 
 
@@ -181,41 +171,36 @@ public class WorkerService : IWorkerService
     #region Courier
     public async Task<bool> AddCourier(AddCourierDto dto)
     {
-        if (_courierValidator.Validate(dto).IsValid)
+
+        var couriers = _unitOfWork.ReadCourierRepository.GetAll().ToList();
+        if (couriers.Count != 0)
         {
-
-            var couriers = _unitOfWork.ReadCourierRepository.GetAll().ToList();
-            if (couriers.Count != 0)
-            {
-                var specCouriers = couriers.FirstOrDefault(c => c?.Email == dto.Email);
-                if (specCouriers is not null)
-                    throw new ArgumentException("This email has already exsist!");
-            }
-
-            _hashService.Create(dto.Password, out byte[] passHash, out byte[] passSalt);
-
-            Courier newCourier = new Courier()
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = dto.Name,
-                Surname = dto.Surname,
-                BirthDate = dto.BirthDate,
-                Email = dto.Email,
-                PassHash = passHash,
-                PassSalt = passSalt,
-                CourierCommentIds = new List<string>(),
-                OrderIds = new List<string>(),
-                PhoneNumber = dto.PhoneNumber,
-                ActiveOrderId = string.Empty,
-                Rating = 0,
-            };
-
-            var result = await _unitOfWork.WriteCourierRepository.AddAsync(newCourier);
-            await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
-            return result;
+            var specCouriers = couriers.FirstOrDefault(c => c?.Email == dto.Email);
+            if (specCouriers is not null)
+                throw new ArgumentException("This email has already exsist!");
         }
 
-        throw new ArgumentNullException("Validation Error in [WORKER-SERVICE]AddCourier");
+        _hashService.Create(dto.Password, out byte[] passHash, out byte[] passSalt);
+
+        Courier newCourier = new Courier()
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = dto.Name,
+            Surname = dto.Surname,
+            BirthDate = dto.BirthDate,
+            Email = dto.Email,
+            PassHash = passHash,
+            PassSalt = passSalt,
+            CourierCommentIds = new List<string>(),
+            OrderIds = new List<string>(),
+            PhoneNumber = dto.PhoneNumber,
+            ActiveOrderId = string.Empty,
+            Rating = 0,
+        };
+
+        var result = await _unitOfWork.WriteCourierRepository.AddAsync(newCourier);
+        await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
+        return result;
     }
 
 
