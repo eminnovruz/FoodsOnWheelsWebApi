@@ -45,18 +45,22 @@ public class UserService : IUserService
         var restaurants = _unitOfWork.ReadRestaurantRepository.GetAll().ToList();
 
         if (restaurants.Count == 0)
-            throw new ArgumentNullException();
+            throw new ArgumentNullException("Restaurant not found");
 
-        var restaurantDtos = restaurants.Select(restaurant => new RestaurantInfoDto
+        var restaurantDtos = new List<RestaurantInfoDto>();
+        foreach (var item in restaurants)
         {
-            Id = restaurant.Id,
-            Description = restaurant.Description,
-            FoodIds = restaurant.FoodIds,
-            Name = restaurant.Name,
-            Rating = restaurant.Rating,
-            ImageUrl = restaurant.ImageUrl
-        });
-
+            if (item is not null)
+                restaurantDtos.Add(new RestaurantInfoDto
+                {
+                    Id = item.Id,
+                    Description = item.Description,
+                    FoodIds = item.FoodIds,
+                    Name = item.Name,
+                    Rating = item.Rating,
+                    ImageUrl = item.ImageUrl
+                });
+        }
         return restaurantDtos;
     }
 
@@ -64,7 +68,7 @@ public class UserService : IUserService
     {
         var allFoods = _unitOfWork.ReadFoodRepository.GetAll().ToList();
         if (allFoods.Count == 0)
-            throw new ArgumentNullException();
+            throw new ArgumentNullException("Food not found");
 
         var foods = new List<Food>();
         foreach (var item in allFoods)
@@ -93,7 +97,7 @@ public class UserService : IUserService
         var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(restaurantId);
 
         if (restaurant is null)
-            throw new ArgumentNullException();
+            throw new ArgumentNullException("Restaurant not found");
 
         List<FoodInfoDto> dtos = new List<FoodInfoDto>();
         foreach (var item in restaurant.FoodIds)
@@ -122,7 +126,7 @@ public class UserService : IUserService
         var categories = _unitOfWork.ReadCategoryRepository.GetAll().ToList();
 
         if (categories.Count == 0)
-            throw new ArgumentNullException();
+            throw new ArgumentNullException("Category not found");
 
         List<CategoryInfoDto> dtos = new List<CategoryInfoDto>();
         foreach (var item in categories)
@@ -148,7 +152,7 @@ public class UserService : IUserService
         {
             var user = await _unitOfWork.ReadUserRepository.GetAsync(request.UserId);
             if (user is null)
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("User not found");
 
             var newOrder = new Order()
             {
@@ -187,11 +191,11 @@ public class UserService : IUserService
     {
         var order = await _unitOfWork.ReadOrderRepository.GetAsync(request.OrderId);
         if (order is null)
-            throw new ArgumentNullException();
+            throw new ArgumentNullException("Order not found");
 
         var courier = await _unitOfWork.ReadCourierRepository.GetAsync(order.CourierId);
         if (courier is null)
-            throw new ArgumentNullException();
+            throw new ArgumentNullException("Courier not found");
 
         var orderRating = new OrderRating
         {
@@ -237,7 +241,7 @@ public class UserService : IUserService
         var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(request.RestaurantId);
 
         if (restaurant is null)
-            throw new ArgumentNullException();
+            throw new ArgumentNullException("Restaurant not found");
 
         var comment = new RestaurantComment
         {
@@ -265,10 +269,10 @@ public class UserService : IUserService
     {
         var testCard = await _unitOfWork.ReadBankCardRepository.GetAsync(cardDto.CardNumber);
         if (testCard is not null)
-            throw new ArgumentException();
+            throw new ArgumentException("This card is unavailable, you must change it");
         var user = await _unitOfWork.ReadUserRepository.GetAsync(cardDto.UserId);
         if (user is null)
-            throw new ArgumentException();
+            throw new ArgumentException("User not found");
 
         var newCard = new BankCard { 
             Id = Guid.NewGuid().ToString(),
@@ -294,11 +298,11 @@ public class UserService : IUserService
     {
         var card = await _unitOfWork.ReadBankCardRepository.GetAsync(cardId);
         if (card is null)
-            throw new ArgumentNullException();
+            throw new ArgumentNullException("Bank Card not found");
 
         var user = await _unitOfWork.ReadUserRepository.GetAsync(card.UserId);
         if (user is null)
-            throw new ArgumentException();
+            throw new ArgumentException("User not found");
 
         user.BankCardsId.Remove(cardId);
 
@@ -315,7 +319,7 @@ public class UserService : IUserService
     {
         var card = await _unitOfWork.ReadBankCardRepository.GetAsync(cardDto.Id);
         if (card is null)
-            throw new ArgumentNullException();
+            throw new ArgumentNullException("Bank Card not found");
 
         card.CVV = cardDto.CVV;
         card.ExpireDate = cardDto.ExpireDate;
@@ -332,7 +336,7 @@ public class UserService : IUserService
     {
         var card = await _unitOfWork.ReadBankCardRepository.GetAsync(cardId);
         if (card is null)
-            throw new ArgumentNullException();
+            throw new ArgumentNullException("Bank Card not found");
 
         var cardDto = new GetBankCardDto
         {
@@ -349,7 +353,7 @@ public class UserService : IUserService
     {
         var cards =  _unitOfWork.ReadBankCardRepository.GetWhere(x=> x.UserId == userId).ToList();
         if (cards.Count == 0)
-            throw new ArgumentNullException();
+            throw new ArgumentNullException("Bank Card not found");
 
         var cardDtos = new List<GetBankCardDto>();
         foreach (var item in cards)
@@ -375,7 +379,7 @@ public class UserService : IUserService
     {
         var foods = _unitOfWork.ReadFoodRepository.GetAll().ToList();
         if (foods.Count == 0)
-            throw new ArgumentNullException();
+            throw new ArgumentNullException("Food not found");
 
         uint amount = 0;
         foreach (var item in foods)
@@ -389,7 +393,7 @@ public class UserService : IUserService
     {
         var user = await _unitOfWork.ReadUserRepository.GetAsync(userId);
         if (user is  null)
-            throw new ArgumentNullException();
+            throw new ArgumentNullException("User not found");
 
         var bankCard = _unitOfWork.ReadBankCardRepository.GetWhere(x=> x.UserId == userId);
         foreach (var item in bankCard)

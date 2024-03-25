@@ -422,11 +422,11 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("getAllWorkers")]
-        public async Task<ActionResult<IEnumerable<GetWorkerDto>>> GetAllWorkers()
+        public ActionResult<IEnumerable<GetWorkerDto>> GetAllWorkers()
         {
             try
             {
-                var workers = await _workerService.GetAllWorkers();
+                var workers =  _workerService.GetAllWorkers();
 
                 if (workers == null || !workers.Any())
                     return NotFound(); 
@@ -508,11 +508,11 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("getAllUsers")]
-        public async Task<ActionResult<IEnumerable<GetUserProfileInfoDto>>> GetAllUsers()
+        public ActionResult<IEnumerable<GetUserProfileInfoDto>> GetAllUsers()
         {
             try
             {
-                var users = await _workerService.GetAllUsers();
+                var users = _workerService.GetAllUsers();
 
                 if (users == null || !users.Any())
                     return NotFound();

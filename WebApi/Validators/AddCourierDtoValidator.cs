@@ -7,7 +7,7 @@ public class AddCourierDtoValidator : AbstractValidator<AddCourierDto>
 {
     public AddCourierDtoValidator()
     {
-        RuleFor(c => c.PasswordHash)
+        RuleFor(c => c.Password)
             .NotEmpty()
             .WithMessage("Password is required!")
             .MinimumLength(8)
