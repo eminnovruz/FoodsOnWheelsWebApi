@@ -85,11 +85,11 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("getAllCouriers")]
-        public async Task<ActionResult<IEnumerable<SummaryCourierDto>>> GetAllCouriers()
+        public ActionResult<IEnumerable<SummaryCourierDto>> GetAllCouriers()
         {
             try
             {
-                var result = await _workerService.GetAllCouriers();
+                var result =  _workerService.GetAllCouriers();
                 return Ok(result);
             }
             catch (Exception exception)
@@ -165,11 +165,11 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("getAllRestaurants")]
-        public async Task<ActionResult<IEnumerable<RestaurantInfoDto>>> GetAllRestaurants()
+        public ActionResult<IEnumerable<RestaurantInfoDto>> GetAllRestaurants()
         {
             try
             {
-                var restaurants = await _workerService.GetAllRestaurants();
+                var restaurants = _workerService.GetAllRestaurants();
 
                 if (restaurants == null || !restaurants.Any())
                     return NotFound(); 
@@ -250,11 +250,11 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("getAllFoods")]
-        public async Task<ActionResult<IEnumerable<FoodInfoDto>>> GetAllFoods()
+        public ActionResult<IEnumerable<FoodInfoDto>> GetAllFoods()
         {
             try
             {
-                var foods = await _workerService.SeeAllFoods();
+                var foods = _workerService.SeeAllFoods();
 
                 if (foods == null || !foods.Any())
                     return NotFound(); 
@@ -301,7 +301,7 @@ namespace WebApi.Controllers
         }
 
         [HttpDelete("removeCategory")]
-        public async Task<ActionResult<bool>> RemoveCategory(string categoryId)
+        public ActionResult<bool> RemoveCategory(string categoryId)
         {
             try
             {
@@ -334,11 +334,11 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("getAllCategories")]
-        public async Task<ActionResult<IEnumerable<CategoryInfoDto>>> GetAllCategories()
+        public ActionResult<IEnumerable<CategoryInfoDto>> GetAllCategories()
         {
             try
             {
-                var categories = await _workerService.SeeAllCategories();
+                var categories =  _workerService.SeeAllCategories();
 
                 if (categories == null || !categories.Any())
                 {

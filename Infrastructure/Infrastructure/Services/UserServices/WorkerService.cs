@@ -152,36 +152,56 @@ public class WorkerService : IWorkerService
         return restaurantDto;
     }
 
+
     public IEnumerable<RestaurantInfoDto> GetAllRestaurants()
     {
         var restaurants = _unitOfWork.ReadRestaurantRepository.GetAll().ToList();
         if (restaurants.Count == 0)
             throw new ArgumentNullException("Restaurants not found");
 
-        var restaurantDtos = restaurants.Select(item => new RestaurantInfoDto
+        var restaurantDtos = new List<RestaurantInfoDto>();
+        foreach (var item in restaurants)
         {
-            Description = item.Description,
-            FoodIds = item.FoodIds,
-            Id = item.Id,
-            Name = item.Name,
-            Rating = item.Rating
-        });
+            if (item is not null)
+                restaurantDtos.Add(new RestaurantInfoDto
+                {
+                    Description = item.Description,
+                    FoodIds = item.FoodIds,
+                    Id = item.Id,
+                    Name = item.Name,
+                    Rating = item.Rating
+                });
+        }
 
         return restaurantDtos;
     }
+
 
     public async Task<bool> AddCourier(AddCourierDto dto)
     {
         if (_courierValidator.Validate(dto).IsValid)
         {
+
+            var couriers = _unitOfWork.ReadCourierRepository.GetAll().ToList();
+            if (couriers.Count != 0)
+            {
+                var specCouriers = couriers.FirstOrDefault(c => c?.Email == dto.Email);
+                if (specCouriers is not null)
+                    throw new ArgumentException("This email has already exsist!");
+            }
+
+            _hashService.Create(dto.Password, out byte[] passHash, out byte[] passSalt);
+
             Courier newCourier = new Courier()
             {
+                Id = Guid.NewGuid().ToString(),
                 Name = dto.Name,
                 Surname = dto.Surname,
                 BirthDate = dto.BirthDate,
                 Email = dto.Email,
+                PassHash = passHash,
+                PassSalt = passSalt,
                 CourierCommentIds = new List<string>(),
-                Id = Guid.NewGuid().ToString(),
                 OrderIds = new List<string>(),
                 PhoneNumber = dto.PhoneNumber,
                 ActiveOrderId = string.Empty,
@@ -195,6 +215,7 @@ public class WorkerService : IWorkerService
 
         throw new ArgumentNullException("Validation Error in [WORKER-SERVICE]AddCourier");
     }
+
 
     public async Task<bool> UpdateCourier(UpdateCourierDto dto)
     {
@@ -215,6 +236,7 @@ public class WorkerService : IWorkerService
         return result;
     }
 
+
     public async Task<bool> RemoveCourier(string courierId)
     {
 
@@ -233,6 +255,7 @@ public class WorkerService : IWorkerService
         await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
         return result;
     }
+
 
     public async Task<SummaryCourierDto> GetCourierById(string id)
     {
@@ -256,20 +279,33 @@ public class WorkerService : IWorkerService
         return summaryCourierDto;
     }
 
-    public async Task<IEnumerable<SummaryCourierDto>> GetAllCouriers() // check
+
+    public IEnumerable<SummaryCourierDto> GetAllCouriers()
     {
         var couriers = _unitOfWork.ReadCourierRepository.GetAll().ToList();
         if (couriers.Count == 0)
             throw new ArgumentNullException("Courier not found");
 
-        var courierDtos = couriers.Select(item => new SummaryCourierDto
+        var courierDtos = new List<SummaryCourierDto>();
+        foreach (var item in couriers)
         {
-            Name = item.Name,
-            Id = item.Id,
-        }).ToList();
+            if (item is not null)
+                courierDtos.Add(new SummaryCourierDto
+                {
+                    Id = item.Id,
+                    Name = item.Name,
+                    Surname = item.Surname,
+                    Email = item.Email,
+                    PhoneNumber = item.PhoneNumber,
+                    BirthDate = item.BirthDate,
+                    Rating = item.Rating,
+                    OrderSize = item.OrderIds.Count,
+                });
+        }
 
         return courierDtos;
     }
+
 
     public async Task<bool> AddNewFood(AddFoodRequest request)
     {
@@ -307,7 +343,7 @@ public class WorkerService : IWorkerService
 
         foreach (var item in request.CategoryIds)
         {
-            var category = categorys.FirstOrDefault(x => item == x.Id);
+            var category = categorys.FirstOrDefault(x => item == x?.Id);
             if (category is null) throw new ArgumentNullException("Category Id Is Not Found");
             category.FoodIds.Add(food.Id);
 
@@ -324,15 +360,13 @@ public class WorkerService : IWorkerService
         return true;
     }
 
+
     public async Task<bool> UpdateFood(UpdateFoodRequest request)
     {
         var existingFood = await _unitOfWork.ReadFoodRepository.GetAsync(request.Id);
 
-        if (existingFood == null)
-        {
-            Log.Error("Food not found with ID: {FoodId}", request.Id);
-            return false;
-        }
+        if (existingFood is null)
+            throw new ArgumentNullException("Food not found");
 
         existingFood.Name = request.Name;
         existingFood.CategoryIds = request.CategoryIds;
@@ -345,6 +379,7 @@ public class WorkerService : IWorkerService
 
         return result;
     }
+
 
     public async Task<bool> RemoveFood(string Id)
     {
@@ -361,7 +396,7 @@ public class WorkerService : IWorkerService
             throw new ArgumentNullException("Categorys Is Not Found");
         foreach (var item in food.CategoryIds)
         {
-            var category = categorys.FirstOrDefault(x => item == x.Id);
+            var category = categorys.FirstOrDefault(x => item == x?.Id);
             if (category is null)
                 throw new ArgumentNullException("Category Id Is Not Found");
             category.FoodIds.Remove(food.Id);
@@ -379,15 +414,13 @@ public class WorkerService : IWorkerService
         return true;
     }
 
+
     public async Task<FoodInfoDto> GetFoodById(string id)
     {
         var food = await _unitOfWork.ReadFoodRepository.GetAsync(id);
 
-        if (food == null)
-        {
-            Log.Error("Food not found with ID: {FoodId}", id);
-            return null;
-        }
+        if (food is null)
+            throw new ArgumentNullException("Food not found");
 
         var foodDto = new FoodInfoDto
         {
@@ -402,25 +435,45 @@ public class WorkerService : IWorkerService
         return foodDto;
     }
 
-    public async Task<IEnumerable<Food>> SeeAllFoods() // 
+
+    public IEnumerable<FoodInfoDto> SeeAllFoods() 
     {
-        var restaurants = _unitOfWork.ReadFoodRepository.GetAll();
-        return restaurants;
+        var foods = _unitOfWork.ReadFoodRepository.GetAll();
+        if (foods is null)
+            throw new ArgumentNullException("Currently there is no food");
+
+        var foodDtos = new List<FoodInfoDto>();
+        foreach (var food in foods)
+        {
+            if (food is not null)
+                foodDtos.Add(new FoodInfoDto
+                {
+                    CategoryIds = food.CategoryIds,
+                    Description = food.Description,
+                    Id = food.Id,
+                    Name = food.Name,
+                    Price = food.Price,
+                    ImageUrl = food.ImageUrl
+                });
+        }
+        return foodDtos;
     }
+
 
     public async Task<bool> AddCategory(AddCategoryRequest request)
     {
-        if (request == null)
+        var testCategory = _unitOfWork.ReadCategoryRepository.GetAll().ToList();
+        if (testCategory.Count != 0)
         {
-            Log.Error("Request is null ");
-            throw new ArgumentNullException("Request is null ");
+            if (testCategory.FirstOrDefault(x => x?.CategoryName.ToLower() == request.CategoryName.ToLower()) == default)
+                throw new ArgumentException("There is a category in this name, choose another name");
         }
 
         Category newCategory = new Category()
         {
+            Id = Guid.NewGuid().ToString(),
             CategoryName = request.CategoryName,
             FoodIds = request.FoodIds,
-            Id = Guid.NewGuid().ToString(),
         };
 
         var result = await _unitOfWork.WriteCategoryRepository.AddAsync(newCategory);
@@ -428,15 +481,13 @@ public class WorkerService : IWorkerService
         return result;
     }
 
+
     public async Task<bool> UpdateCategory(UpdateCategoryRequest request)
     {
         var existingCategory = await _unitOfWork.ReadCategoryRepository.GetAsync(request.Id);
 
-        if (existingCategory == null)
-        {
-            Log.Error("Category not found with ID: {CategoryId}", request.Id);
-            return false;
-        }
+        if (existingCategory is null)
+            throw new ArgumentNullException("Category not found");
 
         existingCategory.CategoryName = request.CategoryName;
         existingCategory.FoodIds = request.FoodIds;
@@ -447,22 +498,28 @@ public class WorkerService : IWorkerService
         return result;
     }
 
+
     public async Task<bool> RemoveCategory(string Id)
     {
+        var category = await _unitOfWork.ReadCategoryRepository.GetAsync(Id);
+        if (category is null)
+            throw new ArgumentNullException("Category not found");
+
+        if (category.FoodIds.Count != 0)
+            throw new ArgumentNullException("There are dishes in this category, so you can't delete the category");
+
         var result = await _unitOfWork.WriteCategoryRepository.RemoveAsync(Id);
         await _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
         return result;
     }
 
+
     public async Task<CategoryInfoDto> GetCategoryById(string id)
     {
         var category = await _unitOfWork.ReadCategoryRepository.GetAsync(id);
 
-        if (category == null)
-        {
-            Log.Error("Category not found with ID: {CategoryId}", id);
-            return null;
-        }
+        if (category is null)
+            throw new ArgumentNullException("Category not found");
 
         var categoryDto = new CategoryInfoDto
         {
@@ -474,28 +531,50 @@ public class WorkerService : IWorkerService
         return categoryDto;
     }
 
-    public async Task<IEnumerable<Category>> SeeAllCategories()
+
+    public IEnumerable<CategoryInfoDto> SeeAllCategories()
     {
         var categories = _unitOfWork.ReadCategoryRepository.GetAll();
-        return categories;
+        if (categories is null)
+            throw new ArgumentNullException("Category not found");
+
+        var categoryDtos = new List<CategoryInfoDto>();
+        foreach (var category in categories)
+        {
+            if (category is not null)
+                categoryDtos.Add(new CategoryInfoDto
+                {
+                    Id = category.Id,
+                    CategoryName = category.CategoryName,
+                    FoodIds = category.FoodIds,
+                });
+        }
+
+        return categoryDtos;
     }
+
 
     public async Task<bool> AddWorker(AddWorkerDto dto)
     {
-        if (dto == null)
+        var worker = _unitOfWork.ReadWorkerRepository.GetAll().ToList();
+        if (worker.Count != 0)
         {
-            Log.Error("Request is null ");
-            throw new ArgumentNullException("Request is null ");
+            var specCouriers = worker.FirstOrDefault(c => c?.Email == dto.Email);
+            if (specCouriers is not null)
+                throw new ArgumentException("This email has already exsist!");
         }
+        _hashService.Create(dto.Password, out byte[] passHash, out byte[] passSalt);
 
         Worker newWorker = new Worker()
         {
+            Id = Guid.NewGuid().ToString(),
             Name = dto.Name,
             Surname = dto.Surname,
             BirthDate = dto.BirthDate,
             Email = dto.Email,
             PhoneNumber = dto.PhoneNumber,
-            Id = Guid.NewGuid().ToString(),
+            PassHash = passHash,
+            PassSalt = passSalt,
         };
 
         var result = await _unitOfWork.WriteWorkerRepository.AddAsync(newWorker);
@@ -507,11 +586,8 @@ public class WorkerService : IWorkerService
     {
         var existingWorker = await _unitOfWork.ReadWorkerRepository.GetAsync(dto.Id);
 
-        if (existingWorker == null)
-        {
-            Log.Error("Worker not found with ID: {WorkerId}", dto.Id);
-            return false;
-        }
+        if (existingWorker is null)
+            throw new ArgumentException("Worker not found");
 
         existingWorker.Name = dto.Name;
         existingWorker.Surname = dto.Surname;
@@ -536,11 +612,8 @@ public class WorkerService : IWorkerService
     {
         var worker = await _unitOfWork.ReadWorkerRepository.GetAsync(id);
 
-        if (worker == null)
-        {
-            Log.Error("Worker not found with ID: {WorkerId}", id);
-            return null;
-        }
+        if (worker is null)
+            throw new ArgumentException("Worker not found");
 
         var workerDto = new GetWorkerDto
         {
@@ -554,19 +627,26 @@ public class WorkerService : IWorkerService
         return workerDto;
     }
 
-    public async Task<IEnumerable<GetWorkerDto>> GetAllWorkers()
+    public IEnumerable<GetWorkerDto> GetAllWorkers()
     {
         var workers = _unitOfWork.ReadWorkerRepository.GetAll().ToList();
+        if (workers is null)
+            throw new ArgumentException("Worker not found");
 
-        var workerDtos = workers.Select(worker => new GetWorkerDto
+        var workerDtos = new List<GetWorkerDto>();
+        foreach (var item in workers)
         {
-            Name = worker.Name,
-            Surname = worker.Surname,
-            BirthDate = worker.BirthDate,
-            Email = worker.Email,
-            PhoneNumber = worker.PhoneNumber,
-        });
+            if (item is not null)
+                workerDtos.Add(new GetWorkerDto
+                {
+                    Name = item.Name,
+                    Surname = item.Surname,
+                    BirthDate = item.BirthDate,
+                    Email = item.Email,
+                    PhoneNumber = item.PhoneNumber,
+                });
 
+        }
         return workerDtos;
     }
 
@@ -574,7 +654,7 @@ public class WorkerService : IWorkerService
     {
         var users = _unitOfWork.ReadUserRepository.GetAll();
 
-        var specUser = users.FirstOrDefault(c => c.Email == dto.Email);
+        var specUser = users.FirstOrDefault(c => c?.Email == dto.Email);
         if (specUser is not null)
             throw new("This email has already exsist!");
 
@@ -603,11 +683,8 @@ public class WorkerService : IWorkerService
     {
         var existingUser = await _unitOfWork.ReadUserRepository.GetAsync(dto.Id);
 
-        if (existingUser == null)
-        {
-            Log.Error("User not found with ID: {UserId}", dto.Id);
-            return false;
-        }
+        if (existingUser is null)
+            throw new ArgumentNullException("User not found");
 
         existingUser.Name = dto.Name;
         existingUser.Surname = dto.Surname;
@@ -621,22 +698,33 @@ public class WorkerService : IWorkerService
         return result;
     }
 
-    public async Task<bool> RemoveUser(string id)
+    public async Task<bool> RemoveUser(string userId)
     {
-        var result = await _unitOfWork.WriteUserRepository.RemoveAsync(id);
+        var user = await _unitOfWork.ReadUserRepository.GetAsync(userId);
+        if (user is null)
+            throw new ArgumentNullException("User not found");
+
+        var bankCard = _unitOfWork.ReadBankCardRepository.GetWhere(x => x.UserId == userId);
+        foreach (var item in bankCard)
+        {
+            if (item is not null)
+                await _unitOfWork.WriteBankCardRepository.RemoveAsync(item.Id);
+        }
+        await _unitOfWork.WriteUserRepository.RemoveAsync(userId);
+
+
+        await _unitOfWork.WriteBankCardRepository.SaveChangesAsync();
         await _unitOfWork.WriteUserRepository.SaveChangesAsync();
-        return result;
+
+        return true;
+
     }
 
     public async Task<GetUserProfileInfoDto> GetUserById(string id)
     {
         var user = await _unitOfWork.ReadUserRepository.GetAsync(id);
-
-        if (user == null)
-        {
-            Log.Error("User not found with ID: {UserId}", id);
-            return null;
-        }
+        if (user is null)
+            throw new ArgumentNullException("User not found");
 
         var userDto = new GetUserProfileInfoDto
         {
@@ -650,18 +738,25 @@ public class WorkerService : IWorkerService
         return userDto;
     }
 
-    public async Task<IEnumerable<GetUserProfileInfoDto>> GetAllUsers()
+    public IEnumerable<GetUserProfileInfoDto> GetAllUsers()
     {
         var users = _unitOfWork.ReadUserRepository.GetAll().ToList();
+        if (users is null)
+            throw new ArgumentNullException("User not found");
 
-        var userDtos = users.Select(user => new GetUserProfileInfoDto
+        var userDtos = new List<GetUserProfileInfoDto>();
+        foreach (var item in users)
         {
-            Name = user.Name,
-            Surname = user.Surname,
-            BirthDate = user.BirthDate,
-            Email = user.Email,
-            PhoneNumber = user.PhoneNumber,
-        });
+            if (item is not null)
+                userDtos.Add(new GetUserProfileInfoDto
+                {
+                    Name = item.Name,
+                    Surname = item.Surname,
+                    BirthDate = item.BirthDate,
+                    Email = item.Email,
+                    PhoneNumber = item.PhoneNumber,
+                });
+        }
 
         return userDtos;
     }

@@ -9,6 +9,6 @@ public class Worker : BaseEntity
     public DateTime BirthDate { get; set; }
     public string Email { get; set; }
     public string PhoneNumber { get; set; }
-    public string PasswordHash { get; set; }
-    public uint Rating { get; set; }
+    public byte[] PassHash { get; set; }
+    public byte[] PassSalt { get; set; }
 }

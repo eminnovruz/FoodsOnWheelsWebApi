@@ -71,18 +71,19 @@ public class UserService : IUserService
             if (item is not null && item.CategoryIds.Contains(categoryId))
                 foods.Add(item);
 
-        var foodDtos = foods.Select(food => new FoodInfoDto
+        var foodDtos = new List<FoodInfoDto>();
+        foreach (var food in foods)
         {
-            CategoryIds = food.CategoryIds,
-            Description = food.Description,
-            Id = food.Id,
-            Name = food.Name,
-            Price = food.Price,
-            ImageUrl = food.ImageUrl
-        });
-
-        if (foodDtos is null)
-            throw new ArgumentNullException();
+            foodDtos.Add(new FoodInfoDto
+            {
+                CategoryIds = food.CategoryIds,
+                Description = food.Description,
+                Id = food.Id,
+                Name = food.Name,
+                Price = food.Price,
+                ImageUrl = food.ImageUrl
+            });
+        }
 
         return foodDtos;
     }
