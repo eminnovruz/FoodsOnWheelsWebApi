@@ -9,13 +9,10 @@ using Application.Repositories;
 using Application.Services.IAuthServices;
 using Application.Services.IHelperServices;
 using Application.Services.IUserServices;
-using Azure.Core;
 using Domain.Models;
 using Domain.Models.Enums;
 using FluentValidation;
 using Serilog;
-using System.Diagnostics.Metrics;
-using System.Net.WebSockets;
 
 namespace Infrastructure.Services.UserServices;
 
@@ -36,6 +33,8 @@ public class WorkerService : IWorkerService
         _blobSerice = blobSerice;
     }
 
+
+    #region Restaurant
     public async Task<bool> AddRestaurant(AddRestaurantDto request)
     {
         var isValid = _restarurantValidator.Validate(request);
@@ -176,7 +175,10 @@ public class WorkerService : IWorkerService
         return restaurantDtos;
     }
 
+    #endregion
 
+
+    #region Courier
     public async Task<bool> AddCourier(AddCourierDto dto)
     {
         if (_courierValidator.Validate(dto).IsValid)
@@ -306,6 +308,206 @@ public class WorkerService : IWorkerService
         return courierDtos;
     }
 
+    #endregion
+
+
+    #region Category
+    public async Task<bool> AddCategory(AddCategoryRequest request)
+    {
+        var testCategory = _unitOfWork.ReadCategoryRepository.GetAll().ToList();
+        if (testCategory.Count != 0)
+        {
+            if (testCategory.FirstOrDefault(x => x?.CategoryName.ToLower() == request.CategoryName.ToLower()) == default)
+                throw new ArgumentException("There is a category in this name, choose another name");
+        }
+
+        Category newCategory = new Category()
+        {
+            Id = Guid.NewGuid().ToString(),
+            CategoryName = request.CategoryName,
+            FoodIds = request.FoodIds,
+        };
+
+        var result = await _unitOfWork.WriteCategoryRepository.AddAsync(newCategory);
+        await _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
+        return result;
+    }
+
+
+    public async Task<bool> UpdateCategory(UpdateCategoryRequest request)
+    {
+        var existingCategory = await _unitOfWork.ReadCategoryRepository.GetAsync(request.Id);
+
+        if (existingCategory is null)
+            throw new ArgumentNullException("Category not found");
+
+        existingCategory.CategoryName = request.CategoryName;
+        existingCategory.FoodIds = request.FoodIds;
+
+        var result = await _unitOfWork.WriteCategoryRepository.UpdateAsync(existingCategory.Id);
+        await _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
+
+        return result;
+    }
+
+
+    public async Task<bool> RemoveCategory(string Id)
+    {
+        var category = await _unitOfWork.ReadCategoryRepository.GetAsync(Id);
+        if (category is null)
+            throw new ArgumentNullException("Category not found");
+
+        if (category.FoodIds.Count != 0)
+            throw new ArgumentNullException("There are dishes in this category, so you can't delete the category");
+
+        var result = await _unitOfWork.WriteCategoryRepository.RemoveAsync(Id);
+        await _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
+        return result;
+    }
+
+
+    public async Task<CategoryInfoDto> GetCategoryById(string id)
+    {
+        var category = await _unitOfWork.ReadCategoryRepository.GetAsync(id);
+
+        if (category is null)
+            throw new ArgumentNullException("Category not found");
+
+        var categoryDto = new CategoryInfoDto
+        {
+            Id = category.Id,
+            CategoryName = category.CategoryName,
+            FoodIds = category.FoodIds,
+        };
+
+        return categoryDto;
+    }
+
+
+    public IEnumerable<CategoryInfoDto> SeeAllCategories()
+    {
+        var categories = _unitOfWork.ReadCategoryRepository.GetAll();
+        if (categories is null)
+            throw new ArgumentNullException("Category not found");
+
+        var categoryDtos = new List<CategoryInfoDto>();
+        foreach (var category in categories)
+        {
+            if (category is not null)
+                categoryDtos.Add(new CategoryInfoDto
+                {
+                    Id = category.Id,
+                    CategoryName = category.CategoryName,
+                    FoodIds = category.FoodIds,
+                });
+        }
+
+        return categoryDtos;
+    }
+
+    #endregion
+
+
+    #region Worker
+    public async Task<bool> AddWorker(AddWorkerDto dto)
+    {
+        var worker = _unitOfWork.ReadWorkerRepository.GetAll().ToList();
+        if (worker.Count != 0)
+        {
+            var specCouriers = worker.FirstOrDefault(c => c?.Email == dto.Email);
+            if (specCouriers is not null)
+                throw new ArgumentException("This email has already exsist!");
+        }
+        _hashService.Create(dto.Password, out byte[] passHash, out byte[] passSalt);
+
+        Worker newWorker = new Worker()
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = dto.Name,
+            Surname = dto.Surname,
+            BirthDate = dto.BirthDate,
+            Email = dto.Email,
+            PhoneNumber = dto.PhoneNumber,
+            PassHash = passHash,
+            PassSalt = passSalt,
+        };
+
+        var result = await _unitOfWork.WriteWorkerRepository.AddAsync(newWorker);
+        await _unitOfWork.WriteWorkerRepository.SaveChangesAsync();
+        return result;
+    }
+
+    public async Task<bool> UpdateWorker(UpdateWorkerDto dto)
+    {
+        var existingWorker = await _unitOfWork.ReadWorkerRepository.GetAsync(dto.Id);
+
+        if (existingWorker is null)
+            throw new ArgumentException("Worker not found");
+
+        existingWorker.Name = dto.Name;
+        existingWorker.Surname = dto.Surname;
+        existingWorker.BirthDate = dto.BirthDate;
+        existingWorker.Email = dto.Email;
+        existingWorker.PhoneNumber = dto.PhoneNumber;
+
+        var result = await _unitOfWork.WriteWorkerRepository.UpdateAsync(existingWorker.Id);
+        await _unitOfWork.WriteWorkerRepository.SaveChangesAsync();
+
+        return result;
+    }
+
+    public async Task<bool> RemoveWorker(string id)
+    {
+        var result = await _unitOfWork.WriteWorkerRepository.RemoveAsync(id);
+        await _unitOfWork.WriteWorkerRepository.SaveChangesAsync();
+        return result;
+    }
+
+    public async Task<GetWorkerDto> GetWorkerById(string id)
+    {
+        var worker = await _unitOfWork.ReadWorkerRepository.GetAsync(id);
+
+        if (worker is null)
+            throw new ArgumentException("Worker not found");
+
+        var workerDto = new GetWorkerDto
+        {
+            Name = worker.Name,
+            Surname = worker.Surname,
+            BirthDate = worker.BirthDate,
+            Email = worker.Email,
+            PhoneNumber = worker.PhoneNumber,
+        };
+
+        return workerDto;
+    }
+
+    public IEnumerable<GetWorkerDto> GetAllWorkers()
+    {
+        var workers = _unitOfWork.ReadWorkerRepository.GetAll().ToList();
+        if (workers is null)
+            throw new ArgumentException("Worker not found");
+
+        var workerDtos = new List<GetWorkerDto>();
+        foreach (var item in workers)
+        {
+            if (item is not null)
+                workerDtos.Add(new GetWorkerDto
+                {
+                    Name = item.Name,
+                    Surname = item.Surname,
+                    BirthDate = item.BirthDate,
+                    Email = item.Email,
+                    PhoneNumber = item.PhoneNumber,
+                });
+
+        }
+        return workerDtos;
+    }
+    #endregion
+
+
+    #region Food
 
     public async Task<bool> AddNewFood(AddFoodRequest request)
     {
@@ -459,197 +661,10 @@ public class WorkerService : IWorkerService
         return foodDtos;
     }
 
-
-    public async Task<bool> AddCategory(AddCategoryRequest request)
-    {
-        var testCategory = _unitOfWork.ReadCategoryRepository.GetAll().ToList();
-        if (testCategory.Count != 0)
-        {
-            if (testCategory.FirstOrDefault(x => x?.CategoryName.ToLower() == request.CategoryName.ToLower()) == default)
-                throw new ArgumentException("There is a category in this name, choose another name");
-        }
-
-        Category newCategory = new Category()
-        {
-            Id = Guid.NewGuid().ToString(),
-            CategoryName = request.CategoryName,
-            FoodIds = request.FoodIds,
-        };
-
-        var result = await _unitOfWork.WriteCategoryRepository.AddAsync(newCategory);
-        await _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
-        return result;
-    }
+    #endregion
 
 
-    public async Task<bool> UpdateCategory(UpdateCategoryRequest request)
-    {
-        var existingCategory = await _unitOfWork.ReadCategoryRepository.GetAsync(request.Id);
-
-        if (existingCategory is null)
-            throw new ArgumentNullException("Category not found");
-
-        existingCategory.CategoryName = request.CategoryName;
-        existingCategory.FoodIds = request.FoodIds;
-
-        var result = await _unitOfWork.WriteCategoryRepository.UpdateAsync(existingCategory.Id);
-        await _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
-
-        return result;
-    }
-
-
-    public async Task<bool> RemoveCategory(string Id)
-    {
-        var category = await _unitOfWork.ReadCategoryRepository.GetAsync(Id);
-        if (category is null)
-            throw new ArgumentNullException("Category not found");
-
-        if (category.FoodIds.Count != 0)
-            throw new ArgumentNullException("There are dishes in this category, so you can't delete the category");
-
-        var result = await _unitOfWork.WriteCategoryRepository.RemoveAsync(Id);
-        await _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
-        return result;
-    }
-
-
-    public async Task<CategoryInfoDto> GetCategoryById(string id)
-    {
-        var category = await _unitOfWork.ReadCategoryRepository.GetAsync(id);
-
-        if (category is null)
-            throw new ArgumentNullException("Category not found");
-
-        var categoryDto = new CategoryInfoDto
-        {
-            Id = category.Id,
-            CategoryName = category.CategoryName,
-            FoodIds = category.FoodIds,
-        };
-
-        return categoryDto;
-    }
-
-
-    public IEnumerable<CategoryInfoDto> SeeAllCategories()
-    {
-        var categories = _unitOfWork.ReadCategoryRepository.GetAll();
-        if (categories is null)
-            throw new ArgumentNullException("Category not found");
-
-        var categoryDtos = new List<CategoryInfoDto>();
-        foreach (var category in categories)
-        {
-            if (category is not null)
-                categoryDtos.Add(new CategoryInfoDto
-                {
-                    Id = category.Id,
-                    CategoryName = category.CategoryName,
-                    FoodIds = category.FoodIds,
-                });
-        }
-
-        return categoryDtos;
-    }
-
-
-    public async Task<bool> AddWorker(AddWorkerDto dto)
-    {
-        var worker = _unitOfWork.ReadWorkerRepository.GetAll().ToList();
-        if (worker.Count != 0)
-        {
-            var specCouriers = worker.FirstOrDefault(c => c?.Email == dto.Email);
-            if (specCouriers is not null)
-                throw new ArgumentException("This email has already exsist!");
-        }
-        _hashService.Create(dto.Password, out byte[] passHash, out byte[] passSalt);
-
-        Worker newWorker = new Worker()
-        {
-            Id = Guid.NewGuid().ToString(),
-            Name = dto.Name,
-            Surname = dto.Surname,
-            BirthDate = dto.BirthDate,
-            Email = dto.Email,
-            PhoneNumber = dto.PhoneNumber,
-            PassHash = passHash,
-            PassSalt = passSalt,
-        };
-
-        var result = await _unitOfWork.WriteWorkerRepository.AddAsync(newWorker);
-        await _unitOfWork.WriteWorkerRepository.SaveChangesAsync();
-        return result;
-    }
-
-    public async Task<bool> UpdateWorker(UpdateWorkerDto dto)
-    {
-        var existingWorker = await _unitOfWork.ReadWorkerRepository.GetAsync(dto.Id);
-
-        if (existingWorker is null)
-            throw new ArgumentException("Worker not found");
-
-        existingWorker.Name = dto.Name;
-        existingWorker.Surname = dto.Surname;
-        existingWorker.BirthDate = dto.BirthDate;
-        existingWorker.Email = dto.Email;
-        existingWorker.PhoneNumber = dto.PhoneNumber;
-
-        var result = await _unitOfWork.WriteWorkerRepository.UpdateAsync(existingWorker.Id);
-        await _unitOfWork.WriteWorkerRepository.SaveChangesAsync();
-
-        return result;
-    }
-
-    public async Task<bool> RemoveWorker(string id)
-    {
-        var result = await _unitOfWork.WriteWorkerRepository.RemoveAsync(id);
-        await _unitOfWork.WriteWorkerRepository.SaveChangesAsync();
-        return result;
-    }
-
-    public async Task<GetWorkerDto> GetWorkerById(string id)
-    {
-        var worker = await _unitOfWork.ReadWorkerRepository.GetAsync(id);
-
-        if (worker is null)
-            throw new ArgumentException("Worker not found");
-
-        var workerDto = new GetWorkerDto
-        {
-            Name = worker.Name,
-            Surname = worker.Surname,
-            BirthDate = worker.BirthDate,
-            Email = worker.Email,
-            PhoneNumber = worker.PhoneNumber,
-        };
-
-        return workerDto;
-    }
-
-    public IEnumerable<GetWorkerDto> GetAllWorkers()
-    {
-        var workers = _unitOfWork.ReadWorkerRepository.GetAll().ToList();
-        if (workers is null)
-            throw new ArgumentException("Worker not found");
-
-        var workerDtos = new List<GetWorkerDto>();
-        foreach (var item in workers)
-        {
-            if (item is not null)
-                workerDtos.Add(new GetWorkerDto
-                {
-                    Name = item.Name,
-                    Surname = item.Surname,
-                    BirthDate = item.BirthDate,
-                    Email = item.Email,
-                    PhoneNumber = item.PhoneNumber,
-                });
-
-        }
-        return workerDtos;
-    }
-
+    #region User
     public async Task<bool> AddUser(UserRegisterRequest dto)
     {
         var users = _unitOfWork.ReadUserRepository.GetAll();
@@ -760,4 +775,6 @@ public class WorkerService : IWorkerService
 
         return userDtos;
     }
+    #endregion
+
 }

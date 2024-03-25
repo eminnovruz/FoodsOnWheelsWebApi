@@ -8,7 +8,6 @@ using Application.Repositories;
 using Application.Services.IUserServices;
 using Domain.Models;
 using FluentValidation;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Infrastructure.Services.UserServices;
 
@@ -22,6 +21,8 @@ public class UserService : IUserService
         _unitOfWork = unitOfWork;
         _orderValidator = orderValidator;
     }
+
+
     public async Task<GetUserProfileInfoDto> GetProfileInfo(string userId)
     {
         var user = await _unitOfWork.ReadUserRepository.GetAsync(userId);
