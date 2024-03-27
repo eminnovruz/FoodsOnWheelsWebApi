@@ -89,7 +89,7 @@ public class CourierService : ICourierService
     public List<InfoOrderDto> GetNewOrder()
     {
         var neworders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.CourierId == default).ToList();
-        if (neworders is null)
+        if (neworders.Count == 0)
             throw new ArgumentNullException();
 
         var newOrdersDto = new List<InfoOrderDto>();

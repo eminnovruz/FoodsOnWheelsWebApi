@@ -311,7 +311,7 @@ namespace Infrastructure.Services.UserServices
         public async Task<bool> UpdateStatusOrder(UpdateOrderStatusDto statusDto)
         {
             var order = await _unitOfWork.ReadOrderRepository.GetAsync(statusDto.OrderId);
-            if (order == null)
+            if (order is null)
                 throw new ArgumentNullException("There are no orders");
             if (order.OrderStatus == OrderStatus.Waiting)
                 throw new ArgumentException("");
@@ -360,7 +360,7 @@ namespace Infrastructure.Services.UserServices
 
             var resturant = await _unitOfWork.ReadRestaurantRepository.GetAsync(resturantId);
             if (resturant is null)
-                throw new ArgumentNullException();
+                throw new ArgumentNullException("Resturant not found");
 
             var comments = _unitOfWork.ReadRestaurantCommentRepository.GetWhere(x => x.RestaurantId == resturantId).ToList();
             var orders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.RestaurantId == resturantId).ToList();

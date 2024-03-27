@@ -47,7 +47,7 @@ public class WorkerService : IWorkerService
         var form = request.File;
         using (var stream = form.OpenReadStream())
         {
-            var fileName = Guid.NewGuid().ToString() + "-" + newRestaurant.Name + ".jpg";
+            var fileName = newRestaurant.Id + "-" + newRestaurant.Name + ".jpg";
             var contentType = form.ContentType;
 
             var blobResult = _blobSerice.UploadFile(stream, fileName, contentType);
@@ -115,6 +115,8 @@ public class WorkerService : IWorkerService
 
         foreach (var item in resturant.FoodIds)
             await RemoveFood(item);
+
+        await _blobSerice.DeleteFileAsync(resturant.Id + "-" + resturant.Name + ".jpg");
 
         var result = await _unitOfWork.WriteRestaurantRepository.RemoveAsync(restaurantId);
         await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();

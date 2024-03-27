@@ -15,7 +15,6 @@ public class WriteRepository<T> : IWriteRepository<T> where T : BaseEntity
 
     DbSet<T> Table => _context.Set<T>();
 
-
     #region Add
 
     public async Task<bool> AddAsync(T entity)

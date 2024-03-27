@@ -1,6 +1,6 @@
 ﻿namespace Application.Models.DTOs.Auth;
 
-public class UserLoginRequest
+public class LoginRequest
 {
     public string Email { get; set; }
     public string Password { get; set; }

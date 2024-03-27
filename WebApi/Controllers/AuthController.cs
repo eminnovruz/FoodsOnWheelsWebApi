@@ -21,7 +21,7 @@ namespace WebApi.Controllers
         }
 
         [HttpPost("login")]
-        public ActionResult Login([FromBody] UserLoginRequest request)
+        public ActionResult Login([FromBody] LoginRequest request)
         {
             try
             {
@@ -35,6 +35,7 @@ namespace WebApi.Controllers
 
                 var token =  _authService.LoginUser(request);
                 Log.Information($"{user.Name} Logged in");
+
                 return Ok(token);
             }
             catch (Exception ex)

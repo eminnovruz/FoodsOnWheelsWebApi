@@ -46,11 +46,6 @@ public class BlobService : IBlobService
         return signedUrl;
     }
 
-    public Task<string> GetSignedUrlAsync(string fileName)
-    {
-        throw new NotImplementedException();
-    }
-
     public bool UploadFile(Stream stream, string fileName, string contentType)
     {
         var serviceClient = new BlobServiceClient(_storageOptions.ConnectionString);

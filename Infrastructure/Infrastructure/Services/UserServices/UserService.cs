@@ -164,7 +164,8 @@ public class UserService : IUserService
             UserId = request.UserId,
             OrderRatingId = "",
             RestaurantId = request.RestaurantId,
-            OrderStatus = 0
+            OrderStatus = 0,
+            OrderFinishTime = default
         };
 
         if (request.PayWithCard)
