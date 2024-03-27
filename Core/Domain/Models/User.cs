@@ -2,14 +2,10 @@
 
 namespace Domain.Models;
 
-public class User : BaseEntity
+public class User : AppUser
 {
-    public string Name { get; set; }
     public string Surname { get; set; }
     public string PhoneNumber { get; set; }
-    public string Email { get; set; }
-    public byte[] PassHash { get; set; }
-    public byte[] PassSalt { get; set; }
     public DateTime BirthDate { get; set; }
     public List<string> BankCardsId { get; set; }
     public List<string> OrderIds { get; set; }

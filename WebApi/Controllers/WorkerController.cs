@@ -460,7 +460,7 @@ public class WorkerController : ControllerBase
 
     #region User
     [HttpPost("addNewUser")]
-    public async Task<ActionResult<bool>> AddNewUser([FromBody] UserRegisterRequest request)
+    public async Task<ActionResult<bool>> AddNewUser([FromBody] AddUserDto request)
     {
         try
         {

@@ -77,7 +77,7 @@ public interface IWorkerService
 
 
     #region User
-    Task<bool> AddUser(UserRegisterRequest dto);
+    Task<bool> AddUser(AddUserDto dto);
 
     Task<bool> UpdateUser(UpdateUserDto dto);
 

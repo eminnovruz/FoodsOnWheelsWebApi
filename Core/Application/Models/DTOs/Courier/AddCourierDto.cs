@@ -1,11 +1,10 @@
-﻿namespace Application.Models.DTOs.Courier;
+﻿using Application.Models.DTOs.AppUser;
 
-public class AddCourierDto
+namespace Application.Models.DTOs.Courier;
+
+public class AddCourierDto : AddAppUserDto
 {
-    public string Name { get; set; }
     public string Surname { get; set; }
-    public string Email { get; set; }
     public string PhoneNumber { get; set; }
-    public string Password { get; set; }
     public DateTime BirthDate { get; set; }
 }

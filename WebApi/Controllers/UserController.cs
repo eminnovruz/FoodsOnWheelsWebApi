@@ -126,6 +126,7 @@ namespace WebApi.Controllers
         }
         #endregion
 
+
         #region POST
 
         [HttpPost("rateOrder")]
@@ -159,6 +160,7 @@ namespace WebApi.Controllers
 
         #endregion
 
+
         #region UPDATE
 
         [HttpPost("updateBankCard")]
@@ -175,6 +177,19 @@ namespace WebApi.Controllers
             }
         }
 
+        [HttpPost("updateProfile")]
+        public async Task<ActionResult<bool>> UpdateProfile(UpdateUserDto dto)
+        {
+            try
+            {
+                return Ok(await _userService.UpdateProfile(dto));
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [POST] UpdateProfile");
+                return BadRequest(exception.Message);
+            }
+        }
 
         #endregion
 

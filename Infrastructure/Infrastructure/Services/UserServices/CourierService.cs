@@ -1,20 +1,28 @@
-﻿using Application.Models.DTOs.Comment;
+﻿using Application.Models.DTOs.AppUser;
+using Application.Models.DTOs.Comment;
 using Application.Models.DTOs.Courier;
 using Application.Models.DTOs.Order;
+using Application.Models.DTOs.User;
 using Application.Repositories;
+using Application.Services.IAuthServices;
 using Application.Services.IUserServices;
 using Domain.Models;
 using Domain.Models.Enums;
+using FluentValidation;
 
 namespace Infrastructure.Services.UserServices;
 
 public class CourierService : ICourierService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPassHashService _hashService;
+    private readonly IValidator<UpdateAppUserDto> _updateAppUserValidator;
 
-    public CourierService(IUnitOfWork unitOfWork)
+    public CourierService(IUnitOfWork unitOfWork, IPassHashService hashService, IValidator<UpdateAppUserDto> updateAppUserValidator)
     {
         _unitOfWork = unitOfWork;
+        _hashService = hashService;
+        _updateAppUserValidator = updateAppUserValidator;
     }
 
     public async Task<bool> AcceptOrder(AcceptOrderFromCourierDto request)
@@ -176,7 +184,7 @@ public class CourierService : ICourierService
 
     public async Task<GetProfileInfoDto> GetProfileInfo(string courierId)
     {
-        Courier? courier = await _unitOfWork.ReadCourierRepository.GetAsync(courierId);
+        var courier = await _unitOfWork.ReadCourierRepository.GetAsync(courierId);
 
         if (courier is null)
             throw new NullReferenceException();
@@ -212,6 +220,42 @@ public class CourierService : ICourierService
         await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
 
         return true;
+    }
+
+    public async Task<bool> UpdateProfile(UpdateCourierDto dto)
+    {
+        var isValid = _updateAppUserValidator.Validate(dto);
+
+        if (isValid.IsValid)
+        {
+            var existingCourier = await _unitOfWork.ReadCourierRepository.GetAsync(dto.Id);
+            if (existingCourier is null)
+                throw new ArgumentNullException("Courier not found");
+
+            existingCourier.Name = dto.Name;
+            existingCourier.Surname = dto.Surname;
+            existingCourier.BirthDate = dto.BirthDate;
+            existingCourier.Email = dto.Email;
+            existingCourier.PhoneNumber = dto.PhoneNumber;
+
+            if (dto.UpdatePassword)
+            {
+                if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingCourier.PassHash, existingCourier.PassSalt))
+                    throw new ArgumentException("Wrong password!");
+                _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
+
+                existingCourier.PassSalt = passSalt;
+                existingCourier.PassHash = passHash;
+            }
+
+
+            var result = await _unitOfWork.WriteCourierRepository.UpdateAsync(existingCourier.Id);
+            await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
+
+            return result;
+        }
+        else
+            throw new ArgumentException("No Valid");
     }
 
     private async Task<bool> UpdateRaitingCourier(string courierId)

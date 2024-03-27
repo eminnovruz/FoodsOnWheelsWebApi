@@ -1,4 +1,5 @@
 ﻿using Application.Models.DTOs.Auth;
+using Application.Models.DTOs.User;
 using Application.Repositories;
 using Application.Services.IAuthServices;
 using Domain.Models;
@@ -25,17 +26,7 @@ namespace WebApi.Controllers
         {
             try
             {
-                var users = _unitOfWork.ReadUserRepository.GetAll();
-                if (users is null)
-                    return NotFound("You haven't an account!");
-
-                User user = users.FirstOrDefault(req => req?.Email == request.Email)!;
-                if (user is null)
-                    return NotFound("You haven't an account!");
-
                 var token =  _authService.LoginUser(request);
-                Log.Information($"{user.Name} Logged in");
-
                 return Ok(token);
             }
             catch (Exception ex)
@@ -46,7 +37,7 @@ namespace WebApi.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] UserRegisterRequest request)
+        public async Task<IActionResult> Register([FromBody] AddUserDto request)
         {
             try
             {

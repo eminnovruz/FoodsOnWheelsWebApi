@@ -1,7 +1,9 @@
 ﻿using Application.Models.DTOs.Comment;
 using Application.Models.DTOs.Courier;
 using Application.Models.DTOs.Order;
+using Application.Models.DTOs.User;
 using Application.Services.IUserServices;
+using Infrastructure.Services.UserServices;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 
@@ -33,6 +35,22 @@ namespace WebApi.Controllers
             catch (Exception exception)
             {
                 Log.Error("Error occured on [GET] ViewCourierProfile");
+                return BadRequest(exception.Message);
+            }
+        }
+
+
+
+        [HttpPost("updateProfile")]
+        public async Task<ActionResult<bool>> UpdateProfile(UpdateCourierDto dto)
+        {
+            try
+            {
+                return Ok(await _courierService.UpdateProfile(dto));
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [POST] UpdateProfile");
                 return BadRequest(exception.Message);
             }
         }

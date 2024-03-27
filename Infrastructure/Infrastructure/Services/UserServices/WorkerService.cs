@@ -1,4 +1,4 @@
-﻿using Application.Models.DTOs.Auth;
+﻿using Application.Models.DTOs.AppUser;
 using Application.Models.DTOs.Category;
 using Application.Models.DTOs.Courier;
 using Application.Models.DTOs.Food;
@@ -9,78 +9,115 @@ using Application.Repositories;
 using Application.Services.IAuthServices;
 using Application.Services.IHelperServices;
 using Application.Services.IUserServices;
+using Azure.Core;
 using Domain.Models;
 using Domain.Models.Enums;
 using FluentValidation;
-using Serilog;
 
 namespace Infrastructure.Services.UserServices;
 
 public class WorkerService : IWorkerService
 {
-    private readonly IPassHashService _hashService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IValidator<AddAppUserDto> _addAppUserValidator; 
+    private readonly IPassHashService _hashService;
+    private readonly IValidator<UpdateAppUserDto> _updateAppUserValidator; 
     private readonly IBlobService _blobSerice;
 
-    public WorkerService(IPassHashService hashService, IUnitOfWork unitOfWork, IBlobService blobSerice)
+    public WorkerService(IPassHashService hashService, IUnitOfWork unitOfWork, IValidator<AddAppUserDto> addAppUserValidator, IValidator<UpdateAppUserDto> updateAppUserValidator, IBlobService blobSerice)
     {
         _hashService = hashService;
         _unitOfWork = unitOfWork;
+        _addAppUserValidator = addAppUserValidator;
+        _updateAppUserValidator = updateAppUserValidator;
         _blobSerice = blobSerice;
     }
-
-
     #region Restaurant
-    public async Task<bool> AddRestaurant(AddRestaurantDto request)
+    public async Task<bool> AddRestaurant(AddRestaurantDto dto)
     {
+        var isValid = _addAppUserValidator.Validate(dto);
 
-        var newRestaurant = new Restaurant()
+        if (isValid.IsValid)
         {
-            Name = request.Name,
-            Description = request.Description,
-            CommentIds = new List<string>(),
-            FoodIds = new List<string>(),
-            Id = Guid.NewGuid().ToString(),
-            Rating = 0,
-        };
 
-        var form = request.File;
-        using (var stream = form.OpenReadStream())
-        {
-            var fileName = newRestaurant.Id + "-" + newRestaurant.Name + ".jpg";
-            var contentType = form.ContentType;
+            var restaurant = _unitOfWork.ReadUserRepository.GetAll().ToList();
 
-            var blobResult = _blobSerice.UploadFile(stream, fileName, contentType);
-            if (blobResult == false)
-                return false;
+            if (restaurant.Count != 0)
+            {
+                var specUser = restaurant.FirstOrDefault(c => c?.Email == dto.Email);
+                if (specUser is not null)
+                    throw new("This email has already exsist!");
+            }
 
-            newRestaurant.ImageUrl = _blobSerice.GetSignedUrl(fileName);
+            _hashService.Create(dto.Password, out byte[] passHash, out byte[] passSalt);
+
+            var newRestaurant = new Restaurant()
+            {
+                Name = dto.Name,
+                Description = dto.Description,
+                CommentIds = new List<string>(),
+                FoodIds = new List<string>(),
+                Id = Guid.NewGuid().ToString(),
+                PassHash = passHash,
+                PassSalt = passSalt,
+                Rating = 0,
+            };
+
+            var form = dto.File;
+            using (var stream = form.OpenReadStream())
+            {
+                var fileName = newRestaurant.Id + "-" + newRestaurant.Name + ".jpg";
+                var contentType = form.ContentType;
+
+                var blobResult = _blobSerice.UploadFile(stream, fileName, contentType);
+                if (blobResult == false)
+                    return false;
+
+                newRestaurant.ImageUrl = _blobSerice.GetSignedUrl(fileName);
+            }
+
+            var result = await _unitOfWork.WriteRestaurantRepository.AddAsync(newRestaurant);
+            await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
+
+            return result;
         }
-
-        var result = await _unitOfWork.WriteRestaurantRepository.AddAsync(newRestaurant);
-        await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
-
-        return result;
+        else
+            throw new ArgumentNullException("No Valid");
     }
 
 
     public async Task<bool> UptadeRestaurant(UpdateRestaurantDto dto)
     {
-        var existingRestaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(dto.Id);
+        var isValid = _updateAppUserValidator.Validate(dto);
 
-        if (existingRestaurant == null)
+        if (isValid.IsValid)
         {
-            Log.Error("Restaurant not found with ID: {RestaurantId}", dto.Id);
-            return false;
+            var existingRestaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(dto.Id);
+
+            if (existingRestaurant is null)
+                throw new ArgumentNullException("Restaurant not found");
+
+            existingRestaurant.Name = dto.Name;
+            existingRestaurant.Description = dto.Description;
+            existingRestaurant.Email = dto.Email;
+            if (dto.UpdatePassword)
+            {
+                if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingRestaurant.PassHash, existingRestaurant.PassSalt))
+                    throw new ArgumentException("Wrong password!");
+                _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
+
+                existingRestaurant.PassSalt = passSalt;
+                existingRestaurant.PassHash = passHash;
+            }
+
+
+            var result = await _unitOfWork.WriteRestaurantRepository.UpdateAsync(existingRestaurant.Id);
+            await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
+
+            return result;
         }
-
-        existingRestaurant.Name = dto.Name;
-        existingRestaurant.Description = dto.Description;
-
-        var result = await _unitOfWork.WriteRestaurantRepository.UpdateAsync(existingRestaurant.Id);
-        await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
-
-        return result;
+        else
+            throw new ArgumentNullException("No Valid");
     }
 
 
@@ -173,56 +210,80 @@ public class WorkerService : IWorkerService
     #region Courier
     public async Task<bool> AddCourier(AddCourierDto dto)
     {
+        var isValid = _addAppUserValidator.Validate(dto);
 
-        var couriers = _unitOfWork.ReadCourierRepository.GetAll().ToList();
-        if (couriers.Count != 0)
+        if (isValid.IsValid)
         {
-            var specCouriers = couriers.FirstOrDefault(c => c?.Email == dto.Email);
-            if (specCouriers is not null)
-                throw new ArgumentException("This email has already exsist!");
+
+            var couriers = _unitOfWork.ReadCourierRepository.GetAll().ToList();
+            if (couriers.Count != 0)
+            {
+                var specCouriers = couriers.FirstOrDefault(c => c?.Email == dto.Email);
+                if (specCouriers is not null)
+                    throw new ArgumentException("This email has already exsist!");
+            }
+
+            _hashService.Create(dto.Password, out byte[] passHash, out byte[] passSalt);
+
+            Courier newCourier = new Courier()
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = dto.Name,
+                Surname = dto.Surname,
+                BirthDate = dto.BirthDate,
+                Email = dto.Email,
+                PassHash = passHash,
+                PassSalt = passSalt,
+                CourierCommentIds = new List<string>(),
+                OrderIds = new List<string>(),
+                PhoneNumber = dto.PhoneNumber,
+                ActiveOrderId = string.Empty,
+                Rating = 0,
+            };
+
+            var result = await _unitOfWork.WriteCourierRepository.AddAsync(newCourier);
+            await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
+            return result;
         }
-
-        _hashService.Create(dto.Password, out byte[] passHash, out byte[] passSalt);
-
-        Courier newCourier = new Courier()
-        {
-            Id = Guid.NewGuid().ToString(),
-            Name = dto.Name,
-            Surname = dto.Surname,
-            BirthDate = dto.BirthDate,
-            Email = dto.Email,
-            PassHash = passHash,
-            PassSalt = passSalt,
-            CourierCommentIds = new List<string>(),
-            OrderIds = new List<string>(),
-            PhoneNumber = dto.PhoneNumber,
-            ActiveOrderId = string.Empty,
-            Rating = 0,
-        };
-
-        var result = await _unitOfWork.WriteCourierRepository.AddAsync(newCourier);
-        await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
-        return result;
+        else
+            throw new ArgumentException("No Valid");
     }
 
 
     public async Task<bool> UpdateCourier(UpdateCourierDto dto)
     {
-        var existingCourier = await _unitOfWork.ReadCourierRepository.GetAsync(dto.Id);
+        var isValid = _updateAppUserValidator.Validate(dto);
 
-        if (existingCourier == null)
-            throw new ArgumentNullException("Courier not found");
+        if (isValid.IsValid)
+        {
+            var existingCourier = await _unitOfWork.ReadCourierRepository.GetAsync(dto.Id);
+            if (existingCourier is null)
+                throw new ArgumentNullException("Courier not found");
 
-        existingCourier.Name = dto.Name;
-        existingCourier.Surname = dto.Surname;
-        existingCourier.BirthDate = dto.BirthDate;
-        existingCourier.Email = dto.Email;
-        existingCourier.PhoneNumber = dto.PhoneNumber;
+            existingCourier.Name = dto.Name;
+            existingCourier.Surname = dto.Surname;
+            existingCourier.BirthDate = dto.BirthDate;
+            existingCourier.Email = dto.Email;
+            existingCourier.PhoneNumber = dto.PhoneNumber;
 
-        var result = await _unitOfWork.WriteCourierRepository.UpdateAsync(existingCourier.Id);
-        await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
+            if (dto.UpdatePassword)
+            {
+                if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingCourier.PassHash, existingCourier.PassSalt))
+                    throw new ArgumentException("Wrong password!");
+                _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
 
-        return result;
+                existingCourier.PassSalt = passSalt;
+                existingCourier.PassHash = passHash;
+            }
+
+
+            var result = await _unitOfWork.WriteCourierRepository.UpdateAsync(existingCourier.Id);
+            await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
+
+            return result;
+        }
+        else
+            throw new ArgumentException("No Valid");
     }
 
 
@@ -398,49 +459,75 @@ public class WorkerService : IWorkerService
     #region Worker
     public async Task<bool> AddWorker(AddWorkerDto dto)
     {
-        var worker = _unitOfWork.ReadWorkerRepository.GetAll().ToList();
-        if (worker.Count != 0)
+        var isValid = _addAppUserValidator.Validate(dto);
+
+        if (isValid.IsValid)
         {
-            var specCouriers = worker.FirstOrDefault(c => c?.Email == dto.Email);
-            if (specCouriers is not null)
-                throw new ArgumentException("This email has already exsist!");
+            var worker = _unitOfWork.ReadWorkerRepository.GetAll().ToList();
+            if (worker.Count != 0)
+            {
+                var specCouriers = worker.FirstOrDefault(c => c?.Email == dto.Email);
+                if (specCouriers is not null)
+                    throw new ArgumentException("This email has already exsist!");
+            }
+            _hashService.Create(dto.Password, out byte[] passHash, out byte[] passSalt);
+
+            Worker newWorker = new Worker()
+            {
+                Id = Guid.NewGuid().ToString(),
+                Name = dto.Name,
+                Surname = dto.Surname,
+                BirthDate = dto.BirthDate,
+                Email = dto.Email,
+                PhoneNumber = dto.PhoneNumber,
+                PassHash = passHash,
+                PassSalt = passSalt,
+
+            };
+
+            var result = await _unitOfWork.WriteWorkerRepository.AddAsync(newWorker);
+            await _unitOfWork.WriteWorkerRepository.SaveChangesAsync();
+            return result;
         }
-        _hashService.Create(dto.Password, out byte[] passHash, out byte[] passSalt);
-
-        Worker newWorker = new Worker()
-        {
-            Id = Guid.NewGuid().ToString(),
-            Name = dto.Name,
-            Surname = dto.Surname,
-            BirthDate = dto.BirthDate,
-            Email = dto.Email,
-            PhoneNumber = dto.PhoneNumber,
-            PassHash = passHash,
-            PassSalt = passSalt,
-        };
-
-        var result = await _unitOfWork.WriteWorkerRepository.AddAsync(newWorker);
-        await _unitOfWork.WriteWorkerRepository.SaveChangesAsync();
-        return result;
+        else
+            throw new ArgumentException("No Valid");
     }
 
     public async Task<bool> UpdateWorker(UpdateWorkerDto dto)
     {
-        var existingWorker = await _unitOfWork.ReadWorkerRepository.GetAsync(dto.Id);
+        var isValid = _updateAppUserValidator.Validate(dto);
 
-        if (existingWorker is null)
-            throw new ArgumentException("Worker not found");
+        if (isValid.IsValid)
+        {
 
-        existingWorker.Name = dto.Name;
-        existingWorker.Surname = dto.Surname;
-        existingWorker.BirthDate = dto.BirthDate;
-        existingWorker.Email = dto.Email;
-        existingWorker.PhoneNumber = dto.PhoneNumber;
+            var existingWorker = await _unitOfWork.ReadWorkerRepository.GetAsync(dto.Id);
 
-        var result = await _unitOfWork.WriteWorkerRepository.UpdateAsync(existingWorker.Id);
-        await _unitOfWork.WriteWorkerRepository.SaveChangesAsync();
+            if (existingWorker is null)
+                throw new ArgumentException("Worker not found");
 
-        return result;
+            existingWorker.Name = dto.Name;
+            existingWorker.Surname = dto.Surname;
+            existingWorker.BirthDate = dto.BirthDate;
+            existingWorker.Email = dto.Email;
+            existingWorker.PhoneNumber = dto.PhoneNumber;
+
+            if (dto.UpdatePassword)
+            {
+                if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingWorker.PassHash, existingWorker.PassSalt))
+                    throw new ArgumentException("Wrong password!");
+                _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
+
+                existingWorker.PassSalt = passSalt;
+                existingWorker.PassHash = passHash;
+            }
+
+            var result = await _unitOfWork.WriteWorkerRepository.UpdateAsync(existingWorker.Id);
+            await _unitOfWork.WriteWorkerRepository.SaveChangesAsync();
+
+            return result;
+        }
+        else
+            throw new ArgumentException("No Valid");
     }
 
     public async Task<bool> RemoveWorker(string id)
@@ -652,52 +739,79 @@ public class WorkerService : IWorkerService
 
 
     #region User
-    public async Task<bool> AddUser(UserRegisterRequest dto)
+    public async Task<bool> AddUser(AddUserDto dto)
     {
-        var users = _unitOfWork.ReadUserRepository.GetAll();
+        var isValid = _addAppUserValidator.Validate(dto);
 
-        var specUser = users.FirstOrDefault(c => c?.Email == dto.Email);
-        if (specUser is not null)
-            throw new("This email has already exsist!");
-
-        _hashService.Create(dto.Password, out byte[] passHash, out byte[] passSalt);
-
-        var newUser = new User()
+        if (isValid.IsValid)
         {
-            Name = dto.Name,
-            Surname = dto.Surname,
-            PassHash = passHash,
-            PassSalt = passSalt,
-            BirthDate = dto.BirthDate,
-            Email = dto.Email,
-            Id = Guid.NewGuid().ToString(),
-            BankCardsId = new List<string>(),
-            OrderIds = new List<string>(),
-            PhoneNumber = dto.PhoneNumber
-        };
+            var users = _unitOfWork.ReadUserRepository.GetAll();
 
-        var result = await _unitOfWork.WriteUserRepository.AddAsync(newUser);
-        await _unitOfWork.WriteUserRepository.SaveChangesAsync();
-        return result;
+            var specUser = users.FirstOrDefault(c => c?.Email == dto.Email);
+            if (specUser is not null)
+                throw new("This email has already exsist!");
+
+            _hashService.Create(dto.Password, out byte[] passHash, out byte[] passSalt);
+
+            var newUser = new User()
+            {
+                Name = dto.Name,
+                Surname = dto.Surname,
+                PassHash = passHash,
+                PassSalt = passSalt,
+                BirthDate = dto.BirthDate,
+                Email = dto.Email,
+                Id = Guid.NewGuid().ToString(),
+                BankCardsId = new List<string>(),
+                OrderIds = new List<string>(),
+                PhoneNumber = dto.PhoneNumber
+            };
+
+            var result = await _unitOfWork.WriteUserRepository.AddAsync(newUser);
+            await _unitOfWork.WriteUserRepository.SaveChangesAsync();
+            return result;
+        }
+        else
+            throw new ArgumentException("No Valid");
     }
 
     public async Task<bool> UpdateUser(UpdateUserDto dto)
     {
-        var existingUser = await _unitOfWork.ReadUserRepository.GetAsync(dto.Id);
+        var isValid = _updateAppUserValidator.Validate(dto);
 
-        if (existingUser is null)
-            throw new ArgumentNullException("User not found");
+        if (isValid.IsValid)
+        {
+            var existingUser = await _unitOfWork.ReadUserRepository.GetAsync(dto.Id);
 
-        existingUser.Name = dto.Name;
-        existingUser.Surname = dto.Surname;
-        existingUser.BirthDate = dto.BirthDate;
-        existingUser.Email = dto.Email;
-        existingUser.PhoneNumber = dto.PhoneNumber;
+            if (existingUser is null)
+                throw new ArgumentException("User not found");
 
-        var result = await _unitOfWork.WriteUserRepository.UpdateAsync(existingUser.Id);
-        await _unitOfWork.WriteUserRepository.SaveChangesAsync();
 
-        return result;
+            existingUser.Name = dto.Name;
+            existingUser.Surname = dto.Surname;
+            existingUser.BirthDate = dto.BirthDate;
+            existingUser.Email = dto.Email;
+            existingUser.PhoneNumber = dto.PhoneNumber;
+
+            if (dto.UpdatePassword)
+            {
+                if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingUser.PassHash, existingUser.PassSalt))
+                    throw new ArgumentException("Wrong password!");
+                _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
+
+                existingUser.PassSalt = passSalt;
+                existingUser.PassHash = passHash;
+            }
+
+
+
+            var result = await _unitOfWork.WriteUserRepository.UpdateAsync(existingUser.Id);
+            await _unitOfWork.WriteUserRepository.SaveChangesAsync();
+
+            return result;
+        }
+        else
+            throw new ArgumentException("No Valid");
     }
 
     public async Task<bool> RemoveUser(string userId)

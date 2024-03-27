@@ -1,10 +1,12 @@
-﻿using Application.Models.DTOs.BankCard;
+﻿using Application.Models.DTOs.AppUser;
+using Application.Models.DTOs.BankCard;
 using Application.Models.DTOs.Category;
 using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Order;
 using Application.Models.DTOs.Restaurant;
 using Application.Models.DTOs.User;
 using Application.Repositories;
+using Application.Services.IAuthServices;
 using Application.Services.IUserServices;
 using Domain.Models;
 using FluentValidation;
@@ -14,14 +16,18 @@ namespace Infrastructure.Services.UserServices;
 public class UserService : IUserService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPassHashService _hashService;
+    private readonly IValidator<UpdateAppUserDto> _updateAppUserValidator;
 
-
-    public UserService(IUnitOfWork unitOfWork)
+    public UserService(IUnitOfWork unitOfWork, IPassHashService hashService, IValidator<UpdateAppUserDto> updateAppUserValidator)
     {
         _unitOfWork = unitOfWork;
+        _hashService = hashService;
+        _updateAppUserValidator = updateAppUserValidator;
     }
 
 
+    #region Profile
     public async Task<GetUserProfileInfoDto> GetProfileInfo(string userId)
     {
         var user = await _unitOfWork.ReadUserRepository.GetAsync(userId);
@@ -39,6 +45,73 @@ public class UserService : IUserService
             PhoneNumber = user.PhoneNumber,
         };
     }
+
+
+    public async Task<bool> RemoveProfile(string userId)
+    {
+        var user = await _unitOfWork.ReadUserRepository.GetAsync(userId);
+        if (user is  null)
+            throw new ArgumentNullException("User not found");
+
+        var bankCard = _unitOfWork.ReadBankCardRepository.GetWhere(x=> x.UserId == userId);
+        foreach (var item in bankCard)
+        {
+            if (item is not null)
+                await _unitOfWork.WriteBankCardRepository.RemoveAsync(item.Id);
+        }
+        await _unitOfWork.WriteUserRepository.RemoveAsync(userId);
+        
+        
+        await _unitOfWork.WriteBankCardRepository.SaveChangesAsync();
+        await _unitOfWork.WriteUserRepository.SaveChangesAsync();
+
+        return true;
+
+    }
+
+
+    public async Task<bool> UpdateProfile(UpdateUserDto dto)
+    {
+        var isValid = _updateAppUserValidator.Validate(dto);
+
+        if (isValid.IsValid)
+        {
+            var existingUser = await _unitOfWork.ReadUserRepository.GetAsync(dto.Id);
+
+            if (existingUser is null)
+                throw new ArgumentException("User not found");
+
+
+            existingUser.Name = dto.Name;
+            existingUser.Surname = dto.Surname;
+            existingUser.BirthDate = dto.BirthDate;
+            existingUser.Email = dto.Email;
+            existingUser.PhoneNumber = dto.PhoneNumber;
+
+            if (dto.UpdatePassword)
+            {
+                if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingUser.PassHash, existingUser.PassSalt))
+                    throw new ArgumentException("Wrong password!");
+                _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
+
+                existingUser.PassSalt = passSalt;
+                existingUser.PassHash = passHash;
+            }
+
+
+
+            var result = await _unitOfWork.WriteUserRepository.UpdateAsync(existingUser.Id);
+            await _unitOfWork.WriteUserRepository.SaveChangesAsync();
+
+            return result;
+        }
+        else
+            throw new ArgumentException("No Valid");
+    }
+
+    #endregion
+
+    #region Get 
 
     public IEnumerable<RestaurantInfoDto> GetAllRestaurants()
     {
@@ -146,6 +219,10 @@ public class UserService : IUserService
         return dtos;
     }
 
+    #endregion
+
+    #region Order
+
     public async Task<bool> MakeOrder(MakeOrderDto request)
     {
 
@@ -184,6 +261,7 @@ public class UserService : IUserService
         return result;
 
     }
+
 
     public async Task<bool> RateOrder(RateOrderDto request)
     {
@@ -234,6 +312,7 @@ public class UserService : IUserService
         return result;
     }
 
+
     public async Task<bool> ReportOrder(ReportOrderDto request)
     {
         var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(request.RestaurantId);
@@ -261,6 +340,8 @@ public class UserService : IUserService
 
         return true;
     }
+
+    #endregion
 
     #region BankCard
     public async Task<bool> AddBankCard(AddBankCardDto cardDto)
@@ -387,25 +468,4 @@ public class UserService : IUserService
         return amount;
     }
 
-    public async Task<bool> RemoveProfile(string userId)
-    {
-        var user = await _unitOfWork.ReadUserRepository.GetAsync(userId);
-        if (user is  null)
-            throw new ArgumentNullException("User not found");
-
-        var bankCard = _unitOfWork.ReadBankCardRepository.GetWhere(x=> x.UserId == userId);
-        foreach (var item in bankCard)
-        {
-            if (item is not null)
-                await _unitOfWork.WriteBankCardRepository.RemoveAsync(item.Id);
-        }
-        await _unitOfWork.WriteUserRepository.RemoveAsync(userId);
-        
-        
-        await _unitOfWork.WriteBankCardRepository.SaveChangesAsync();
-        await _unitOfWork.WriteUserRepository.SaveChangesAsync();
-
-        return true;
-
-    }
 }

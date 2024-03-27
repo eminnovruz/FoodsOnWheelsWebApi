@@ -1,4 +1,6 @@
 ﻿using Application.Models.Config;
+using Application.Models.DTOs.AppUser;
+using Application.Models.DTOs.Restaurant;
 using Application.Repositories;
 using Application.Repositories.BankCardRepository;
 using Application.Repositories.CategoryRepository;
@@ -14,6 +16,7 @@ using Application.Repositories.WorkerRepository;
 using Application.Services.IAuthServices;
 using Application.Services.IHelperServices;
 using Application.Services.IUserServices;
+using FluentValidation;
 using Infrastructure.Services.AuthServices;
 using Infrastructure.Services.HelperServices;
 using Infrastructure.Services.UserServices;
@@ -33,7 +36,7 @@ using Persistence.Repositories.RestaurantRepository;
 using Persistence.Repositories.UserRepository;
 using Persistence.Repositories.WorkerRepository;
 using System.Text;
-
+using WebApi.Validators;
 
 public static class Extension
 {
@@ -122,6 +125,9 @@ public static class Extension
         services.AddScoped<IRestaurantService, RestaurantService>();
         services.AddScoped<IMailService, MailService>();
 
+
+        services.AddTransient<IValidator<AddAppUserDto>, AddAppUserDtoValidator>();
+        services.AddTransient<IValidator<UpdateAppUserDto>, UpdateAppUserDtoValidator>();
 
         var smtpConfig = new SMTPConfig();
         configuration.GetSection("SMTP").Bind(smtpConfig);
