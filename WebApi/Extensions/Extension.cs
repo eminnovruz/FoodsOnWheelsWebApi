@@ -128,6 +128,7 @@ public static class Extension
 
         services.AddTransient<IValidator<AddAppUserDto>, AddAppUserDtoValidator>();
         services.AddTransient<IValidator<UpdateAppUserDto>, UpdateAppUserDtoValidator>();
+        services.AddTransient<IValidator<UpdateAppUserPasswordDto>, UpdateAppUserPasswordDtoValidator>();
 
         var smtpConfig = new SMTPConfig();
         configuration.GetSection("SMTP").Bind(smtpConfig);

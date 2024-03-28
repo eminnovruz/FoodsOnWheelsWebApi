@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Application.Models.DTOs.AppUser
 {
-    public class UpdateAppUserDto
+    public class UpdateAppUserPasswordDto
     {
         public string Id { get; set; }
-        public string Name { get; set; }
-        public string Email { get; set; }
+        public string NewPassword { get; set; }
+        public string OldPassword { get; set; }
     }
 }

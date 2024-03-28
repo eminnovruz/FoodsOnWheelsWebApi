@@ -16,6 +16,8 @@ public interface IWorkerService
 
     Task<bool> UptadeRestaurant(UpdateRestaurantDto dto);
 
+    Task<bool> UptadeRestaurantPassword(UptadeRestaurantPasswordDto dto);
+
     Task<bool> RemoveRestaurant(string restaurantId);
 
     Task<RestaurantInfoDto> GetRestaurantById(string id);
@@ -42,6 +44,8 @@ public interface IWorkerService
 
     Task<bool> UpdateCourier(UpdateCourierDto dto);
 
+    Task<bool> UpdateCourierPassword(UpdateCourierPasswordDto dto);
+
     Task<bool> RemoveCourier(string courierId);
 
     Task<SummaryCourierDto> GetCourierById(string id);
@@ -54,6 +58,8 @@ public interface IWorkerService
     Task<bool> AddWorker(AddWorkerDto dto);
 
     Task<bool> UpdateWorker(UpdateWorkerDto dto);
+
+    Task<bool> UpdateWorkerPassword(UpdateWorkerPasswordDto dto);
 
     Task<bool> RemoveWorker(string id);
 
@@ -80,6 +86,8 @@ public interface IWorkerService
     Task<bool> AddUser(AddUserDto dto);
 
     Task<bool> UpdateUser(UpdateUserDto dto);
+
+    Task<bool> UpdateUserPassword(UpdateUserPasswordDto dto);
 
     Task<bool> RemoveUser(string id);
 

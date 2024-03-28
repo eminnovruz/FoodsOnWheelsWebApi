@@ -7,21 +7,7 @@ namespace WebApi.Validators
     {
         public UpdateAppUserDtoValidator()
         {
-            RuleFor(c => c.OldPassword)
-            .NotEmpty()
-            .WithMessage("Password is required!")
-            .MinimumLength(8)
-            .WithMessage("Password must be longer than 8 chars!")
-            .MaximumLength(20)
-            .WithMessage("Password cannot be longer than 20 chars!");
-            
-            RuleFor(c => c.NewPassword)
-            .NotEmpty()
-            .WithMessage("Password is required!")
-            .MinimumLength(8)
-            .WithMessage("Password must be longer than 8 chars!")
-            .MaximumLength(20)
-            .WithMessage("Password cannot be longer than 20 chars!");
+
 
             RuleFor(c => c.Email)
                 .NotEmpty()
@@ -33,9 +19,9 @@ namespace WebApi.Validators
                 .NotEmpty()
                 .WithMessage("Name is required!");
 
-            RuleFor(c => c.UpdatePassword)
+            RuleFor(c => c.Id)
                 .NotEmpty()
-                .WithMessage("UpdatePassword is required!");
+                 .WithMessage("Id is required!");
         }
     }
 }

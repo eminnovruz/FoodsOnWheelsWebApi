@@ -238,16 +238,6 @@ public class CourierService : ICourierService
             existingCourier.Email = dto.Email;
             existingCourier.PhoneNumber = dto.PhoneNumber;
 
-            if (dto.UpdatePassword)
-            {
-                if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingCourier.PassHash, existingCourier.PassSalt))
-                    throw new ArgumentException("Wrong password!");
-                _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
-
-                existingCourier.PassSalt = passSalt;
-                existingCourier.PassHash = passHash;
-            }
-
 
             var result = await _unitOfWork.WriteCourierRepository.UpdateAsync(existingCourier.Id);
             await _unitOfWork.WriteCourierRepository.SaveChangesAsync();

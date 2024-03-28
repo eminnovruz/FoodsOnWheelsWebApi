@@ -88,15 +88,7 @@ public class UserService : IUserService
             existingUser.Email = dto.Email;
             existingUser.PhoneNumber = dto.PhoneNumber;
 
-            if (dto.UpdatePassword)
-            {
-                if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingUser.PassHash, existingUser.PassSalt))
-                    throw new ArgumentException("Wrong password!");
-                _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
-
-                existingUser.PassSalt = passSalt;
-                existingUser.PassHash = passHash;
-            }
+     
 
 
 

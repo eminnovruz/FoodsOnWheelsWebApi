@@ -100,15 +100,6 @@ public class WorkerService : IWorkerService
             existingRestaurant.Name = dto.Name;
             existingRestaurant.Description = dto.Description;
             existingRestaurant.Email = dto.Email;
-            if (dto.UpdatePassword)
-            {
-                if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingRestaurant.PassHash, existingRestaurant.PassSalt))
-                    throw new ArgumentException("Wrong password!");
-                _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
-
-                existingRestaurant.PassSalt = passSalt;
-                existingRestaurant.PassHash = passHash;
-            }
 
 
             var result = await _unitOfWork.WriteRestaurantRepository.UpdateAsync(existingRestaurant.Id);
@@ -120,6 +111,27 @@ public class WorkerService : IWorkerService
             throw new ArgumentNullException("No Valid");
     }
 
+    public async Task<bool> UptadeRestaurantPassword(UptadeRestaurantPasswordDto dto)
+    {
+        var existingRestaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(dto.Id);
+
+        if (existingRestaurant is null)
+            throw new ArgumentNullException("Restaurant not found");
+
+        if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingRestaurant.PassHash, existingRestaurant.PassSalt))
+            throw new ArgumentException("Wrong password!");
+
+        _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
+
+        existingRestaurant.PassSalt = passSalt;
+        existingRestaurant.PassHash = passHash;
+
+        var result = await _unitOfWork.WriteRestaurantRepository.UpdateAsync(existingRestaurant.Id);
+        await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
+
+        return result;
+
+    }
 
     public async Task<bool> RemoveRestaurant(string restaurantId)
     {
@@ -266,16 +278,6 @@ public class WorkerService : IWorkerService
             existingCourier.Email = dto.Email;
             existingCourier.PhoneNumber = dto.PhoneNumber;
 
-            if (dto.UpdatePassword)
-            {
-                if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingCourier.PassHash, existingCourier.PassSalt))
-                    throw new ArgumentException("Wrong password!");
-                _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
-
-                existingCourier.PassSalt = passSalt;
-                existingCourier.PassHash = passHash;
-            }
-
 
             var result = await _unitOfWork.WriteCourierRepository.UpdateAsync(existingCourier.Id);
             await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
@@ -286,6 +288,26 @@ public class WorkerService : IWorkerService
             throw new ArgumentException("No Valid");
     }
 
+    public async Task<bool> UpdateCourierPassword(UpdateCourierPasswordDto dto)
+    {
+        var existingCourier = await _unitOfWork.ReadCourierRepository.GetAsync(dto.Id);
+        if (existingCourier is null)
+            throw new ArgumentNullException("Courier not found");
+
+
+        if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingCourier.PassHash, existingCourier.PassSalt))
+            throw new ArgumentException("Wrong password!");
+        _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
+
+        existingCourier.PassSalt = passSalt;
+        existingCourier.PassHash = passHash;
+
+
+        var result = await _unitOfWork.WriteCourierRepository.UpdateAsync(existingCourier.Id);
+        await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
+
+        return result;
+    }
 
     public async Task<bool> RemoveCourier(string courierId)
     {
@@ -511,16 +533,7 @@ public class WorkerService : IWorkerService
             existingWorker.Email = dto.Email;
             existingWorker.PhoneNumber = dto.PhoneNumber;
 
-            if (dto.UpdatePassword)
-            {
-                if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingWorker.PassHash, existingWorker.PassSalt))
-                    throw new ArgumentException("Wrong password!");
-                _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
-
-                existingWorker.PassSalt = passSalt;
-                existingWorker.PassHash = passHash;
-            }
-
+           
             var result = await _unitOfWork.WriteWorkerRepository.UpdateAsync(existingWorker.Id);
             await _unitOfWork.WriteWorkerRepository.SaveChangesAsync();
 
@@ -530,6 +543,27 @@ public class WorkerService : IWorkerService
             throw new ArgumentException("No Valid");
     }
 
+    public async Task<bool> UpdateWorkerPassword(UpdateWorkerPasswordDto dto)
+    {
+
+        var existingWorker = await _unitOfWork.ReadWorkerRepository.GetAsync(dto.Id);
+
+        if (existingWorker is null)
+            throw new ArgumentException("Worker not found");
+
+        if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingWorker.PassHash, existingWorker.PassSalt))
+            throw new ArgumentException("Wrong password!");
+        _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
+
+        existingWorker.PassSalt = passSalt;
+        existingWorker.PassHash = passHash;
+
+
+        var result = await _unitOfWork.WriteWorkerRepository.UpdateAsync(existingWorker.Id);
+        await _unitOfWork.WriteWorkerRepository.SaveChangesAsync();
+
+        return result;
+    }
     public async Task<bool> RemoveWorker(string id)
     {
         var result = await _unitOfWork.WriteWorkerRepository.RemoveAsync(id);
@@ -793,17 +827,6 @@ public class WorkerService : IWorkerService
             existingUser.Email = dto.Email;
             existingUser.PhoneNumber = dto.PhoneNumber;
 
-            if (dto.UpdatePassword)
-            {
-                if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingUser.PassHash, existingUser.PassSalt))
-                    throw new ArgumentException("Wrong password!");
-                _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
-
-                existingUser.PassSalt = passSalt;
-                existingUser.PassHash = passHash;
-            }
-
-
 
             var result = await _unitOfWork.WriteUserRepository.UpdateAsync(existingUser.Id);
             await _unitOfWork.WriteUserRepository.SaveChangesAsync();
@@ -812,6 +835,25 @@ public class WorkerService : IWorkerService
         }
         else
             throw new ArgumentException("No Valid");
+    }
+    public async Task<bool> UpdateUserPassword(UpdateUserPasswordDto dto)
+    {
+        var existingUser = await _unitOfWork.ReadUserRepository.GetAsync(dto.Id);
+
+        if (existingUser is null)
+            throw new ArgumentException("User not found");
+
+        if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingUser.PassHash, existingUser.PassSalt))
+            throw new ArgumentException("Wrong password!");
+        _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
+
+        existingUser.PassSalt = passSalt;
+        existingUser.PassHash = passHash;
+
+        var result = await _unitOfWork.WriteUserRepository.UpdateAsync(existingUser.Id);
+        await _unitOfWork.WriteUserRepository.SaveChangesAsync();
+
+        return result;
     }
 
     public async Task<bool> RemoveUser(string userId)
@@ -876,6 +918,10 @@ public class WorkerService : IWorkerService
 
         return userDtos;
     }
+
+
+
+
     #endregion
 
 }
