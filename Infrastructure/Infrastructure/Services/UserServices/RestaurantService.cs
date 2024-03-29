@@ -272,7 +272,7 @@ namespace Infrastructure.Services.UserServices
                 throw new ArgumentNullException("There are no orders");
 
             if (orderDto.IsLastSituation)
-                order.OrderStatus = OrderStatus.Comfirmed;
+                order.OrderStatus = OrderStatus.Confirmed;
             else
                 order.OrderStatus = OrderStatus.Rejected;
 
