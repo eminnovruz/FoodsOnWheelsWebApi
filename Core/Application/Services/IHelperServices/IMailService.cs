@@ -1,9 +1,8 @@
-﻿namespace Application.Services.IHelperServices;
+﻿using Domain.Models.Enums;
+
+namespace Application.Services.IHelperServices;
 
 public interface IMailService
 {
-    public void SendOrderFinishedMessage(string email);
-    public void SendOrderActived(string email);
-    public void SendOrderIsReadyMessage(string email);
-    public void SendNewOrderMessage(string email);
+    public void SendingOrder(string email, OrderStatus orderStatus);
 }

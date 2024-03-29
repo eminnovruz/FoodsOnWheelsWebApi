@@ -2,6 +2,7 @@
 using System.Net.Mail;
 using System.Net;
 using Application.Services.IHelperServices;
+using Domain.Models.Enums;
 
 namespace Infrastructure.Services.HelperServices;
 
@@ -14,8 +15,10 @@ public class MailService : IMailService
         _config = configuration;
     }
 
-    public void SendNewOrderMessage(string email)
+    public void SendingOrder(string email, OrderStatus orderStatus)
     {
+        string statusMessage = GetStatusMessage(orderStatus);
+
         using var client = new SmtpClient()
         {
             Host = _config.Host,
@@ -27,8 +30,8 @@ public class MailService : IMailService
         using var mailMessage = new MailMessage()
         {
             IsBodyHtml = true,
-            Subject = "your order has been accepted",
-            Body = "<h1>your order has been accepted</h1>"
+            Subject = statusMessage,
+            Body = $"<h1>{statusMessage}</h1>"
         };
 
         mailMessage.From = new MailAddress(_config.Username);
@@ -37,72 +40,26 @@ public class MailService : IMailService
         client.Send(mailMessage);
     }
 
-    public void SendOrderActived(string email)
+    public string GetStatusMessage(OrderStatus orderStatus)
     {
-        using var client = new SmtpClient()
+        switch (orderStatus)
         {
-            Host = _config.Host,
-            Port = _config.Port,
-            EnableSsl = _config.EnableSsl,
-            Credentials = new NetworkCredential(_config.Username, _config.Password)
-        };
-
-        using var mailMessage = new MailMessage()
-        {
-            IsBodyHtml = true,
-            Subject = "Your order is being prepared",
-            Body = "<h1>Your order is being prepared</h1>"
-        };
-
-        mailMessage.From = new MailAddress(_config.Username);
-        mailMessage.To.Add(new MailAddress(email));
-
-        client.Send(mailMessage);
-    }
-
-    public void SendOrderFinishedMessage(string email)
-    {
-        using var client = new SmtpClient()
-        {
-            Host = _config.Host,
-            Port = _config.Port,
-            EnableSsl = _config.EnableSsl,
-            Credentials = new NetworkCredential(_config.Username, _config.Password)
-        };
-
-        using var mailMessage = new MailMessage()
-        {
-            IsBodyHtml = true,
-            Subject = "Your order has been completed",
-            Body = "<h1>Your order has been completed</h1>"
-        };
-
-        mailMessage.From = new MailAddress(_config.Username);
-        mailMessage.To.Add(new MailAddress(email));
-
-        client.Send(mailMessage);
-    }
-
-    public void SendOrderIsReadyMessage(string email)
-    {
-        using var client = new SmtpClient()
-        {
-            Host = _config.Host,
-            Port = _config.Port,
-            EnableSsl = _config.EnableSsl,
-            Credentials = new NetworkCredential(_config.Username, _config.Password)
-        };
-
-        using var mailMessage = new MailMessage()
-        {
-            IsBodyHtml = true,
-            Subject = "Your order is being shipped to you",
-            Body = "<h1>Your order is being shipped to you</h1>"
-        };
-
-        mailMessage.From = new MailAddress(_config.Username);
-        mailMessage.To.Add(new MailAddress(email));
-
-        client.Send(mailMessage);
+            case OrderStatus.Waiting:
+                return "Your order is waiting.";
+            case OrderStatus.Rejected:
+                return "Sorry, your order has been rejected.";
+            case OrderStatus.Confirmed:
+                return "Your order has been confirmed.";
+            case OrderStatus.Preparing:
+                return "Your order is being prepared.";
+            case OrderStatus.OnTheWheels:
+                return "Your order is on the way.";
+            case OrderStatus.Delivered:
+                return "Your order has been delivered.";
+            case OrderStatus.Rated:
+                return "Thank you for rating your order.";
+            default:
+                return "Your order status is unknown.";
+        }
     }
 }
