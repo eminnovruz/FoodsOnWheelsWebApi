@@ -1,13 +1,17 @@
-﻿using Application.Models.DTOs.Category;
+﻿using Application.Models.DTOs.AppUser;
+using Application.Models.DTOs.Category;
 using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Order;
 using Application.Models.DTOs.Restaurant;
+using Application.Models.DTOs.User;
 using Application.Repositories;
+using Application.Services.IAuthServices;
 using Application.Services.IHelperServices;
 using Application.Services.IUserServices;
 using Azure.Core;
 using Domain.Models;
 using Domain.Models.Enums;
+using FluentValidation;
 using System.Linq;
 
 namespace Infrastructure.Services.UserServices
@@ -15,13 +19,159 @@ namespace Infrastructure.Services.UserServices
     public class RestaurantService : IRestaurantService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IPassHashService _hashService;
+        private readonly IValidator<UpdateAppUserDto> _updateAppUserValidator;
+        private readonly IValidator<UpdateAppUserPasswordDto> _updateAppUserPasswordValidator;
         private readonly IBlobService _blobSerice;
 
-        public RestaurantService(IUnitOfWork unitOfWork, IBlobService blobSerice)
+        public RestaurantService(IUnitOfWork unitOfWork, IPassHashService hashService, IValidator<UpdateAppUserDto> updateAppUserValidator, IValidator<UpdateAppUserPasswordDto> updateAppUserPasswordValidator, IBlobService blobSerice)
         {
             _unitOfWork = unitOfWork;
+            _hashService = hashService;
+            _updateAppUserValidator = updateAppUserValidator;
+            _updateAppUserPasswordValidator = updateAppUserPasswordValidator;
             _blobSerice = blobSerice;
         }
+        
+        
+        #region Profile
+
+        public async Task<RestaurantInfoDto> GetProfileInfo(string Id)
+        {
+            var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(Id);
+            if (restaurant is null)
+                throw new ArgumentNullException("Wrong Restaurant");
+
+            await UpdateRestaurantRaiting(Id);
+
+            RestaurantInfoDto restaurantDto = new RestaurantInfoDto
+            {
+                Id = Id,
+                Name = restaurant.Name,
+                Description = restaurant.Description,
+                FoodIds = restaurant.FoodIds,
+                ImageUrl = restaurant.ImageUrl,
+                Rating = restaurant.Rating,
+            };
+
+            return restaurantDto;
+        }
+
+
+        public async Task<bool> UpdateProfile(UpdateRestaurantDto dto)
+        {
+            var isValid = _updateAppUserValidator.Validate(dto);
+
+            if (isValid.IsValid)
+            {
+                var existingRestaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(dto.Id);
+
+                if (existingRestaurant is null)
+                    throw new ArgumentNullException("Restaurant not found");
+
+                existingRestaurant.Name = dto.Name;
+                existingRestaurant.Description = dto.Description;
+                existingRestaurant.Email = dto.Email;
+
+                if (dto.File is not null)
+                {
+                    await _blobSerice.DeleteFileAsync(existingRestaurant.Id + "-" + existingRestaurant.Name + ".jpg");
+
+                    var form = dto.File;
+                    using (var stream = form.OpenReadStream())
+                    {
+                        var fileName = existingRestaurant.Id + "-" + existingRestaurant.Name + ".jpg";
+                        var contentType = form.ContentType;
+
+                        var blobResult = await _blobSerice.UploadFileAsync(stream, fileName, contentType);
+                        if (blobResult is false)
+                            throw new BadImageFormatException("Image InValid");
+
+                        existingRestaurant.ImageUrl = _blobSerice.GetSignedUrl(fileName);
+                    }
+
+                }
+
+                var result = await _unitOfWork.WriteRestaurantRepository.UpdateAsync(existingRestaurant.Id);
+                await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
+
+                return result;
+            }
+            else
+                throw new ArgumentNullException("No Valid");
+        }
+
+
+        public async Task<bool> UpdateProfilePasssword(UpdateRestaurantPasswordDto dto)
+        {
+            var isValid = _updateAppUserPasswordValidator.Validate(dto);
+
+            if (isValid.IsValid)
+            {
+                var existingRestaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(dto.Id);
+
+                if (existingRestaurant is null)
+                    throw new ArgumentNullException("Restaurant not found");
+
+                if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingRestaurant.PassHash, existingRestaurant.PassSalt))
+                    throw new ArgumentException("Wrong password!");
+
+                _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
+
+                existingRestaurant.PassSalt = passSalt;
+                existingRestaurant.PassHash = passHash;
+
+                var result = await _unitOfWork.WriteRestaurantRepository.UpdateAsync(existingRestaurant.Id);
+                await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
+
+                return result;
+            }
+            else
+                throw new ArgumentNullException("No Valid");
+        }
+
+
+        public async Task<bool> RemoveProfile(string restaurantId)
+        {
+            var resturant = await _unitOfWork.ReadRestaurantRepository.GetAsync(restaurantId);
+            if (resturant is null)
+                throw new ArgumentNullException("wrong Resturant");
+
+            foreach (var item in resturant.CommentIds)
+                await _unitOfWork.WriteRestaurantCommentRepository.RemoveAsync(item);
+
+            await _unitOfWork.WriteRestaurantCommentRepository.SaveChangesAsync();
+
+
+            foreach (var item in resturant.OrderIds)
+            {
+                var order = await _unitOfWork.ReadOrderRepository.GetAsync(item);
+                if (order is not null)
+                {
+                    if (order.OrderStatus == OrderStatus.Preparing)
+                        throw new ArgumentException("Currently, it is not possible to delete the restaurant because the order is being prepared");
+
+                    await _unitOfWork.WriteOrderRatingRepository.RemoveAsync(order.OrderRatingId);
+                    await _unitOfWork.WriteOrderRepository.RemoveAsync(item);
+                }
+
+            }
+
+            await _unitOfWork.WriteOrderRatingRepository.SaveChangesAsync();
+            await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
+
+            foreach (var item in resturant.FoodIds)
+                await RemoveFood(item);
+
+            await _blobSerice.DeleteFileAsync(resturant.Id + "-" + resturant.Name + ".jpg");
+
+            var result = await _unitOfWork.WriteRestaurantRepository.RemoveAsync(restaurantId);
+            await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
+            return result;
+        }
+
+        #endregion
+
 
         public async Task<bool> AddCategory(AddCategoryRequest request)
         {
@@ -60,6 +210,7 @@ namespace Infrastructure.Services.UserServices
 
             return true;
         }
+
 
         public async Task<bool> AddFood(AddFoodRequest request)
         {
@@ -113,6 +264,7 @@ namespace Infrastructure.Services.UserServices
             return true;
         }
         
+
         public async Task<bool> InLastDecidesSituation(InLastSituationOrderDto orderDto)
         {
             var order = await _unitOfWork.ReadOrderRepository.GetAsync(orderDto.OrderId);
@@ -129,6 +281,7 @@ namespace Infrastructure.Services.UserServices
 
             return true;
         }
+
 
         public IEnumerable<InfoOrderDto> WaitingOrders(string resturantId)
         {
@@ -159,6 +312,7 @@ namespace Infrastructure.Services.UserServices
 
             return waitingOrdersDto;
         }
+
 
         public async Task<IEnumerable<InfoOrderDto>> GetAllOrders(string resturantId)
         {
@@ -196,27 +350,7 @@ namespace Infrastructure.Services.UserServices
             return ordersDto;
         }
 
-        public async Task<RestaurantInfoDto> GetRestaurantInfo(string Id)
-        {
-            var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(Id);
-            if (restaurant is null)
-                throw new ArgumentNullException("Wrong Restaurant");
 
-            await UpdateRestaurantRaiting(Id);
-
-            RestaurantInfoDto restaurantDto = new RestaurantInfoDto
-            {
-                Id = Id,
-                Name = restaurant.Name,
-                Description = restaurant.Description,
-                FoodIds = restaurant.FoodIds,
-                ImageUrl = restaurant.ImageUrl,
-                Rating = restaurant.Rating,
-            };
-
-            return restaurantDto;
-        }
-        
         public IEnumerable<InfoOrderDto> GetActiveOrders(string Id)
         {
             var orders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.RestaurantId == Id).ToList();
@@ -247,6 +381,7 @@ namespace Infrastructure.Services.UserServices
 
             return activeOrders;
         }
+
 
         public async Task<IEnumerable<InfoOrderDto>> GetOrderHistory(string Id)
         {
@@ -281,6 +416,7 @@ namespace Infrastructure.Services.UserServices
             return restaurantOrders;
         }
 
+
         public async Task<InfoOrderDto> GetPastOrderInfoById(string orderId)
         {
             var order = await _unitOfWork.ReadOrderRepository.GetAsync(orderId);
@@ -308,6 +444,7 @@ namespace Infrastructure.Services.UserServices
             return pastOrders;
         }
 
+
         public async Task<bool> UpdateStatusOrder(UpdateOrderStatusDto statusDto)
         {
             var order = await _unitOfWork.ReadOrderRepository.GetAsync(statusDto.OrderId);
@@ -322,6 +459,7 @@ namespace Infrastructure.Services.UserServices
             await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
             return true;
         }
+
 
         public async Task<bool> RemoveFood(string Id)
         {
@@ -354,6 +492,7 @@ namespace Infrastructure.Services.UserServices
             await _unitOfWork.WriteFoodRepository.SaveChangesAsync();
             return true;
         }
+
 
         private async Task<bool> UpdateRestaurantRaiting(string resturantId)
         {
@@ -399,5 +538,6 @@ namespace Infrastructure.Services.UserServices
             return result;
 
         }
+
     }
 }

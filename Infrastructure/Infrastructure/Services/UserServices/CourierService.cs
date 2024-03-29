@@ -17,12 +17,14 @@ public class CourierService : ICourierService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPassHashService _hashService;
     private readonly IValidator<UpdateAppUserDto> _updateAppUserValidator;
+    private readonly IValidator<UpdateAppUserPasswordDto> _updateAppUserPasswordValidator;
 
-    public CourierService(IUnitOfWork unitOfWork, IPassHashService hashService, IValidator<UpdateAppUserDto> updateAppUserValidator)
+    public CourierService(IUnitOfWork unitOfWork, IPassHashService hashService, IValidator<UpdateAppUserDto> updateAppUserValidator, IValidator<UpdateAppUserPasswordDto> updateAppUserPasswordValidator)
     {
         _unitOfWork = unitOfWork;
         _hashService = hashService;
         _updateAppUserValidator = updateAppUserValidator;
+        _updateAppUserPasswordValidator = updateAppUserPasswordValidator;
     }
 
     public async Task<bool> AcceptOrder(AcceptOrderFromCourierDto request)
@@ -49,6 +51,7 @@ public class CourierService : ICourierService
         return true;
     }
 
+
     public async Task<InfoOrderDto> GetActiveOrderInfo(string OrderId)
     {
         var order = await _unitOfWork.ReadOrderRepository.GetAsync(OrderId);
@@ -69,6 +72,7 @@ public class CourierService : ICourierService
 
         return orderInfo;
     }
+
 
     public async Task<IEnumerable<GetCommentDto>> GetAllComments(string CourierId)
     {
@@ -94,6 +98,7 @@ public class CourierService : ICourierService
         return commentDtos;
     }
 
+
     public List<InfoOrderDto> GetNewOrder()
     {
         var neworders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.CourierId == default).ToList();
@@ -118,6 +123,7 @@ public class CourierService : ICourierService
        
         return newOrdersDto;
     }
+
 
     public async Task<IEnumerable<InfoOrderDto>> GetOrderHistory(string courierId)
     {
@@ -154,6 +160,7 @@ public class CourierService : ICourierService
         return PastOrders;
     }
 
+
     public async Task<InfoOrderDto> GetPastOrderInfoById(string pastOrderId)
     {
         var pastOrder = await _unitOfWork.ReadOrderRepository.GetAsync(pastOrderId);
@@ -182,6 +189,7 @@ public class CourierService : ICourierService
         return order;
     }
 
+
     public async Task<GetProfileInfoDto> GetProfileInfo(string courierId)
     {
         var courier = await _unitOfWork.ReadCourierRepository.GetAsync(courierId);
@@ -205,6 +213,7 @@ public class CourierService : ICourierService
         return dto;
     }
 
+
     public async Task<bool> RejectOrder(RejectOrderDto orderDto)
     {
         var order = await _unitOfWork.ReadOrderRepository.GetAsync(orderDto.OrderId);
@@ -222,6 +231,26 @@ public class CourierService : ICourierService
         return true;
     }
 
+
+    public async Task<bool> RemoveProfile(string courierId)
+    {
+        var courier = await _unitOfWork.ReadCourierRepository.GetAsync(courierId);
+        if (courier is null)
+            throw new ArgumentNullException("Courier not found");
+
+        if (courier.ActiveOrderId != string.Empty)
+            throw new ArgumentException("The courier is currently making an order. Delete is not possible");
+
+        foreach (var item in courier.CourierCommentIds)
+            await _unitOfWork.WriteCourierCommentRepository.RemoveAsync(item);
+        await _unitOfWork.WriteCourierCommentRepository.SaveChangesAsync();
+
+        var result = await _unitOfWork.WriteCourierRepository.RemoveAsync(courierId);
+        await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
+        return result;
+    }
+
+
     public async Task<bool> UpdateProfile(UpdateCourierDto dto)
     {
         var isValid = _updateAppUserValidator.Validate(dto);
@@ -237,6 +266,35 @@ public class CourierService : ICourierService
             existingCourier.BirthDate = dto.BirthDate;
             existingCourier.Email = dto.Email;
             existingCourier.PhoneNumber = dto.PhoneNumber;
+
+
+            var result = await _unitOfWork.WriteCourierRepository.UpdateAsync(existingCourier.Id);
+            await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
+
+            return result;
+        }
+        else
+            throw new ArgumentException("No Valid");
+    }
+
+
+    public async Task<bool> UpdateProfilePasssword(UpdateCourierPasswordDto dto)
+    {
+        var isValid = _updateAppUserPasswordValidator.Validate(dto);
+
+        if (isValid.IsValid)
+        {
+            var existingCourier = await _unitOfWork.ReadCourierRepository.GetAsync(dto.Id);
+            if (existingCourier is null)
+                throw new ArgumentNullException("Courier not found");
+
+
+            if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingCourier.PassHash, existingCourier.PassSalt))
+                throw new ArgumentException("Wrong password!");
+            _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
+
+            existingCourier.PassSalt = passSalt;
+            existingCourier.PassHash = passHash;
 
 
             var result = await _unitOfWork.WriteCourierRepository.UpdateAsync(existingCourier.Id);

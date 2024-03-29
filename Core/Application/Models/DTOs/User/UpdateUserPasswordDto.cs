@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Application.Models.DTOs.User
 {
-    public class UpdateUserPasswordDto :UpdateAppUserPasswordDto
+    public class UpdateRestaurantPasswordDto :UpdateAppUserPasswordDto
     {
     }
 }

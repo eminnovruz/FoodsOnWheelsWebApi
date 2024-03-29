@@ -17,14 +17,18 @@ public class UserService : IUserService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPassHashService _hashService;
+    private readonly IValidator<UpdateAppUserPasswordDto> _updateAppUserPasswordValidator;
     private readonly IValidator<UpdateAppUserDto> _updateAppUserValidator;
 
-    public UserService(IUnitOfWork unitOfWork, IPassHashService hashService, IValidator<UpdateAppUserDto> updateAppUserValidator)
+    public UserService(IUnitOfWork unitOfWork, IPassHashService hashService, IValidator<UpdateAppUserPasswordDto> updateAppUserPasswordValidator, IValidator<UpdateAppUserDto> updateAppUserValidator)
     {
         _unitOfWork = unitOfWork;
         _hashService = hashService;
+        _updateAppUserPasswordValidator = updateAppUserPasswordValidator;
         _updateAppUserValidator = updateAppUserValidator;
     }
+
+
 
 
     #region Profile
@@ -88,10 +92,6 @@ public class UserService : IUserService
             existingUser.Email = dto.Email;
             existingUser.PhoneNumber = dto.PhoneNumber;
 
-     
-
-
-
             var result = await _unitOfWork.WriteUserRepository.UpdateAsync(existingUser.Id);
             await _unitOfWork.WriteUserRepository.SaveChangesAsync();
 
@@ -101,6 +101,32 @@ public class UserService : IUserService
             throw new ArgumentException("No Valid");
     }
 
+    public async Task<bool> UpdateProfilePasssword(UpdateRestaurantPasswordDto dto)
+    {
+        var isValid = _updateAppUserPasswordValidator.Validate(dto);
+
+        if (isValid.IsValid)
+        {
+            var existingUser = await _unitOfWork.ReadUserRepository.GetAsync(dto.Id);
+
+            if (existingUser is null)
+                throw new ArgumentException("User not found");
+
+            if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingUser.PassHash, existingUser.PassSalt))
+                throw new ArgumentException("Wrong password!");
+            _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
+
+            existingUser.PassSalt = passSalt;
+            existingUser.PassHash = passHash;
+
+            var result = await _unitOfWork.WriteUserRepository.UpdateAsync(existingUser.Id);
+            await _unitOfWork.WriteUserRepository.SaveChangesAsync();
+
+            return result;
+        }
+        else
+            throw new ArgumentException("No Valid");
+    }
     #endregion
 
     #region Get 

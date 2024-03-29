@@ -67,7 +67,7 @@ namespace WebApi.Controllers
         {
             try
             {
-                return Ok(await restaurantService.GetRestaurantInfo(Id));
+                return Ok(await restaurantService.GetProfileInfo(Id));
             }
             catch (Exception exception)
             {

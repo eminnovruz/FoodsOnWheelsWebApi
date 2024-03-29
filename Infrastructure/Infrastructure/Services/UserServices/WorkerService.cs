@@ -22,16 +22,20 @@ public class WorkerService : IWorkerService
     private readonly IValidator<AddAppUserDto> _addAppUserValidator; 
     private readonly IPassHashService _hashService;
     private readonly IValidator<UpdateAppUserDto> _updateAppUserValidator; 
+    private readonly IValidator<UpdateAppUserPasswordDto> _updateAppUserPasswordValidator;
     private readonly IBlobService _blobSerice;
 
-    public WorkerService(IPassHashService hashService, IUnitOfWork unitOfWork, IValidator<AddAppUserDto> addAppUserValidator, IValidator<UpdateAppUserDto> updateAppUserValidator, IBlobService blobSerice)
+    public WorkerService(IUnitOfWork unitOfWork, IValidator<AddAppUserDto> addAppUserValidator, IPassHashService hashService, IValidator<UpdateAppUserDto> updateAppUserValidator, IValidator<UpdateAppUserPasswordDto> updateAppUserPasswordValidator, IBlobService blobSerice)
     {
-        _hashService = hashService;
         _unitOfWork = unitOfWork;
         _addAppUserValidator = addAppUserValidator;
+        _hashService = hashService;
         _updateAppUserValidator = updateAppUserValidator;
+        _updateAppUserPasswordValidator = updateAppUserPasswordValidator;
         _blobSerice = blobSerice;
     }
+
+
     #region Restaurant
     public async Task<bool> AddRestaurant(AddRestaurantDto dto)
     {
@@ -101,6 +105,24 @@ public class WorkerService : IWorkerService
             existingRestaurant.Description = dto.Description;
             existingRestaurant.Email = dto.Email;
 
+            if (dto.File is not null)
+            {
+                await _blobSerice.DeleteFileAsync(existingRestaurant.Id + "-" + existingRestaurant.Name + ".jpg");
+
+                var form = dto.File;
+                using (var stream = form.OpenReadStream())
+                {
+                    var fileName = existingRestaurant.Id + "-" + existingRestaurant.Name + ".jpg";
+                    var contentType = form.ContentType;
+
+                    var blobResult = await _blobSerice.UploadFileAsync(stream, fileName, contentType);
+                    if (blobResult is false)
+                        throw new BadImageFormatException("Image InValid");
+
+                    existingRestaurant.ImageUrl = _blobSerice.GetSignedUrl(fileName);
+                }
+
+            }
 
             var result = await _unitOfWork.WriteRestaurantRepository.UpdateAsync(existingRestaurant.Id);
             await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
@@ -111,27 +133,35 @@ public class WorkerService : IWorkerService
             throw new ArgumentNullException("No Valid");
     }
 
+
     public async Task<bool> UptadeRestaurantPassword(UptadeRestaurantPasswordDto dto)
     {
-        var existingRestaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(dto.Id);
+        var isValid = _updateAppUserPasswordValidator.Validate(dto);
 
-        if (existingRestaurant is null)
-            throw new ArgumentNullException("Restaurant not found");
+        if (isValid.IsValid)
+        {
+            var existingRestaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(dto.Id);
 
-        if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingRestaurant.PassHash, existingRestaurant.PassSalt))
-            throw new ArgumentException("Wrong password!");
+            if (existingRestaurant is null)
+                throw new ArgumentNullException("Restaurant not found");
 
-        _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
+            if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingRestaurant.PassHash, existingRestaurant.PassSalt))
+                throw new ArgumentException("Wrong password!");
 
-        existingRestaurant.PassSalt = passSalt;
-        existingRestaurant.PassHash = passHash;
+            _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
 
-        var result = await _unitOfWork.WriteRestaurantRepository.UpdateAsync(existingRestaurant.Id);
-        await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
+            existingRestaurant.PassSalt = passSalt;
+            existingRestaurant.PassHash = passHash;
 
-        return result;
+            var result = await _unitOfWork.WriteRestaurantRepository.UpdateAsync(existingRestaurant.Id);
+            await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
 
+            return result;
+        }
+        else
+            throw new ArgumentNullException("No Valid");
     }
+
 
     public async Task<bool> RemoveRestaurant(string restaurantId)
     {
@@ -288,26 +318,35 @@ public class WorkerService : IWorkerService
             throw new ArgumentException("No Valid");
     }
 
+
     public async Task<bool> UpdateCourierPassword(UpdateCourierPasswordDto dto)
     {
-        var existingCourier = await _unitOfWork.ReadCourierRepository.GetAsync(dto.Id);
-        if (existingCourier is null)
-            throw new ArgumentNullException("Courier not found");
+        var isValid = _updateAppUserPasswordValidator.Validate(dto);
+
+        if (isValid.IsValid)
+        {
+            var existingCourier = await _unitOfWork.ReadCourierRepository.GetAsync(dto.Id);
+            if (existingCourier is null)
+                throw new ArgumentNullException("Courier not found");
 
 
-        if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingCourier.PassHash, existingCourier.PassSalt))
-            throw new ArgumentException("Wrong password!");
-        _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
+            if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingCourier.PassHash, existingCourier.PassSalt))
+                throw new ArgumentException("Wrong password!");
+            _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
 
-        existingCourier.PassSalt = passSalt;
-        existingCourier.PassHash = passHash;
+            existingCourier.PassSalt = passSalt;
+            existingCourier.PassHash = passHash;
 
 
-        var result = await _unitOfWork.WriteCourierRepository.UpdateAsync(existingCourier.Id);
-        await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
+            var result = await _unitOfWork.WriteCourierRepository.UpdateAsync(existingCourier.Id);
+            await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
 
-        return result;
+            return result;
+        }
+        else
+            throw new ArgumentException("No Valid");
     }
+
 
     public async Task<bool> RemoveCourier(string courierId)
     {
@@ -545,24 +584,30 @@ public class WorkerService : IWorkerService
 
     public async Task<bool> UpdateWorkerPassword(UpdateWorkerPasswordDto dto)
     {
+        var isValid = _updateAppUserPasswordValidator.Validate(dto);
 
-        var existingWorker = await _unitOfWork.ReadWorkerRepository.GetAsync(dto.Id);
+        if (isValid.IsValid)
+        {
+            var existingWorker = await _unitOfWork.ReadWorkerRepository.GetAsync(dto.Id);
 
-        if (existingWorker is null)
-            throw new ArgumentException("Worker not found");
+            if (existingWorker is null)
+                throw new ArgumentException("Worker not found");
 
-        if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingWorker.PassHash, existingWorker.PassSalt))
-            throw new ArgumentException("Wrong password!");
-        _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
+            if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingWorker.PassHash, existingWorker.PassSalt))
+                throw new ArgumentException("Wrong password!");
+            _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
 
-        existingWorker.PassSalt = passSalt;
-        existingWorker.PassHash = passHash;
+            existingWorker.PassSalt = passSalt;
+            existingWorker.PassHash = passHash;
 
 
-        var result = await _unitOfWork.WriteWorkerRepository.UpdateAsync(existingWorker.Id);
-        await _unitOfWork.WriteWorkerRepository.SaveChangesAsync();
+            var result = await _unitOfWork.WriteWorkerRepository.UpdateAsync(existingWorker.Id);
+            await _unitOfWork.WriteWorkerRepository.SaveChangesAsync();
 
-        return result;
+            return result;
+        }
+        else 
+            throw new ArgumentException("No Valid");
     }
     public async Task<bool> RemoveWorker(string id)
     {
@@ -681,9 +726,27 @@ public class WorkerService : IWorkerService
         existingFood.Name = request.Name;
         existingFood.CategoryIds = request.CategoryIds;
         existingFood.Description = request.Description;
-        existingFood.ImageUrl = request.ImageUrl;
         existingFood.Price = request.Price;
 
+
+
+        if (request.File is not null)
+        {
+
+            await _blobSerice.DeleteFileAsync(existingFood.Id + "-" + existingFood.Name + ".jpg");
+            var form = request.File;
+            using (var stream = form.OpenReadStream())
+            {
+                var fileName = existingFood.Id + "-" + existingFood.Name + ".jpg";
+                var contentType = form.ContentType;
+
+                var blobResult = await _blobSerice.UploadFileAsync(stream, fileName, contentType);
+                if (blobResult is false)
+                    throw new BadImageFormatException("Image InValid");
+
+                existingFood.ImageUrl = _blobSerice.GetSignedUrl(fileName);
+            }
+        }
         var result = await _unitOfWork.WriteFoodRepository.UpdateAsync(existingFood.Id);
         await _unitOfWork.WriteFoodRepository.SaveChangesAsync();
 
@@ -836,25 +899,35 @@ public class WorkerService : IWorkerService
         else
             throw new ArgumentException("No Valid");
     }
-    public async Task<bool> UpdateUserPassword(UpdateUserPasswordDto dto)
+
+
+    public async Task<bool> UpdateUserPassword(UpdateRestaurantPasswordDto dto)
     {
-        var existingUser = await _unitOfWork.ReadUserRepository.GetAsync(dto.Id);
+        var isValid = _updateAppUserPasswordValidator.Validate(dto);
 
-        if (existingUser is null)
-            throw new ArgumentException("User not found");
+        if (isValid.IsValid)
+        {
+            var existingUser = await _unitOfWork.ReadUserRepository.GetAsync(dto.Id);
 
-        if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingUser.PassHash, existingUser.PassSalt))
-            throw new ArgumentException("Wrong password!");
-        _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
+            if (existingUser is null)
+                throw new ArgumentException("User not found");
 
-        existingUser.PassSalt = passSalt;
-        existingUser.PassHash = passHash;
+            if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingUser.PassHash, existingUser.PassSalt))
+                throw new ArgumentException("Wrong password!");
+            _hashService.Create(dto.NewPassword, out byte[] passHash, out byte[] passSalt);
 
-        var result = await _unitOfWork.WriteUserRepository.UpdateAsync(existingUser.Id);
-        await _unitOfWork.WriteUserRepository.SaveChangesAsync();
+            existingUser.PassSalt = passSalt;
+            existingUser.PassHash = passHash;
 
-        return result;
+            var result = await _unitOfWork.WriteUserRepository.UpdateAsync(existingUser.Id);
+            await _unitOfWork.WriteUserRepository.SaveChangesAsync();
+
+            return result;
+        }
+        else
+            throw new ArgumentException("No Valid");
     }
+
 
     public async Task<bool> RemoveUser(string userId)
     {
@@ -878,6 +951,7 @@ public class WorkerService : IWorkerService
 
     }
 
+
     public async Task<GetUserProfileInfoDto> GetUserById(string id)
     {
         var user = await _unitOfWork.ReadUserRepository.GetAsync(id);
@@ -895,6 +969,7 @@ public class WorkerService : IWorkerService
 
         return userDto;
     }
+
 
     public IEnumerable<GetUserProfileInfoDto> GetAllUsers()
     {

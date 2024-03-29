@@ -18,7 +18,11 @@ public interface IUserService
     Task<IEnumerable<FoodInfoDto>> GetFoodsByRestaurant(string restaurantId);
 
     Task<GetUserProfileInfoDto> GetProfileInfo(string userId);
+
     Task<bool> UpdateProfile(UpdateUserDto dto);
+
+    Task<bool> UpdateProfilePasssword(UpdateRestaurantPasswordDto dto);
+
     Task<bool> RemoveProfile(string userId);
 
     Task<bool> RateOrder(RateOrderDto request);
@@ -36,6 +40,4 @@ public interface IUserService
     Task<GetBankCardDto> GetUserBankCard(string cardId);
     
     IEnumerable<GetBankCardDto> GetAllUserBankCard(string userId);
-
-
 }

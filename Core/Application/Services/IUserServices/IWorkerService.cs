@@ -87,7 +87,7 @@ public interface IWorkerService
 
     Task<bool> UpdateUser(UpdateUserDto dto);
 
-    Task<bool> UpdateUserPassword(UpdateUserPasswordDto dto);
+    Task<bool> UpdateUserPassword(UpdateRestaurantPasswordDto dto);
 
     Task<bool> RemoveUser(string id);
 
