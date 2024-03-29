@@ -185,9 +185,7 @@ public class WorkerController : ControllerBase
             var categories =  _workerService.SeeAllCategories();
 
             if (categories == null || !categories.Any())
-            {
                 return NotFound(); 
-            }
 
             return Ok(categories);
         }

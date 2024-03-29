@@ -35,7 +35,6 @@ public class WorkerService : IWorkerService
         _blobSerice = blobSerice;
     }
 
-
     #region Restaurant
     public async Task<bool> AddRestaurant(AddRestaurantDto dto)
     {
@@ -89,7 +88,6 @@ public class WorkerService : IWorkerService
             throw new ArgumentNullException("No Valid");
     }
 
-
     public async Task<bool> UptadeRestaurant(UpdateRestaurantDto dto)
     {
         var isValid = _updateAppUserValidator.Validate(dto);
@@ -99,7 +97,7 @@ public class WorkerService : IWorkerService
             var existingRestaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(dto.Id);
 
             if (existingRestaurant is null)
-                throw new ArgumentNullException("Restaurant not found");
+                throw new ArgumentNullException("Restaurant not found...");
 
             existingRestaurant.Name = dto.Name;
             existingRestaurant.Description = dto.Description;
@@ -117,7 +115,7 @@ public class WorkerService : IWorkerService
 
                     var blobResult = await _blobSerice.UploadFileAsync(stream, fileName, contentType);
                     if (blobResult is false)
-                        throw new BadImageFormatException("Image InValid");
+                        throw new BadImageFormatException("Image InValid!");
 
                     existingRestaurant.ImageUrl = _blobSerice.GetSignedUrl(fileName);
                 }
@@ -133,7 +131,6 @@ public class WorkerService : IWorkerService
             throw new ArgumentNullException("No Valid");
     }
 
-
     public async Task<bool> UptadeRestaurantPassword(UptadeRestaurantPasswordDto dto)
     {
         var isValid = _updateAppUserPasswordValidator.Validate(dto);
@@ -143,7 +140,7 @@ public class WorkerService : IWorkerService
             var existingRestaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(dto.Id);
 
             if (existingRestaurant is null)
-                throw new ArgumentNullException("Restaurant not found");
+                throw new ArgumentNullException("Restaurant not found...");
 
             if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingRestaurant.PassHash, existingRestaurant.PassSalt))
                 throw new ArgumentException("Wrong password!");
@@ -162,12 +159,11 @@ public class WorkerService : IWorkerService
             throw new ArgumentNullException("No Valid");
     }
 
-
     public async Task<bool> RemoveRestaurant(string restaurantId)
     {
         var resturant = await _unitOfWork.ReadRestaurantRepository.GetAsync(restaurantId);
         if (resturant is null)
-            throw new ArgumentNullException("wrong Resturant");
+            throw new ArgumentNullException("Wrong Resturant!");
 
         foreach (var item in resturant.CommentIds)
             await _unitOfWork.WriteRestaurantCommentRepository.RemoveAsync(item);
@@ -181,12 +177,11 @@ public class WorkerService : IWorkerService
             if (order is not null)
             {
                 if (order.OrderStatus == OrderStatus.Preparing)
-                    throw new ArgumentException("Currently, it is not possible to delete the restaurant because the order is being prepared");
+                    throw new ArgumentException("Currently, it is not possible to delete the restaurant because the order is being prepared.");
 
                 await _unitOfWork.WriteOrderRatingRepository.RemoveAsync(order.OrderRatingId);
                 await _unitOfWork.WriteOrderRepository.RemoveAsync(item);
             }
-
         }
 
         await _unitOfWork.WriteOrderRatingRepository.SaveChangesAsync();
@@ -202,15 +197,13 @@ public class WorkerService : IWorkerService
         return result;
     }
 
-
     public async Task<RestaurantInfoDto> GetRestaurantById(string id)
     {
         var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(id);
 
         if (restaurant == null)
-            throw new ArgumentNullException("Restaurant not found");
+            throw new ArgumentNullException("Restaurant not found...");
             
-
         var restaurantDto = new RestaurantInfoDto
         {
             Id = restaurant.Id,
@@ -222,12 +215,11 @@ public class WorkerService : IWorkerService
         return restaurantDto;
     }
 
-
     public IEnumerable<RestaurantInfoDto> GetAllRestaurants()
     {
         var restaurants = _unitOfWork.ReadRestaurantRepository.GetAll().ToList();
         if (restaurants.Count == 0)
-            throw new ArgumentNullException("Restaurants not found");
+            throw new ArgumentNullException("Restaurants not found...");
 
         var restaurantDtos = new List<RestaurantInfoDto>();
         foreach (var item in restaurants)
@@ -245,9 +237,7 @@ public class WorkerService : IWorkerService
 
         return restaurantDtos;
     }
-
     #endregion
-
 
     #region Courier
     public async Task<bool> AddCourier(AddCourierDto dto)
@@ -291,7 +281,6 @@ public class WorkerService : IWorkerService
             throw new ArgumentException("No Valid");
     }
 
-
     public async Task<bool> UpdateCourier(UpdateCourierDto dto)
     {
         var isValid = _updateAppUserValidator.Validate(dto);
@@ -300,7 +289,7 @@ public class WorkerService : IWorkerService
         {
             var existingCourier = await _unitOfWork.ReadCourierRepository.GetAsync(dto.Id);
             if (existingCourier is null)
-                throw new ArgumentNullException("Courier not found");
+                throw new ArgumentNullException("Courier not found...");
 
             existingCourier.Name = dto.Name;
             existingCourier.Surname = dto.Surname;
@@ -318,7 +307,6 @@ public class WorkerService : IWorkerService
             throw new ArgumentException("No Valid");
     }
 
-
     public async Task<bool> UpdateCourierPassword(UpdateCourierPasswordDto dto)
     {
         var isValid = _updateAppUserPasswordValidator.Validate(dto);
@@ -327,8 +315,7 @@ public class WorkerService : IWorkerService
         {
             var existingCourier = await _unitOfWork.ReadCourierRepository.GetAsync(dto.Id);
             if (existingCourier is null)
-                throw new ArgumentNullException("Courier not found");
-
+                throw new ArgumentNullException("Courier not found...");
 
             if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingCourier.PassHash, existingCourier.PassSalt))
                 throw new ArgumentException("Wrong password!");
@@ -336,7 +323,6 @@ public class WorkerService : IWorkerService
 
             existingCourier.PassSalt = passSalt;
             existingCourier.PassHash = passHash;
-
 
             var result = await _unitOfWork.WriteCourierRepository.UpdateAsync(existingCourier.Id);
             await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
@@ -347,16 +333,15 @@ public class WorkerService : IWorkerService
             throw new ArgumentException("No Valid");
     }
 
-
     public async Task<bool> RemoveCourier(string courierId)
     {
 
         var courier = await _unitOfWork.ReadCourierRepository.GetAsync(courierId);
         if (courier is null)
-            throw new ArgumentNullException("Courier not found");
+            throw new ArgumentNullException("Courier not found...");
 
         if (courier.ActiveOrderId != string.Empty)
-            throw new ArgumentException("The courier is currently making an order. Delete is not possible");
+            throw new ArgumentException("The courier is currently making an order. Delete is not possible.");
 
         foreach (var item in courier.CourierCommentIds)
             await _unitOfWork.WriteCourierCommentRepository.RemoveAsync(item);
@@ -367,13 +352,12 @@ public class WorkerService : IWorkerService
         return result;
     }
 
-
     public async Task<SummaryCourierDto> GetCourierById(string id)
     {
         var courier = await _unitOfWork.ReadCourierRepository.GetAsync(id);
 
         if (courier is null)
-            throw new ArgumentNullException("Courier not found");
+            throw new ArgumentNullException("Courier not found...");
 
         var summaryCourierDto = new SummaryCourierDto
         {
@@ -390,12 +374,11 @@ public class WorkerService : IWorkerService
         return summaryCourierDto;
     }
 
-
     public IEnumerable<SummaryCourierDto> GetAllCouriers()
     {
         var couriers = _unitOfWork.ReadCourierRepository.GetAll().ToList();
         if (couriers.Count == 0)
-            throw new ArgumentNullException("Courier not found");
+            throw new ArgumentNullException("Courier not found...");
 
         var courierDtos = new List<SummaryCourierDto>();
         foreach (var item in couriers)
@@ -416,9 +399,7 @@ public class WorkerService : IWorkerService
 
         return courierDtos;
     }
-
     #endregion
-
 
     #region Category
     public async Task<bool> AddCategory(AddCategoryRequest request)
@@ -427,7 +408,7 @@ public class WorkerService : IWorkerService
         if (testCategory.Count != 0)
         {
             if (testCategory.FirstOrDefault(x => x?.CategoryName.ToLower() == request.CategoryName.ToLower()) == default)
-                throw new ArgumentException("There is a category in this name, choose another name");
+                throw new ArgumentException("There is a category in this name, choose another name.");
         }
 
         Category newCategory = new Category()
@@ -442,13 +423,12 @@ public class WorkerService : IWorkerService
         return result;
     }
 
-
     public async Task<bool> UpdateCategory(UpdateCategoryRequest request)
     {
         var existingCategory = await _unitOfWork.ReadCategoryRepository.GetAsync(request.Id);
 
         if (existingCategory is null)
-            throw new ArgumentNullException("Category not found");
+            throw new ArgumentNullException("Category not found...");
 
         existingCategory.CategoryName = request.CategoryName;
         existingCategory.FoodIds = request.FoodIds;
@@ -459,28 +439,26 @@ public class WorkerService : IWorkerService
         return result;
     }
 
-
     public async Task<bool> RemoveCategory(string Id)
     {
         var category = await _unitOfWork.ReadCategoryRepository.GetAsync(Id);
         if (category is null)
-            throw new ArgumentNullException("Category not found");
+            throw new ArgumentNullException("Category not found...");
 
         if (category.FoodIds.Count != 0)
-            throw new ArgumentNullException("There are dishes in this category, so you can't delete the category");
+            throw new ArgumentNullException("There are dishes in this category, so you can't delete the category.");
 
         var result = await _unitOfWork.WriteCategoryRepository.RemoveAsync(Id);
         await _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
         return result;
     }
 
-
     public async Task<CategoryInfoDto> GetCategoryById(string id)
     {
         var category = await _unitOfWork.ReadCategoryRepository.GetAsync(id);
 
         if (category is null)
-            throw new ArgumentNullException("Category not found");
+            throw new ArgumentNullException("Category not found...");
 
         var categoryDto = new CategoryInfoDto
         {
@@ -492,12 +470,11 @@ public class WorkerService : IWorkerService
         return categoryDto;
     }
 
-
     public IEnumerable<CategoryInfoDto> SeeAllCategories()
     {
         var categories = _unitOfWork.ReadCategoryRepository.GetAll();
         if (categories is null)
-            throw new ArgumentNullException("Category not found");
+            throw new ArgumentNullException("Category not found...");
 
         var categoryDtos = new List<CategoryInfoDto>();
         foreach (var category in categories)
@@ -513,9 +490,7 @@ public class WorkerService : IWorkerService
 
         return categoryDtos;
     }
-
     #endregion
-
 
     #region Worker
     public async Task<bool> AddWorker(AddWorkerDto dto)
@@ -564,7 +539,7 @@ public class WorkerService : IWorkerService
             var existingWorker = await _unitOfWork.ReadWorkerRepository.GetAsync(dto.Id);
 
             if (existingWorker is null)
-                throw new ArgumentException("Worker not found");
+                throw new ArgumentException("Worker not found...");
 
             existingWorker.Name = dto.Name;
             existingWorker.Surname = dto.Surname;
@@ -591,7 +566,7 @@ public class WorkerService : IWorkerService
             var existingWorker = await _unitOfWork.ReadWorkerRepository.GetAsync(dto.Id);
 
             if (existingWorker is null)
-                throw new ArgumentException("Worker not found");
+                throw new ArgumentException("Worker not found...");
 
             if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingWorker.PassHash, existingWorker.PassSalt))
                 throw new ArgumentException("Wrong password!");
@@ -609,6 +584,7 @@ public class WorkerService : IWorkerService
         else 
             throw new ArgumentException("No Valid");
     }
+
     public async Task<bool> RemoveWorker(string id)
     {
         var result = await _unitOfWork.WriteWorkerRepository.RemoveAsync(id);
@@ -621,7 +597,7 @@ public class WorkerService : IWorkerService
         var worker = await _unitOfWork.ReadWorkerRepository.GetAsync(id);
 
         if (worker is null)
-            throw new ArgumentException("Worker not found");
+            throw new ArgumentException("Worker not found...");
 
         var workerDto = new GetWorkerDto
         {
@@ -639,7 +615,7 @@ public class WorkerService : IWorkerService
     {
         var workers = _unitOfWork.ReadWorkerRepository.GetAll().ToList();
         if (workers is null)
-            throw new ArgumentException("Worker not found");
+            throw new ArgumentException("Worker not found...");
 
         var workerDtos = new List<GetWorkerDto>();
         foreach (var item in workers)
@@ -659,17 +635,15 @@ public class WorkerService : IWorkerService
     }
     #endregion
 
-
     #region Food
-
     public async Task<bool> AddNewFood(AddFoodRequest request)
     {
         if (request is null)
-            throw new ArgumentNullException("The Information Is Not Complete");
+            throw new ArgumentNullException("The Information Is Not Complete...");
 
         var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(request.RestaurantId);
         if (restaurant is null)
-            throw new ArgumentNullException("Wrong Restaurant");
+            throw new ArgumentNullException("Wrong Restaurant!");
 
         var food = new Food
         {
@@ -694,12 +668,12 @@ public class WorkerService : IWorkerService
         }
 
         var categorys = _unitOfWork.ReadCategoryRepository.GetAll().ToList();
-        if (categorys.Count == 0) throw new ArgumentNullException("Category is not found");
+        if (categorys.Count == 0) throw new ArgumentNullException("Category is not found...");
 
         foreach (var item in request.CategoryIds)
         {
             var category = categorys.FirstOrDefault(x => item == x?.Id);
-            if (category is null) throw new ArgumentNullException("Category Id Is Not Found");
+            if (category is null) throw new ArgumentNullException("Category Id Is Not Found...");
             category.FoodIds.Add(food.Id);
 
             await _unitOfWork.WriteCategoryRepository.UpdateAsync(category.Id);
@@ -715,20 +689,17 @@ public class WorkerService : IWorkerService
         return true;
     }
 
-
     public async Task<bool> UpdateFood(UpdateFoodRequest request)
     {
         var existingFood = await _unitOfWork.ReadFoodRepository.GetAsync(request.Id);
 
         if (existingFood is null)
-            throw new ArgumentNullException("Food not found");
+            throw new ArgumentNullException("Food not found...");
 
         existingFood.Name = request.Name;
         existingFood.CategoryIds = request.CategoryIds;
         existingFood.Description = request.Description;
         existingFood.Price = request.Price;
-
-
 
         if (request.File is not null)
         {
@@ -742,7 +713,7 @@ public class WorkerService : IWorkerService
 
                 var blobResult = await _blobSerice.UploadFileAsync(stream, fileName, contentType);
                 if (blobResult is false)
-                    throw new BadImageFormatException("Image InValid");
+                    throw new BadImageFormatException("Image InValid!");
 
                 existingFood.ImageUrl = _blobSerice.GetSignedUrl(fileName);
             }
@@ -753,25 +724,24 @@ public class WorkerService : IWorkerService
         return result;
     }
 
-
     public async Task<bool> RemoveFood(string Id)
     {
         var food = await _unitOfWork.ReadFoodRepository.GetAsync(Id);
         if (food is null)
-            throw new ArgumentNullException("Wrong Food");
+            throw new ArgumentNullException("Wrong Food!");
 
         var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(food.RestaurantId);
         if (restaurant is null)
-            throw new ArgumentNullException("Wrong Restaurant");
+            throw new ArgumentNullException("Wrong Restaurant!");
 
         var categorys = _unitOfWork.ReadCategoryRepository.GetAll().ToList();
         if (categorys is null || categorys.Count == 0)
-            throw new ArgumentNullException("Categorys Is Not Found");
+            throw new ArgumentNullException("Categories Is Not Found...");
         foreach (var item in food.CategoryIds)
         {
             var category = categorys.FirstOrDefault(x => item == x?.Id);
             if (category is null)
-                throw new ArgumentNullException("Category Id Is Not Found");
+                throw new ArgumentNullException("Category Id Is Not Found...");
             category.FoodIds.Remove(food.Id);
             await _unitOfWork.WriteCategoryRepository.UpdateAsync(category.Id);
             await _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
@@ -787,13 +757,12 @@ public class WorkerService : IWorkerService
         return true;
     }
 
-
     public async Task<FoodInfoDto> GetFoodById(string id)
     {
         var food = await _unitOfWork.ReadFoodRepository.GetAsync(id);
 
         if (food is null)
-            throw new ArgumentNullException("Food not found");
+            throw new ArgumentNullException("Food not found...");
 
         var foodDto = new FoodInfoDto
         {
@@ -808,12 +777,11 @@ public class WorkerService : IWorkerService
         return foodDto;
     }
 
-
     public IEnumerable<FoodInfoDto> SeeAllFoods() 
     {
         var foods = _unitOfWork.ReadFoodRepository.GetAll();
         if (foods is null)
-            throw new ArgumentNullException("Currently there is no food");
+            throw new ArgumentNullException("Currently there is no food.");
 
         var foodDtos = new List<FoodInfoDto>();
         foreach (var food in foods)
@@ -831,9 +799,7 @@ public class WorkerService : IWorkerService
         }
         return foodDtos;
     }
-
     #endregion
-
 
     #region User
     public async Task<bool> AddUser(AddUserDto dto)
@@ -881,7 +847,7 @@ public class WorkerService : IWorkerService
             var existingUser = await _unitOfWork.ReadUserRepository.GetAsync(dto.Id);
 
             if (existingUser is null)
-                throw new ArgumentException("User not found");
+                throw new ArgumentException("User not found...");
 
 
             existingUser.Name = dto.Name;
@@ -900,7 +866,6 @@ public class WorkerService : IWorkerService
             throw new ArgumentException("No Valid");
     }
 
-
     public async Task<bool> UpdateUserPassword(UpdateRestaurantPasswordDto dto)
     {
         var isValid = _updateAppUserPasswordValidator.Validate(dto);
@@ -910,7 +875,7 @@ public class WorkerService : IWorkerService
             var existingUser = await _unitOfWork.ReadUserRepository.GetAsync(dto.Id);
 
             if (existingUser is null)
-                throw new ArgumentException("User not found");
+                throw new ArgumentException("User not found...");
 
             if (!_hashService.ConfirmPasswordHash(dto.OldPassword, existingUser.PassHash, existingUser.PassSalt))
                 throw new ArgumentException("Wrong password!");
@@ -928,12 +893,11 @@ public class WorkerService : IWorkerService
             throw new ArgumentException("No Valid");
     }
 
-
     public async Task<bool> RemoveUser(string userId)
     {
         var user = await _unitOfWork.ReadUserRepository.GetAsync(userId);
         if (user is null)
-            throw new ArgumentNullException("User not found");
+            throw new ArgumentNullException("User not found...");
 
         var bankCard = _unitOfWork.ReadBankCardRepository.GetWhere(x => x.UserId == userId);
         foreach (var item in bankCard)
@@ -951,12 +915,11 @@ public class WorkerService : IWorkerService
 
     }
 
-
     public async Task<GetUserProfileInfoDto> GetUserById(string id)
     {
         var user = await _unitOfWork.ReadUserRepository.GetAsync(id);
         if (user is null)
-            throw new ArgumentNullException("User not found");
+            throw new ArgumentNullException("User not found...");
 
         var userDto = new GetUserProfileInfoDto
         {
@@ -970,12 +933,11 @@ public class WorkerService : IWorkerService
         return userDto;
     }
 
-
     public IEnumerable<GetUserProfileInfoDto> GetAllUsers()
     {
         var users = _unitOfWork.ReadUserRepository.GetAll().ToList();
         if (users is null)
-            throw new ArgumentNullException("User not found");
+            throw new ArgumentNullException("User not found...");
 
         var userDtos = new List<GetUserProfileInfoDto>();
         foreach (var item in users)
@@ -993,10 +955,5 @@ public class WorkerService : IWorkerService
 
         return userDtos;
     }
-
-
-
-
     #endregion
-
 }
