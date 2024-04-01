@@ -15,5 +15,5 @@ public class Courier : BaseEntity
     public string ActiveOrderId {  get; set; }
     public List<string> OrderIds { get; set; }
     public List<string> CourierCommentIds { get; set; }
-    public int Rating { get; set; }
+    public float Rating { get; set; }
 }

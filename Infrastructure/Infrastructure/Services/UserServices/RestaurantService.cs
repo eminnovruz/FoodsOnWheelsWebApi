@@ -18,20 +18,24 @@ namespace Infrastructure.Services.UserServices
 {
     public class RestaurantService : IRestaurantService
     {
+        private readonly IMailService _mailService;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPassHashService _hashService;
         private readonly IValidator<UpdateAppUserDto> _updateAppUserValidator;
         private readonly IValidator<UpdateAppUserPasswordDto> _updateAppUserPasswordValidator;
         private readonly IBlobService _blobSerice;
 
-        public RestaurantService(IUnitOfWork unitOfWork, IPassHashService hashService, IValidator<UpdateAppUserDto> updateAppUserValidator, IValidator<UpdateAppUserPasswordDto> updateAppUserPasswordValidator, IBlobService blobSerice)
+        public RestaurantService(IMailService mailService, IUnitOfWork unitOfWork, IPassHashService hashService, IValidator<UpdateAppUserDto> updateAppUserValidator, IValidator<UpdateAppUserPasswordDto> updateAppUserPasswordValidator, IBlobService blobSerice)
         {
+            _mailService = mailService;
             _unitOfWork = unitOfWork;
             _hashService = hashService;
             _updateAppUserValidator = updateAppUserValidator;
             _updateAppUserPasswordValidator = updateAppUserPasswordValidator;
             _blobSerice = blobSerice;
         }
+
+
 
 
         #region Profile
@@ -271,10 +275,20 @@ namespace Infrastructure.Services.UserServices
             if (order is null)
                 throw new ArgumentNullException("There are no orders");
 
+            var user = await _unitOfWork.ReadUserRepository.GetAsync(order.UserId);
+            if (user is null)
+                throw new ArgumentNullException("There are no user");
+
             if (orderDto.IsLastSituation)
+            {
                 order.OrderStatus = OrderStatus.Confirmed;
+                _mailService.SendingOrder(user.Email, OrderStatus.Confirmed);
+            }
             else
+            {
                 order.OrderStatus = OrderStatus.Rejected;
+                _mailService.SendingOrder(user.Email, OrderStatus.Rejected);
+            }
 
             await _unitOfWork.WriteOrderRepository.UpdateAsync(order.Id);
             await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
@@ -452,8 +466,14 @@ namespace Infrastructure.Services.UserServices
                 throw new ArgumentNullException("There are no orders");
             if (order.OrderStatus == OrderStatus.Waiting)
                 throw new ArgumentException("");
+            var user = await _unitOfWork.ReadUserRepository.GetAsync(order.UserId);
+            if (user is null)
+                throw new ArgumentNullException("There are no user");
 
             order.OrderStatus = statusDto.OrderStatus;
+
+            _mailService.SendingOrder(user.Email , order.OrderStatus);
+
 
             await _unitOfWork.WriteOrderRepository.UpdateAsync(order.Id);
             await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
@@ -506,7 +526,7 @@ namespace Infrastructure.Services.UserServices
             if (orders.Count == 0)
                 return false;
 
-            var ordersRaiting = new List<int>();
+            var ordersRaiting = new List<float>();
             foreach (var order in orders)
             {
                 if (order is not null)
@@ -520,14 +540,14 @@ namespace Infrastructure.Services.UserServices
 
             if (comments.Count != 0)
             {
-                var averageComments = comments.Average(x => x?.Rating);
-                var average = (averageComments + averageOrders) / 2;
-                resturant.Rating = Convert.ToUInt32(average);
+                float averageComments = Convert.ToSingle(comments.Average(x => x?.Rating));
+                float average = (averageComments + averageOrders) / 2;
+                resturant.Rating = average;
             }
             else
             {
                 var average = averageOrders;
-                resturant.Rating = Convert.ToUInt32(average);
+                resturant.Rating = Convert.ToSingle(average);
             }
 
 

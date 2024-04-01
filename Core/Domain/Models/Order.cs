@@ -10,6 +10,7 @@ public class Order : BaseEntity
     public string RestaurantId { get; set; }
     public string CourierId { get; set; }
     public string UserId { get; set; }
+    public string BankCardId { get; set; }
     public List<string> OrderedFoodIds { get; set; }
     public DateTime OrderDate { get; set; }
     public DateTime OrderFinishTime { get; set; }

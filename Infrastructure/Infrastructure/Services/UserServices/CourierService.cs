@@ -78,7 +78,7 @@ public class CourierService : ICourierService
     {
         var courier = await _unitOfWork.ReadCourierRepository.GetAsync(CourierId);
         if (courier is null)
-            throw new ArgumentNullException();
+            throw new ArgumentNullException("Courier Not Found");
 
         var comments = _unitOfWork.ReadCourierCommentRepository.GetWhere(x => x.CourierId == courier.Id);
         var commentDtos = new List<GetCommentDto>();
@@ -101,7 +101,7 @@ public class CourierService : ICourierService
 
     public List<InfoOrderDto> GetNewOrder()
     {
-        var neworders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.CourierId == default).ToList();
+        var neworders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.CourierId == "").ToList();
         if (neworders.Count == 0)
             throw new ArgumentNullException();
 
@@ -127,13 +127,12 @@ public class CourierService : ICourierService
 
     public async Task<IEnumerable<InfoOrderDto>> GetOrderHistory(string courierId)
     {
-        Courier? courier = await _unitOfWork.ReadCourierRepository.GetAsync(courierId);
-        List<InfoOrderDto> PastOrders = new List<InfoOrderDto>();
-
+        var courier = await _unitOfWork.ReadCourierRepository.GetAsync(courierId);
         if (courier is null)
-            throw new NullReferenceException();
+            throw new NullReferenceException("Courier Not Found");
 
 
+        List<InfoOrderDto> PastOrders = new List<InfoOrderDto>();
         foreach (var item in courier.OrderIds)
         {
             var order = await _unitOfWork.ReadOrderRepository.GetAsync(item);
@@ -166,7 +165,7 @@ public class CourierService : ICourierService
         var pastOrder = await _unitOfWork.ReadOrderRepository.GetAsync(pastOrderId);
 
         if (pastOrder is null || pastOrder.OrderFinishTime == default)
-            throw new ArgumentNullException();
+            throw new ArgumentNullException("Order Not Finish");
 
         var rateOrder = await _unitOfWork.ReadOrderRatingRepository.GetAsync(pastOrder.OrderRatingId);
         if (rateOrder is null)
@@ -195,7 +194,7 @@ public class CourierService : ICourierService
         var courier = await _unitOfWork.ReadCourierRepository.GetAsync(courierId);
 
         if (courier is null)
-            throw new NullReferenceException();
+            throw new NullReferenceException("Courier Not Found");
 
         await UpdateRaitingCourier(courierId);
 
@@ -218,7 +217,7 @@ public class CourierService : ICourierService
     {
         var order = await _unitOfWork.ReadOrderRepository.GetAsync(orderDto.OrderId);
         if (order is null)
-            throw new ArgumentNullException();
+            throw new ArgumentNullException("Order Not Found");
 
         if (order.OrderStatus != OrderStatus.Delivered && order.CourierId == orderDto.CourierId)
             order.CourierId = string.Empty;
@@ -312,20 +311,20 @@ public class CourierService : ICourierService
         if (courier is null)
             throw new ArgumentNullException();
 
-        var average = new List<int>();
+        var average = new List<float>();
         foreach (var item in courier.CourierCommentIds)
         {
             var comment = await _unitOfWork.ReadCourierCommentRepository.GetAsync(item);
             if (comment is not null)
             {
-                average.Add(Convert.ToInt32(comment.Rate));
+                average.Add(comment.Rate);
             }
         }
 
         if (average.Count == 0)
             courier.Rating = 0;
         else
-            courier.Rating = Convert.ToInt32(average.Average());
+            courier.Rating = Convert.ToSingle(average.Average());
 
 
         var result = await _unitOfWork.WriteCourierRepository.UpdateAsync(courier.Id);

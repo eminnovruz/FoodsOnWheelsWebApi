@@ -4,6 +4,7 @@ using System.Net;
 using Application.Services.IHelperServices;
 using Domain.Models.Enums;
 
+
 namespace Infrastructure.Services.HelperServices;
 
 public class MailService : IMailService
@@ -19,25 +20,26 @@ public class MailService : IMailService
     {
         string statusMessage = GetStatusMessage(orderStatus);
 
-        using var client = new SmtpClient()
-        {
-            Host = _config.Host,
-            Port = _config.Port,
-            EnableSsl = _config.EnableSsl,
-            Credentials = new NetworkCredential(_config.Username, _config.Password)
-        };
+            using var client = new SmtpClient()
+            {
+                Host = _config.Host,
+                Port = _config.Port,
+                EnableSsl = _config.EnableSsl,
+                Credentials = new NetworkCredential(_config.Username, _config.Password)
+            };
 
-        using var mailMessage = new MailMessage()
-        {
-            IsBodyHtml = true,
-            Subject = statusMessage,
-            Body = $"<h1>{statusMessage}</h1>"
-        };
+            using var mailMessage = new MailMessage()
+            {
+                IsBodyHtml = true,
+                Subject = statusMessage,
+                Body = $"<h1>{statusMessage}</h1>"
+            };
 
-        mailMessage.From = new MailAddress(_config.Username);
-        mailMessage.To.Add(new MailAddress(email));
+            mailMessage.From = new MailAddress(_config.Username);
+            mailMessage.To.Add(new MailAddress(email));
 
-        client.Send(mailMessage);
+            client.Send(mailMessage);
+
     }
 
     public string GetStatusMessage(OrderStatus orderStatus)

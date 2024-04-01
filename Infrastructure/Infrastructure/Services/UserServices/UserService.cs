@@ -247,12 +247,15 @@ public class UserService : IUserService
         var user = await _unitOfWork.ReadUserRepository.GetAsync(request.UserId);
         if (user is null)
             throw new ArgumentNullException("User not found");
+        var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(request.RestaurantId);
+        if (restaurant is null)
+            throw new ArgumentNullException("Restaurant not found");
 
         var newOrder = new Order()
         {
+            Id = Guid.NewGuid().ToString(),
             Amount = CalculateOrderAmountAsync(request.FoodIds),
             CourierId = "",
-            Id = Guid.NewGuid().ToString(),
             IsActivated = false,
             OrderDate = DateTime.Now,
             OrderedFoodIds = request.FoodIds,
@@ -260,15 +263,22 @@ public class UserService : IUserService
             OrderRatingId = "",
             RestaurantId = request.RestaurantId,
             OrderStatus = 0,
-            OrderFinishTime = default
+            OrderFinishTime = default,
         };
+
+
 
         if (request.PayWithCard)
         {
             newOrder.PayedWithCard = request.PayWithCard;
+            newOrder.BankCardId = user.SelectBankCardId;
         }
 
         user.OrderIds.Add(newOrder.Id);
+        restaurant.OrderIds.Add(newOrder.Id);
+
+        await _unitOfWork.WriteRestaurantRepository.UpdateAsync(restaurant.Id);
+        await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
 
         await _unitOfWork.WriteUserRepository.UpdateAsync(user.Id);
         await _unitOfWork.WriteUserRepository.SaveChangesAsync();
@@ -313,7 +323,7 @@ public class UserService : IUserService
 
         courier.ActiveOrderId = string.Empty;
         courier.CourierCommentIds.Add(courierComment.Id);
-
+        courier.OrderIds.Add(order.Id);
 
         await _unitOfWork.WriteCourierCommentRepository.AddAsync(courierComment);
         await _unitOfWork.WriteCourierCommentRepository.SaveChangesAsync();

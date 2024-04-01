@@ -8,6 +8,6 @@ public class SummaryCourierDto
     public string Email { get; set; }
     public string PhoneNumber { get; set; }
     public DateTime BirthDate { get; set; }
-    public int Rating { get; set; }
+    public float Rating { get; set; }
     public int OrderSize { get; set; }
 }

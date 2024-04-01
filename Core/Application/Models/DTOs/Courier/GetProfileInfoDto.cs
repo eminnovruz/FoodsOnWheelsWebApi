@@ -8,5 +8,5 @@ public class GetProfileInfoDto
     public string PhoneNumber { get; set; }
     public DateTime BirthDate { get; set; }
     public List<string> OrderIds { get; set; }
-    public int Rating { get; set; }
+    public float Rating { get; set; }
 }
