@@ -21,7 +21,7 @@ public interface IUserService
 
     Task<bool> UpdateProfile(UpdateUserDto dto);
 
-    Task<bool> UpdateProfilePasssword(UpdateRestaurantPasswordDto dto);
+    Task<bool> UpdateProfilePasssword(UpdateUserPasswordDto dto);
 
     Task<bool> RemoveProfile(string userId);
 
@@ -32,12 +32,14 @@ public interface IUserService
     Task<bool> MakeOrder(MakeOrderDto request);
 
     Task<bool> AddBankCard(AddBankCardDto cardDto);
-    
+
     Task<bool> RemoveBankCard(string cardId);
-    
+
+    Task<bool> UpdateSelectBankCard(UpdateSelectBankCardDto cardDto);
+
     Task<bool> UpdateBankCard(UpdateBankCardDto cardDto);
-    
+
     Task<GetBankCardDto> GetUserBankCard(string cardId);
-    
+
     IEnumerable<GetBankCardDto> GetAllUserBankCard(string userId);
 }

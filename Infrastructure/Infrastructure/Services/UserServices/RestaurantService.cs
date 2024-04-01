@@ -32,8 +32,8 @@ namespace Infrastructure.Services.UserServices
             _updateAppUserPasswordValidator = updateAppUserPasswordValidator;
             _blobSerice = blobSerice;
         }
-        
-        
+
+
         #region Profile
 
         public async Task<RestaurantInfoDto> GetProfileInfo(string Id)
@@ -56,7 +56,6 @@ namespace Infrastructure.Services.UserServices
 
             return restaurantDto;
         }
-
 
         public async Task<bool> UpdateProfile(UpdateRestaurantDto dto)
         {
@@ -102,7 +101,7 @@ namespace Infrastructure.Services.UserServices
         }
 
 
-        public async Task<bool> UpdateProfilePasssword(UpdateRestaurantPasswordDto dto)
+        public async Task<bool> UpdateProfilePasssword(UpdateUserPasswordDto dto)
         {
             var isValid = _updateAppUserPasswordValidator.Validate(dto);
 
@@ -141,6 +140,7 @@ namespace Infrastructure.Services.UserServices
                 await _unitOfWork.WriteRestaurantCommentRepository.RemoveAsync(item);
 
             await _unitOfWork.WriteRestaurantCommentRepository.SaveChangesAsync();
+
 
 
             foreach (var item in resturant.OrderIds)
@@ -188,18 +188,18 @@ namespace Infrastructure.Services.UserServices
 
             if (request.FoodIds.Count != 0)
             {
-                var foods =_unitOfWork.ReadFoodRepository.GetAll().ToList();
+                var foods = _unitOfWork.ReadFoodRepository.GetAll().ToList();
                 if (foods is null || foods.Count == 0)
                     throw new ArgumentNullException("Foods Is Not Found");
 
                 foreach (var item in request.FoodIds)
                 {
-                   var food = foods.FirstOrDefault(x => x?.Id == item); 
-                   if (food == default)
+                    var food = foods.FirstOrDefault(x => x?.Id == item);
+                    if (food == default)
                         throw new ArgumentNullException("Food Id Is Not Found");
-                   
+
                     food.CategoryIds.Add(category.Id);
-                    
+
                     await _unitOfWork.WriteFoodRepository.UpdateAsync(food.Id);
                     await _unitOfWork.WriteFoodRepository.SaveChangesAsync();
                 }
@@ -255,15 +255,15 @@ namespace Infrastructure.Services.UserServices
             }
 
             restaurant.FoodIds.Add(food.Id);
-           
+
             await _unitOfWork.WriteRestaurantRepository.UpdateAsync(restaurant.Id);
             await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
             await _unitOfWork.WriteFoodRepository.AddAsync(food);
             await _unitOfWork.WriteFoodRepository.SaveChangesAsync();
-            
+
             return true;
         }
-        
+
 
         public async Task<bool> InLastDecidesSituation(InLastSituationOrderDto orderDto)
         {
@@ -285,7 +285,7 @@ namespace Infrastructure.Services.UserServices
 
         public IEnumerable<InfoOrderDto> WaitingOrders(string resturantId)
         {
-            var orders = _unitOfWork.ReadOrderRepository.GetWhere(x=> x.RestaurantId == resturantId && x.OrderStatus == OrderStatus.Waiting).ToList();
+            var orders = _unitOfWork.ReadOrderRepository.GetWhere(x => x.RestaurantId == resturantId && x.OrderStatus == OrderStatus.Waiting).ToList();
             if (orders.Count == 0)
                 throw new ArgumentNullException("There are no orders");
 
@@ -329,7 +329,7 @@ namespace Infrastructure.Services.UserServices
                     byte rating = 0;
                     if (rateOrder is not null)
                         rating = rateOrder.Rate;
-                    
+
                     ordersDto.Add(new InfoOrderDto
                     {
                         Id = order.Id,
@@ -438,9 +438,9 @@ namespace Infrastructure.Services.UserServices
                 UserId = order.UserId,
                 Amount = order.Amount,
                 OrderStatus = order.OrderStatus,
-                Rate = rateOrder.Rate 
+                Rate = rateOrder.Rate
             };
-          
+
             return pastOrders;
         }
 
@@ -517,18 +517,18 @@ namespace Infrastructure.Services.UserServices
                 }
             }
             var averageOrders = ordersRaiting.Average();
-            
+
             if (comments.Count != 0)
             {
                 var averageComments = comments.Average(x => x?.Rating);
-                var average =  (averageComments + averageOrders) / 2;
+                var average = (averageComments + averageOrders) / 2;
                 resturant.Rating = Convert.ToUInt32(average);
             }
             else
             {
                 var average = averageOrders;
                 resturant.Rating = Convert.ToUInt32(average);
-            } 
+            }
 
 
 

@@ -6,6 +6,7 @@ using Application.Models.DTOs.Restaurant;
 using Application.Models.DTOs.User;
 using Application.Models.DTOs.Worker;
 using Application.Services.IUserServices;
+using Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 
@@ -24,7 +25,7 @@ public class WorkerController : ControllerBase
 
     #region Restaurant
     [HttpPost("addNewRestaurant")]
-    public async Task<ActionResult<bool>> AddNewRestaurant([FromForm]AddRestaurantDto request)
+    public async Task<ActionResult<bool>> AddNewRestaurant([FromForm] AddRestaurantDto request)
     {
         try
         {
@@ -33,13 +34,13 @@ public class WorkerController : ControllerBase
         catch (Exception exception)
         {
             Log.Error("error occured with [POST] AddNewRestaurant");
-            return BadRequest(exception.Message);   
+            return BadRequest(exception.Message);
         }
     }
 
 
     [HttpPut("updateRestaurant/{restaurantId}")]
-    public async Task<ActionResult<bool>> UpdateRestaurant([FromForm]UpdateRestaurantDto request)
+    public async Task<ActionResult<bool>> UpdateRestaurant([FromForm] UpdateRestaurantDto request)
     {
         try
         {
@@ -76,8 +77,8 @@ public class WorkerController : ControllerBase
         {
             var restaurant = await _workerService.GetRestaurantById(restaurantId);
 
-            if (restaurant == null)
-                return NotFound(); 
+            if (restaurant is null)
+                return NotFound();
 
             return Ok(restaurant);
         }
@@ -97,13 +98,28 @@ public class WorkerController : ControllerBase
             var restaurants = _workerService.GetAllRestaurants();
 
             if (restaurants == null || !restaurants.Any())
-                return NotFound(); 
+                return NotFound();
 
             return Ok(restaurants);
         }
         catch (Exception exception)
         {
             Log.Error("Error occurred on [GET] GetAllRestaurants");
+            return BadRequest(exception.Message);
+        }
+    }
+
+    [HttpPut("uptadeRestaurantPassword")]
+    public async Task<ActionResult<bool>> UptadeRestaurantPassword(UptadeRestaurantPasswordDto dto)
+    {
+        try
+        {
+            var result = await _workerService.UptadeRestaurantPassword(dto);
+            return Ok(result);
+        }
+        catch (Exception exception)
+        {
+            Log.Error("Error occurred on [PUT] UptadeRestaurantPassword");
             return BadRequest(exception.Message);
         }
     }
@@ -147,7 +163,7 @@ public class WorkerController : ControllerBase
     {
         try
         {
-            return Ok( _workerService.RemoveCategory(categoryId));
+            return Ok(_workerService.RemoveCategory(categoryId));
         }
         catch (Exception exception)
         {
@@ -165,7 +181,7 @@ public class WorkerController : ControllerBase
             var category = await _workerService.GetCategoryById(categoryId);
 
             if (category == null)
-                return NotFound(); 
+                return NotFound();
 
             return Ok(category);
         }
@@ -182,10 +198,10 @@ public class WorkerController : ControllerBase
     {
         try
         {
-            var categories =  _workerService.SeeAllCategories();
+            var categories = _workerService.SeeAllCategories();
 
             if (categories == null || !categories.Any())
-                return NotFound(); 
+                return NotFound();
 
             return Ok(categories);
         }
@@ -252,7 +268,7 @@ public class WorkerController : ControllerBase
             var courier = await _workerService.GetCourierById(courierId);
 
             if (courier == null)
-                return NotFound(); 
+                return NotFound();
 
             return Ok(courier);
         }
@@ -269,7 +285,7 @@ public class WorkerController : ControllerBase
     {
         try
         {
-            var result =  _workerService.GetAllCouriers();
+            var result = _workerService.GetAllCouriers();
             return Ok(result);
         }
         catch (Exception exception)
@@ -278,6 +294,23 @@ public class WorkerController : ControllerBase
             return BadRequest(exception.Message);
         }
     }
+
+
+    [HttpPut("updateCourierPassword")]
+    public async Task<ActionResult<bool>> UpdateCourierPassword(UpdateCourierPasswordDto dto)
+    {
+        try
+        {
+            var result = await _workerService.UpdateCourierPassword(dto);
+            return Ok(result);
+        }
+        catch (Exception exception)
+        {
+            Log.Error("Error occurred on [PUT] UpdateCourierPassword");
+            return BadRequest(exception.Message);
+        }
+    }
+
     #endregion
 
 
@@ -293,6 +326,22 @@ public class WorkerController : ControllerBase
         catch (Exception exception)
         {
             Log.Error("Error occurred on [POST] AddWorker");
+            return BadRequest(exception.Message);
+        }
+    }
+
+
+    [HttpPut("updateWorkerPassword")]
+    public async Task<ActionResult<bool>> UpdateWorkerPassword(UpdateWorkerPasswordDto dto)
+    {
+        try
+        {
+            var result = await _workerService.UpdateWorkerPassword(dto);
+            return Ok(result);
+        }
+        catch (Exception exception)
+        {
+            Log.Error("Error occurred on [PUT] UpdateWorkerPassword");
             return BadRequest(exception.Message);
         }
     }
@@ -338,7 +387,7 @@ public class WorkerController : ControllerBase
             var worker = await _workerService.GetWorkerById(workerId);
 
             if (worker == null)
-                return NotFound(); 
+                return NotFound();
 
             return Ok(worker);
         }
@@ -378,7 +427,7 @@ public class WorkerController : ControllerBase
         catch (Exception exception)
         {
             Log.Error("error occured with [POST] AddNewRestaurant");
-            return BadRequest(exception.Message);   
+            return BadRequest(exception.Message);
         }
     }
 
@@ -443,7 +492,7 @@ public class WorkerController : ControllerBase
             var foods = _workerService.SeeAllFoods();
 
             if (foods == null || !foods.Any())
-                return NotFound(); 
+                return NotFound();
 
             return Ok(foods);
         }
@@ -484,6 +533,22 @@ public class WorkerController : ControllerBase
         catch (Exception exception)
         {
             Log.Error("Error occurred on [PUT] UpdateUser");
+            return BadRequest(exception.Message);
+        }
+    }
+
+
+    [HttpPut("updateUserPassword")]
+    public async Task<ActionResult<bool>> UpdateUserPassword(UpdateUserPasswordDto dto)
+    {
+        try
+        {
+            var result = await _workerService.UpdateUserPassword(dto);
+            return Ok(result);
+        }
+        catch (Exception exception)
+        {
+            Log.Error("Error occurred on [PUT] UpdateUserPassword");
             return BadRequest(exception.Message);
         }
     }

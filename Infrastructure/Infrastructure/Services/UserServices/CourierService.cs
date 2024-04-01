@@ -79,9 +79,9 @@ public class CourierService : ICourierService
         var courier = await _unitOfWork.ReadCourierRepository.GetAsync(CourierId);
         if (courier is null)
             throw new ArgumentNullException();
-        
-        var comments = _unitOfWork.ReadCourierCommentRepository.GetWhere(x=> x.CourierId == courier.Id);
-        var commentDtos = new List<GetCommentDto>(); 
+
+        var comments = _unitOfWork.ReadCourierCommentRepository.GetWhere(x => x.CourierId == courier.Id);
+        var commentDtos = new List<GetCommentDto>();
         foreach (var comment in comments)
         {
             if (comment is not null)
@@ -120,7 +120,7 @@ public class CourierService : ICourierService
                     UserId = neworder.UserId,
                 });
         }
-       
+
         return newOrdersDto;
     }
 
@@ -185,7 +185,7 @@ public class CourierService : ICourierService
             Amount = pastOrder.Amount,
             Rate = rateOrder.Rate,
         };
-        
+
         return order;
     }
 
@@ -223,7 +223,7 @@ public class CourierService : ICourierService
         if (order.OrderStatus != OrderStatus.Delivered && order.CourierId == orderDto.CourierId)
             order.CourierId = string.Empty;
         else
-            throw new ArgumentException("Wrong"); 
+            throw new ArgumentException("Wrong");
 
         await _unitOfWork.WriteOrderRepository.UpdateAsync(order.Id);
         await _unitOfWork.WriteOrderRepository.SaveChangesAsync();
@@ -324,7 +324,7 @@ public class CourierService : ICourierService
 
         if (average.Count == 0)
             courier.Rating = 0;
-        else 
+        else
             courier.Rating = Convert.ToInt32(average.Average());
 
 

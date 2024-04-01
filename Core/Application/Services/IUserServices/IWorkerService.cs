@@ -1,5 +1,4 @@
-﻿using Application.Models.DTOs.Auth;
-using Application.Models.DTOs.Category;
+﻿using Application.Models.DTOs.Category;
 using Application.Models.DTOs.Courier;
 using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Restaurant;
@@ -12,6 +11,7 @@ public interface IWorkerService
 {
 
     #region Resturant
+
     Task<bool> AddRestaurant(AddRestaurantDto dto);
 
     Task<bool> UptadeRestaurant(UpdateRestaurantDto dto);
@@ -23,10 +23,12 @@ public interface IWorkerService
     Task<RestaurantInfoDto> GetRestaurantById(string id);
 
     IEnumerable<RestaurantInfoDto> GetAllRestaurants();
+
     #endregion
 
 
     #region Category
+
     Task<bool> AddCategory(AddCategoryRequest request);
 
     Task<bool> UpdateCategory(UpdateCategoryRequest request);
@@ -36,10 +38,12 @@ public interface IWorkerService
     Task<CategoryInfoDto> GetCategoryById(string id);
 
     IEnumerable<CategoryInfoDto> SeeAllCategories();
+
     #endregion
 
 
     #region Courier
+
     Task<bool> AddCourier(AddCourierDto dto);
 
     Task<bool> UpdateCourier(UpdateCourierDto dto);
@@ -51,10 +55,12 @@ public interface IWorkerService
     Task<SummaryCourierDto> GetCourierById(string id);
 
     IEnumerable<SummaryCourierDto> GetAllCouriers();
+
     #endregion
 
 
     #region Worker
+
     Task<bool> AddWorker(AddWorkerDto dto);
 
     Task<bool> UpdateWorker(UpdateWorkerDto dto);
@@ -66,6 +72,7 @@ public interface IWorkerService
     Task<GetWorkerDto> GetWorkerById(string id);
 
     IEnumerable<GetWorkerDto> GetAllWorkers();
+
     #endregion
 
 
@@ -83,17 +90,19 @@ public interface IWorkerService
 
 
     #region User
+
     Task<bool> AddUser(AddUserDto dto);
 
     Task<bool> UpdateUser(UpdateUserDto dto);
 
-    Task<bool> UpdateUserPassword(UpdateRestaurantPasswordDto dto);
+    Task<bool> UpdateUserPassword(UpdateUserPasswordDto dto);
 
     Task<bool> RemoveUser(string id);
 
     Task<GetUserProfileInfoDto> GetUserById(string id);
 
     IEnumerable<GetUserProfileInfoDto> GetAllUsers();
+
     #endregion
 
 }

@@ -54,18 +54,18 @@ public class UserService : IUserService
     public async Task<bool> RemoveProfile(string userId)
     {
         var user = await _unitOfWork.ReadUserRepository.GetAsync(userId);
-        if (user is  null)
+        if (user is null)
             throw new ArgumentNullException("User not found");
 
-        var bankCard = _unitOfWork.ReadBankCardRepository.GetWhere(x=> x.UserId == userId);
+        var bankCard = _unitOfWork.ReadBankCardRepository.GetWhere(x => x.UserId == userId);
         foreach (var item in bankCard)
         {
             if (item is not null)
                 await _unitOfWork.WriteBankCardRepository.RemoveAsync(item.Id);
         }
         await _unitOfWork.WriteUserRepository.RemoveAsync(userId);
-        
-        
+
+
         await _unitOfWork.WriteBankCardRepository.SaveChangesAsync();
         await _unitOfWork.WriteUserRepository.SaveChangesAsync();
 
@@ -101,7 +101,7 @@ public class UserService : IUserService
             throw new ArgumentException("No Valid");
     }
 
-    public async Task<bool> UpdateProfilePasssword(UpdateRestaurantPasswordDto dto)
+    public async Task<bool> UpdateProfilePasssword(UpdateUserPasswordDto dto)
     {
         var isValid = _updateAppUserPasswordValidator.Validate(dto);
 
@@ -362,16 +362,19 @@ public class UserService : IUserService
     #endregion
 
     #region BankCard
+
     public async Task<bool> AddBankCard(AddBankCardDto cardDto)
     {
         var testCard = await _unitOfWork.ReadBankCardRepository.GetAsync(cardDto.CardNumber);
         if (testCard is not null)
             throw new ArgumentException("This card is unavailable, you must change it");
+
         var user = await _unitOfWork.ReadUserRepository.GetAsync(cardDto.UserId);
         if (user is null)
             throw new ArgumentException("User not found");
 
-        var newCard = new BankCard { 
+        var newCard = new BankCard
+        {
             Id = Guid.NewGuid().ToString(),
             UserId = cardDto.UserId,
             CardNumber = cardDto.CardNumber,
@@ -380,16 +383,20 @@ public class UserService : IUserService
             CardOwnerFullName = cardDto.CardOwnerFullName,
         };
 
+        if (user.BankCardsId.Count == 0)
+            user.SelectBankCardId = newCard.Id;
+
         user.BankCardsId.Add(newCard.Id);
 
         await _unitOfWork.WriteUserRepository.UpdateAsync(user.Id);
         await _unitOfWork.WriteUserRepository.SaveChangesAsync();
 
-        var result =  await _unitOfWork.WriteBankCardRepository.AddAsync(newCard);
+        var result = await _unitOfWork.WriteBankCardRepository.AddAsync(newCard);
         await _unitOfWork.WriteBankCardRepository.SaveChangesAsync();
 
         return result;
     }
+
 
     public async Task<bool> RemoveBankCard(string cardId)
     {
@@ -406,7 +413,7 @@ public class UserService : IUserService
         await _unitOfWork.WriteUserRepository.UpdateAsync(user.Id);
         await _unitOfWork.WriteUserRepository.SaveChangesAsync();
 
-        var result =  await _unitOfWork.WriteBankCardRepository.RemoveAsync(card.Id);
+        var result = await _unitOfWork.WriteBankCardRepository.RemoveAsync(card.Id);
         await _unitOfWork.WriteBankCardRepository.SaveChangesAsync();
 
         return result;
@@ -448,7 +455,7 @@ public class UserService : IUserService
 
     public IEnumerable<GetBankCardDto> GetAllUserBankCard(string userId)
     {
-        var cards =  _unitOfWork.ReadBankCardRepository.GetWhere(x=> x.UserId == userId).ToList();
+        var cards = _unitOfWork.ReadBankCardRepository.GetWhere(x => x.UserId == userId).ToList();
         if (cards.Count == 0)
             throw new ArgumentNullException("Bank Card not found");
 
@@ -466,9 +473,28 @@ public class UserService : IUserService
                     CardOwnerFullName = item.CardOwnerFullName,
                 });
             }
-        }    
-        
+        }
+
         return cardDtos;
+    }
+
+    public async Task<bool> UpdateSelectBankCard(UpdateSelectBankCardDto cardDto)
+    {
+        var user = await _unitOfWork.ReadUserRepository.GetAsync(cardDto.UserId);
+        if (user is null)
+            throw new ArgumentException("User not found");
+
+        var card = await _unitOfWork.ReadBankCardRepository.GetAsync(cardDto.BankCardId);
+        if (card is null)
+            throw new ArgumentNullException("Bank Card not found");
+
+        user.SelectBankCardId = cardDto.BankCardId;
+
+
+        var result = await _unitOfWork.WriteUserRepository.UpdateAsync(user.Id);
+        await _unitOfWork.WriteUserRepository.SaveChangesAsync();
+
+        return result;
     }
     #endregion
 
@@ -485,5 +511,4 @@ public class UserService : IUserService
 
         return amount;
     }
-
 }

@@ -13,7 +13,7 @@ namespace WebApi.Controllers
     [ApiController]
     public class CourierController : ControllerBase
     {
-        private readonly ICourierService _courierService; 
+        private readonly ICourierService _courierService;
 
         public CourierController(ICourierService courierService)
         {
@@ -26,10 +26,10 @@ namespace WebApi.Controllers
             try
             {
                 var user = await _courierService.GetProfileInfo(courierId);
-            
+
                 if (user is null)
                     return BadRequest($"Cannot find user - {courierId}. Maybe deleted or missing.");
-            
+
                 return Ok(user);
             }
             catch (Exception exception)
@@ -38,7 +38,6 @@ namespace WebApi.Controllers
                 return BadRequest(exception.Message);
             }
         }
-
 
 
         [HttpPost("updateProfile")]
@@ -51,6 +50,36 @@ namespace WebApi.Controllers
             catch (Exception exception)
             {
                 Log.Error("Error occured on [POST] UpdateProfile");
+                return BadRequest(exception.Message);
+            }
+        }
+
+
+        [HttpPost("updateProfilePasssword")]
+        public async Task<ActionResult<bool>> UpdateProfilePasssword(UpdateCourierPasswordDto dto)
+        {
+            try
+            {
+                return Ok(await _courierService.UpdateProfilePasssword(dto));
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [POST] UpdateProfilePasssword");
+                return BadRequest(exception.Message);
+            }
+        }
+
+
+        [HttpDelete("removeProfile")]
+        public async Task<ActionResult<bool>> RemoveProfile(string courierId)
+        {
+            try
+            {
+                return Ok(await _courierService.RemoveProfile(courierId));
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [POST] RemoveProfile");
                 return BadRequest(exception.Message);
             }
         }
@@ -78,7 +107,7 @@ namespace WebApi.Controllers
         {
             try
             {
-                return Ok(GetNewOrder());
+                return Ok(_courierService.GetNewOrder());
             }
             catch (Exception exception)
             {
@@ -93,7 +122,7 @@ namespace WebApi.Controllers
         {
             try
             {
-                return Ok(await GetActiveOrderInfo(OrderId));
+                return Ok(await _courierService.GetActiveOrderInfo(OrderId));
             }
             catch (Exception exception)
             {
@@ -108,7 +137,7 @@ namespace WebApi.Controllers
         {
             try
             {
-                return Ok(await GetAllComments(CourierId));
+                return Ok(await _courierService.GetAllComments(CourierId));
             }
             catch (Exception exception)
             {
@@ -116,14 +145,14 @@ namespace WebApi.Controllers
                 return BadRequest(exception.Message);
             }
         }
-     
+
 
         [HttpGet("getPastOrderInfoById")]
         public async Task<ActionResult<InfoOrderDto>> GetPastOrderInfoById(string PastOrderId)
         {
             try
             {
-                return Ok(await GetPastOrderInfoById(PastOrderId));
+                return Ok(await _courierService.GetPastOrderInfoById(PastOrderId));
             }
             catch (Exception exception)
             {
@@ -138,7 +167,7 @@ namespace WebApi.Controllers
         {
             try
             {
-                return Ok(await AcceptOrder(request));
+                return Ok(await _courierService.AcceptOrder(request));
             }
             catch (Exception exception)
             {
@@ -153,7 +182,7 @@ namespace WebApi.Controllers
         {
             try
             {
-                return Ok(await RejectOrder(orderDto));
+                return Ok(await _courierService.RejectOrder(orderDto));
             }
             catch (Exception exception)
             {

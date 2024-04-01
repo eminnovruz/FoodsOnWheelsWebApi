@@ -19,9 +19,9 @@ namespace Infrastructure.Services.UserServices;
 public class WorkerService : IWorkerService
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IValidator<AddAppUserDto> _addAppUserValidator; 
+    private readonly IValidator<AddAppUserDto> _addAppUserValidator;
     private readonly IPassHashService _hashService;
-    private readonly IValidator<UpdateAppUserDto> _updateAppUserValidator; 
+    private readonly IValidator<UpdateAppUserDto> _updateAppUserValidator;
     private readonly IValidator<UpdateAppUserPasswordDto> _updateAppUserPasswordValidator;
     private readonly IBlobService _blobSerice;
 
@@ -170,10 +170,10 @@ public class WorkerService : IWorkerService
 
         await _unitOfWork.WriteRestaurantCommentRepository.SaveChangesAsync();
 
-        
+
         foreach (var item in resturant.OrderIds)
         {
-            var order =await _unitOfWork.ReadOrderRepository.GetAsync(item);
+            var order = await _unitOfWork.ReadOrderRepository.GetAsync(item);
             if (order is not null)
             {
                 if (order.OrderStatus == OrderStatus.Preparing)
@@ -203,7 +203,7 @@ public class WorkerService : IWorkerService
 
         if (restaurant == null)
             throw new ArgumentNullException("Restaurant not found...");
-            
+
         var restaurantDto = new RestaurantInfoDto
         {
             Id = restaurant.Id,
@@ -547,7 +547,7 @@ public class WorkerService : IWorkerService
             existingWorker.Email = dto.Email;
             existingWorker.PhoneNumber = dto.PhoneNumber;
 
-           
+
             var result = await _unitOfWork.WriteWorkerRepository.UpdateAsync(existingWorker.Id);
             await _unitOfWork.WriteWorkerRepository.SaveChangesAsync();
 
@@ -581,7 +581,7 @@ public class WorkerService : IWorkerService
 
             return result;
         }
-        else 
+        else
             throw new ArgumentException("No Valid");
     }
 
@@ -777,7 +777,7 @@ public class WorkerService : IWorkerService
         return foodDto;
     }
 
-    public IEnumerable<FoodInfoDto> SeeAllFoods() 
+    public IEnumerable<FoodInfoDto> SeeAllFoods()
     {
         var foods = _unitOfWork.ReadFoodRepository.GetAll();
         if (foods is null)
@@ -866,7 +866,7 @@ public class WorkerService : IWorkerService
             throw new ArgumentException("No Valid");
     }
 
-    public async Task<bool> UpdateUserPassword(UpdateRestaurantPasswordDto dto)
+    public async Task<bool> UpdateUserPassword(UpdateUserPasswordDto dto)
     {
         var isValid = _updateAppUserPasswordValidator.Validate(dto);
 

@@ -2,6 +2,7 @@
 using Application.Models.DTOs.Food;
 using Application.Models.DTOs.Order;
 using Application.Models.DTOs.Restaurant;
+using Application.Models.DTOs.User;
 using Application.Services.IUserServices;
 using Azure.Core;
 using Microsoft.AspNetCore.Mvc;
@@ -13,19 +14,19 @@ namespace WebApi.Controllers
     [ApiController]
     public class RestaurantController : ControllerBase
     {
-        private readonly IRestaurantService restaurantService;
+        private readonly IRestaurantService _restaurantService;
 
         public RestaurantController(IRestaurantService restaurantService)
         {
-            this.restaurantService = restaurantService;
+            this._restaurantService = restaurantService;
         }
 
         [HttpPost("addCategory")]
-        public async Task<ActionResult<bool>> AddCategory(AddCategoryRequest request) 
+        public async Task<ActionResult<bool>> AddCategory(AddCategoryRequest request)
         {
             try
             {
-                return Ok(await restaurantService.AddCategory(request));
+                return Ok(await _restaurantService.AddCategory(request));
             }
             catch (Exception exception)
             {
@@ -35,11 +36,11 @@ namespace WebApi.Controllers
         }
 
         [HttpPost("addFood")]
-        public async Task<ActionResult<bool>> AddFood([FromForm]AddFoodRequest request)
+        public async Task<ActionResult<bool>> AddFood([FromForm] AddFoodRequest request)
         {
             try
             {
-                return Ok(await restaurantService.AddFood(request));
+                return Ok(await _restaurantService.AddFood(request));
             }
             catch (Exception exception)
             {
@@ -53,7 +54,7 @@ namespace WebApi.Controllers
         {
             try
             {
-                return Ok(await restaurantService.InLastDecidesSituation(orderDto));
+                return Ok(await _restaurantService.InLastDecidesSituation(orderDto));
             }
             catch (Exception exception)
             {
@@ -62,12 +63,55 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpGet("getRestaurantInfo")]
-        public async Task<ActionResult<RestaurantInfoDto>> GetRestaurantInfo([FromQuery]string Id)
+        [HttpPut("updateProfile")]
+        public async Task<ActionResult<bool>> UpdateProfile(UpdateRestaurantDto dto)
         {
             try
             {
-                return Ok(await restaurantService.GetProfileInfo(Id));
+                return Ok(await _restaurantService.UpdateProfile(dto));
+            }
+            catch (Exception exception)
+            {
+                Log.Error($"Error occured on [PUT] UpdateProfile : {exception.Message}");
+                return BadRequest(exception.Message);
+            }
+        }
+
+        [HttpPut("updateProfilePasssword")]
+        public async Task<ActionResult<bool>> UpdateProfilePasssword(UpdateUserPasswordDto dto)
+        {
+            try
+            {
+                return Ok(await _restaurantService.UpdateProfilePasssword(dto));
+            }
+            catch (Exception exception)
+            {
+                Log.Error($"Error occured on [PUT] UpdateProfilePasssword");
+                return BadRequest(exception.Message);
+            }
+        }
+
+        [HttpDelete("RemoveProfile")]
+        public async Task<ActionResult<bool>> RemoveProfile(string restaurantId)
+        {
+            try
+            {
+                return Ok(await _restaurantService.RemoveProfile(restaurantId));
+            }
+            catch (Exception exception)
+            {
+                Log.Error($"Error occured on [DELETE] RemoveProfile");
+                return BadRequest(exception.Message);
+            }
+        }
+
+
+        [HttpGet("getRestaurantInfo")]
+        public async Task<ActionResult<RestaurantInfoDto>> GetRestaurantInfo([FromQuery] string Id)
+        {
+            try
+            {
+                return Ok(await _restaurantService.GetProfileInfo(Id));
             }
             catch (Exception exception)
             {
@@ -77,15 +121,30 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("getActiveOrders")]
-        public ActionResult<List<InfoOrderDto>> GetActiveOrders([FromQuery]string Id)
+        public ActionResult<List<InfoOrderDto>> GetActiveOrders([FromQuery] string Id)
         {
             try
             {
-                return Ok(restaurantService.GetActiveOrders(Id));
+                return Ok(_restaurantService.GetActiveOrders(Id));
             }
             catch (Exception exception)
             {
                 Log.Error($"Error occured on [GET] GetActiveOrders : {exception.Message}");
+                return BadRequest(exception.Message);
+            }
+        }
+
+
+        [HttpGet("getAllOrders")]
+        public async Task<ActionResult<IEnumerable<InfoOrderDto>>> GetAllOrders(string resturantId)
+        {
+            try
+            {
+                return Ok(await _restaurantService.GetAllOrders(resturantId));
+            }
+            catch (Exception exception)
+            {
+                Log.Error($"Error occured on [GET] GetAllOrders : {exception.Message}");
                 return BadRequest(exception.Message);
             }
         }
@@ -95,7 +154,7 @@ namespace WebApi.Controllers
         {
             try
             {
-                return Ok(restaurantService.GetOrderHistory(Id));
+                return Ok(_restaurantService.GetOrderHistory(Id));
             }
             catch (Exception exception)
             {
@@ -109,7 +168,7 @@ namespace WebApi.Controllers
         {
             try
             {
-                return Ok(restaurantService.GetPastOrderInfoById(Id));
+                return Ok(_restaurantService.GetPastOrderInfoById(Id));
             }
             catch (Exception exception)
             {
@@ -123,7 +182,7 @@ namespace WebApi.Controllers
         {
             try
             {
-                return Ok(restaurantService.WaitingOrders(resturantId));
+                return Ok(_restaurantService.WaitingOrders(resturantId));
             }
             catch (Exception exception)
             {
@@ -137,7 +196,7 @@ namespace WebApi.Controllers
         {
             try
             {
-                return Ok(await restaurantService.UpdateStatusOrder(statusDto));
+                return Ok(await _restaurantService.UpdateStatusOrder(statusDto));
             }
             catch (Exception exception)
             {
@@ -151,7 +210,7 @@ namespace WebApi.Controllers
         {
             try
             {
-                return Ok(await restaurantService.RemoveFood(Id));
+                return Ok(await _restaurantService.RemoveFood(Id));
             }
             catch (Exception exception)
             {

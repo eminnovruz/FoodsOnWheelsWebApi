@@ -24,13 +24,13 @@ namespace WebApi.Controllers
         }
 
         #region GET
-        
+
         [HttpGet("getAllRestaurants")]
         public ActionResult<RestaurantInfoDto> GetAllRestaurants()
         {
             try
             {
-                return Ok( _userService.GetAllRestaurants());
+                return Ok(_userService.GetAllRestaurants());
             }
             catch (Exception exception)
             {
@@ -52,7 +52,7 @@ namespace WebApi.Controllers
                 return BadRequest(exception.Message);
             }
         }
-        
+
         [HttpGet("getFoodsByCategory")]
         public ActionResult<FoodInfoDto> GetFoodsByCategory(string categoryId)
         {
@@ -177,6 +177,7 @@ namespace WebApi.Controllers
             }
         }
 
+
         [HttpPost("updateProfile")]
         public async Task<ActionResult<bool>> UpdateProfile(UpdateUserDto dto)
         {
@@ -187,6 +188,35 @@ namespace WebApi.Controllers
             catch (Exception exception)
             {
                 Log.Error("Error occured on [POST] UpdateProfile");
+                return BadRequest(exception.Message);
+            }
+        }
+
+
+        [HttpPost("updateProfilePasssword")]
+        public async Task<ActionResult<bool>> UpdateProfilePasssword(UpdateUserPasswordDto dto)
+        {
+            try
+            {
+                return Ok(await _userService.UpdateProfilePasssword(dto));
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [POST] UpdateProfilePasssword");
+                return BadRequest(exception.Message);
+            }
+        }
+
+        [HttpPost("updateSelectBankCard")]
+        public async Task<ActionResult<bool>> UpdateSelectBankCard(UpdateSelectBankCardDto cardDto)
+        {
+            try
+            {
+                return Ok(await _userService.UpdateSelectBankCard(cardDto));
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [POST] UpdateSelectBankCard");
                 return BadRequest(exception.Message);
             }
         }
@@ -209,7 +239,7 @@ namespace WebApi.Controllers
             }
         }
 
-        
+
         [HttpPost("addBankCard")]
         public async Task<ActionResult<bool>> AddBankCard(AddBankCardDto cardDto)
         {
