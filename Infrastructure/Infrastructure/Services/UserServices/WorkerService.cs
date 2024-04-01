@@ -56,11 +56,12 @@ public class WorkerService : IWorkerService
 
             var newRestaurant = new Restaurant()
             {
+                Id = Guid.NewGuid().ToString(),
                 Name = dto.Name,
                 Description = dto.Description,
+                Email = dto.Email,
                 CommentIds = new List<string>(),
                 FoodIds = new List<string>(),
-                Id = Guid.NewGuid().ToString(),
                 PassHash = passHash,
                 PassSalt = passSalt,
                 Rating = 0,
@@ -415,7 +416,7 @@ public class WorkerService : IWorkerService
         {
             Id = Guid.NewGuid().ToString(),
             CategoryName = request.CategoryName,
-            FoodIds = request.FoodIds,
+            FoodIds = new List<string>(),
         };
 
         var result = await _unitOfWork.WriteCategoryRepository.AddAsync(newCategory);

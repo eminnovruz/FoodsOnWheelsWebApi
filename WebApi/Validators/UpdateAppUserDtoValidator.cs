@@ -7,8 +7,6 @@ namespace WebApi.Validators
     {
         public UpdateAppUserDtoValidator()
         {
-
-
             RuleFor(c => c.Email)
                 .NotEmpty()
                 .WithMessage("Email address is required!")

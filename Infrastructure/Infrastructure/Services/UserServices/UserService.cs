@@ -19,14 +19,17 @@ public class UserService : IUserService
     private readonly IPassHashService _hashService;
     private readonly IValidator<UpdateAppUserPasswordDto> _updateAppUserPasswordValidator;
     private readonly IValidator<UpdateAppUserDto> _updateAppUserValidator;
+    private readonly IValidator<AddBankCardDto> _addBankCardDtoValidator;
 
-    public UserService(IUnitOfWork unitOfWork, IPassHashService hashService, IValidator<UpdateAppUserPasswordDto> updateAppUserPasswordValidator, IValidator<UpdateAppUserDto> updateAppUserValidator)
+    public UserService(IUnitOfWork unitOfWork, IPassHashService hashService, IValidator<UpdateAppUserPasswordDto> updateAppUserPasswordValidator, IValidator<UpdateAppUserDto> updateAppUserValidator, IValidator<AddBankCardDto> addBankCardDtoValidator)
     {
         _unitOfWork = unitOfWork;
         _hashService = hashService;
         _updateAppUserPasswordValidator = updateAppUserPasswordValidator;
         _updateAppUserValidator = updateAppUserValidator;
+        _addBankCardDtoValidator = addBankCardDtoValidator;
     }
+
 
 
 
@@ -375,36 +378,42 @@ public class UserService : IUserService
 
     public async Task<bool> AddBankCard(AddBankCardDto cardDto)
     {
-        var testCard = await _unitOfWork.ReadBankCardRepository.GetAsync(cardDto.CardNumber);
-        if (testCard is not null)
-            throw new ArgumentException("This card is unavailable, you must change it");
-
-        var user = await _unitOfWork.ReadUserRepository.GetAsync(cardDto.UserId);
-        if (user is null)
-            throw new ArgumentException("User not found");
-
-        var newCard = new BankCard
+        var isValid = _addBankCardDtoValidator.Validate(cardDto);
+        if (isValid.IsValid)
         {
-            Id = Guid.NewGuid().ToString(),
-            UserId = cardDto.UserId,
-            CardNumber = cardDto.CardNumber,
-            CVV = cardDto.CVV,
-            ExpireDate = cardDto.ExpireDate,
-            CardOwnerFullName = cardDto.CardOwnerFullName,
-        };
 
-        if (user.BankCardsId.Count == 0)
-            user.SelectBankCardId = newCard.Id;
+            var testCard = await _unitOfWork.ReadBankCardRepository.GetAsync(cardDto.CardNumber);
+            if (testCard is not null)
+                throw new ArgumentException("This card is unavailable, you must change it");
 
-        user.BankCardsId.Add(newCard.Id);
+            var user = await _unitOfWork.ReadUserRepository.GetAsync(cardDto.UserId);
+            if (user is null)
+                throw new ArgumentException("User not found");
 
-        await _unitOfWork.WriteUserRepository.UpdateAsync(user.Id);
-        await _unitOfWork.WriteUserRepository.SaveChangesAsync();
+            var newCard = new BankCard
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = cardDto.UserId,
+                CardNumber = cardDto.CardNumber,
+                CVV = cardDto.CVV,
+                ExpireDate = cardDto.ExpireDate,
+                CardOwnerFullName = cardDto.CardOwnerFullName,
+            };
 
-        var result = await _unitOfWork.WriteBankCardRepository.AddAsync(newCard);
-        await _unitOfWork.WriteBankCardRepository.SaveChangesAsync();
+            if (user.BankCardsId.Count == 0)
+                user.SelectBankCardId = newCard.Id;
 
-        return result;
+            user.BankCardsId.Add(newCard.Id);
+
+            await _unitOfWork.WriteUserRepository.UpdateAsync(user.Id);
+            await _unitOfWork.WriteUserRepository.SaveChangesAsync();
+
+            var result = await _unitOfWork.WriteBankCardRepository.AddAsync(newCard);
+            await _unitOfWork.WriteBankCardRepository.SaveChangesAsync();
+
+            return result;
+        }
+        throw new ArgumentException("No valid");
     }
 
 

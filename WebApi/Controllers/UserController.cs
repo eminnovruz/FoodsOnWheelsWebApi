@@ -129,7 +129,7 @@ namespace WebApi.Controllers
 
         #region POST
 
-        [HttpPost("rateOrder")]
+        [HttpPut("rateOrder")]
         public async Task<ActionResult<bool>> RateOrder(RateOrderDto request)
         {
             try
@@ -138,12 +138,12 @@ namespace WebApi.Controllers
             }
             catch (Exception exception)
             {
-                Log.Error("Error occured on [POST] RateOrder");
+                Log.Error("Error occured on [PUT] RateOrder");
                 return BadRequest(exception.Message);
             }
         }
 
-        [HttpPost("reportOrder")]
+        [HttpPut("reportOrder")]
         public async Task<ActionResult<bool>> ReportOrder(ReportOrderDto request)
         {
             try
@@ -152,7 +152,7 @@ namespace WebApi.Controllers
             }
             catch (Exception exception)
             {
-                Log.Error("Error occured on [POST] RateOrder");
+                Log.Error("Error occured on [PUT] RateOrder");
                 return BadRequest(exception.Message);
             }
         }

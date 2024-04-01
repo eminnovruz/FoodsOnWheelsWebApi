@@ -40,7 +40,7 @@ namespace WebApi.Controllers
         }
 
 
-        [HttpPost("updateProfile")]
+        [HttpPut("updateProfile")]
         public async Task<ActionResult<bool>> UpdateProfile(UpdateCourierDto dto)
         {
             try
@@ -49,13 +49,13 @@ namespace WebApi.Controllers
             }
             catch (Exception exception)
             {
-                Log.Error("Error occured on [POST] UpdateProfile");
+                Log.Error("Error occured on [PUT] UpdateProfile");
                 return BadRequest(exception.Message);
             }
         }
 
 
-        [HttpPost("updateProfilePasssword")]
+        [HttpPut("updateProfilePasssword")]
         public async Task<ActionResult<bool>> UpdateProfilePasssword(UpdateCourierPasswordDto dto)
         {
             try
@@ -64,7 +64,7 @@ namespace WebApi.Controllers
             }
             catch (Exception exception)
             {
-                Log.Error("Error occured on [POST] UpdateProfilePasssword");
+                Log.Error("Error occured on [PUT] UpdateProfilePasssword");
                 return BadRequest(exception.Message);
             }
         }

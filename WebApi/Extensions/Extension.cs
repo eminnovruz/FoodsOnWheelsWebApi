@@ -1,5 +1,6 @@
 ﻿using Application.Models.Config;
 using Application.Models.DTOs.AppUser;
+using Application.Models.DTOs.BankCard;
 using Application.Models.DTOs.Restaurant;
 using Application.Repositories;
 using Application.Repositories.BankCardRepository;
@@ -127,6 +128,7 @@ public static class Extension
 
 
         services.AddTransient<IValidator<AddAppUserDto>, AddAppUserDtoValidator>();
+        services.AddTransient<IValidator<AddBankCardDto>, AddBankCardDtoValidator>();
         services.AddTransient<IValidator<UpdateAppUserDto>, UpdateAppUserDtoValidator>();
         services.AddTransient<IValidator<UpdateAppUserPasswordDto>, UpdateAppUserPasswordDtoValidator>();
 
