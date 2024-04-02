@@ -65,6 +65,7 @@ public class WorkerService : IWorkerService
                 PassHash = passHash,
                 PassSalt = passSalt,
                 Rating = 0,
+                OrderIds = new List<string>()
             };
 
             var form = dto.File;
