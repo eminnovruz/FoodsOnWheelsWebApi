@@ -17,9 +17,11 @@ namespace WebApi.Validators
                 .NotEmpty()
                 .Length(3)
                 .WithMessage("CVV is required");
+            
             RuleFor(x => x.CardOwnerFullName)
                 .NotEmpty()
                 .WithMessage("Full Name is required");
+
             RuleFor(x=> x.ExpireDate)
                 .Length(5)
                 .NotEmpty()

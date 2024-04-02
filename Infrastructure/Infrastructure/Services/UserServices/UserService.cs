@@ -259,7 +259,7 @@ public class UserService : IUserService
             Id = Guid.NewGuid().ToString(),
             Amount = CalculateOrderAmountAsync(request.FoodIds),
             CourierId = "",
-            IsActivated = false,
+            IsActivated = true,
             OrderDate = DateTime.Now,
             OrderedFoodIds = request.FoodIds,
             UserId = request.UserId,
@@ -271,7 +271,7 @@ public class UserService : IUserService
 
 
 
-        if (request.PayWithCard)
+        if (request.PayWithCard && user.SelectBankCardId != "")
         {
             newOrder.PayedWithCard = request.PayWithCard;
             newOrder.BankCardId = user.SelectBankCardId;
@@ -323,6 +323,7 @@ public class UserService : IUserService
 
         order.OrderRatingId = orderRating.Id;
         order.OrderFinishTime = DateTime.Now;
+        order.IsActivated = false;
 
         courier.ActiveOrderId = string.Empty;
         courier.CourierCommentIds.Add(courierComment.Id);
@@ -517,13 +518,13 @@ public class UserService : IUserService
     }
     #endregion
 
-    public uint CalculateOrderAmountAsync(List<string> foodIds)
+    public float CalculateOrderAmountAsync(List<string> foodIds)
     {
         var foods = _unitOfWork.ReadFoodRepository.GetAll().ToList();
         if (foods.Count == 0)
             throw new ArgumentNullException("Food not found");
 
-        uint amount = 0;
+        float amount = 0;
         foreach (var item in foods)
             if (item is not null && foodIds.Contains(item.Id))
                 amount += item.Price;

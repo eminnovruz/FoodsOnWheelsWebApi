@@ -129,7 +129,7 @@ namespace WebApi.Controllers
 
         #region POST
 
-        [HttpPut("rateOrder")]
+        [HttpPost("rateOrder")]
         public async Task<ActionResult<bool>> RateOrder(RateOrderDto request)
         {
             try
@@ -138,12 +138,12 @@ namespace WebApi.Controllers
             }
             catch (Exception exception)
             {
-                Log.Error("Error occured on [PUT] RateOrder");
+                Log.Error("Error occured on [POST] RateOrder");
                 return BadRequest(exception.Message);
             }
         }
 
-        [HttpPut("reportOrder")]
+        [HttpPost("reportOrder")]
         public async Task<ActionResult<bool>> ReportOrder(ReportOrderDto request)
         {
             try
@@ -152,7 +152,7 @@ namespace WebApi.Controllers
             }
             catch (Exception exception)
             {
-                Log.Error("Error occured on [PUT] RateOrder");
+                Log.Error("Error occured on [POST] RateOrder");
                 return BadRequest(exception.Message);
             }
         }
@@ -163,7 +163,7 @@ namespace WebApi.Controllers
 
         #region UPDATE
 
-        [HttpPost("updateBankCard")]
+        [HttpPut("updateBankCard")]
         public async Task<ActionResult<bool>> UpdateBankCard(UpdateBankCardDto cardDto)
         {
             try
@@ -172,13 +172,13 @@ namespace WebApi.Controllers
             }
             catch (Exception exception)
             {
-                Log.Error("Error occured on [POST] UpdateBankCard");
+                Log.Error("Error occured on [PUT] UpdateBankCard");
                 return BadRequest(exception.Message);
             }
         }
 
 
-        [HttpPost("updateProfile")]
+        [HttpPut("updateProfile")]
         public async Task<ActionResult<bool>> UpdateProfile(UpdateUserDto dto)
         {
             try
@@ -187,7 +187,7 @@ namespace WebApi.Controllers
             }
             catch (Exception exception)
             {
-                Log.Error("Error occured on [POST] UpdateProfile");
+                Log.Error("Error occured on [PUT] UpdateProfile");
                 return BadRequest(exception.Message);
             }
         }

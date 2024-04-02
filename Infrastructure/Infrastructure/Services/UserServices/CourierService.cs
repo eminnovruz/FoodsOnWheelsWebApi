@@ -55,8 +55,8 @@ public class CourierService : ICourierService
     public async Task<InfoOrderDto> GetActiveOrderInfo(string OrderId)
     {
         var order = await _unitOfWork.ReadOrderRepository.GetAsync(OrderId);
-        if (order is null)
-            throw new ArgumentNullException();
+        if (order is null || order.IsActivated == false)
+            throw new ArgumentNullException("Order no Active");
 
         var orderInfo = new InfoOrderDto
         {
@@ -136,8 +136,9 @@ public class CourierService : ICourierService
         foreach (var item in courier.OrderIds)
         {
             var order = await _unitOfWork.ReadOrderRepository.GetAsync(item);
-            if (order is not null)
+            if (order is not null || order?.IsActivated == false)
             {
+
                 var rateOrder = await _unitOfWork.ReadOrderRatingRepository.GetAsync(order.OrderRatingId);
                 if (rateOrder is null)
                     throw new InvalidDataException("There are no order");
@@ -164,7 +165,7 @@ public class CourierService : ICourierService
     {
         var pastOrder = await _unitOfWork.ReadOrderRepository.GetAsync(pastOrderId);
 
-        if (pastOrder is null || pastOrder.OrderFinishTime == default)
+        if (pastOrder is null || pastOrder.IsActivated == true)
             throw new ArgumentNullException("Order Not Finish");
 
         var rateOrder = await _unitOfWork.ReadOrderRatingRepository.GetAsync(pastOrder.OrderRatingId);
