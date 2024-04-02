@@ -408,7 +408,7 @@ public class WorkerService : IWorkerService
         var testCategory = _unitOfWork.ReadCategoryRepository.GetAll().ToList();
         if (testCategory.Count != 0)
         {
-            if (testCategory.FirstOrDefault(x => x?.CategoryName.ToLower() == request.CategoryName.ToLower()) == default)
+            if (testCategory.FirstOrDefault(x => x?.CategoryName.ToLower() == request.CategoryName.ToLower()) != default)
                 throw new ArgumentException("There is a category in this name, choose another name.");
         }
 
@@ -639,12 +639,9 @@ public class WorkerService : IWorkerService
     #region Food
     public async Task<bool> AddNewFood(AddFoodRequest request)
     {
-        if (request is null)
-            throw new ArgumentNullException("The Information Is Not Complete...");
-
         var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(request.RestaurantId);
         if (restaurant is null)
-            throw new ArgumentNullException("Wrong Restaurant!");
+            throw new ArgumentNullException("Wrong Restaurant");
 
         var food = new Food
         {
@@ -663,25 +660,27 @@ public class WorkerService : IWorkerService
             var contentType = form.ContentType;
 
             var blobResult = await _blobSerice.UploadFileAsync(stream, fileName, contentType);
-            if (blobResult is false) return false;
+            if (blobResult is false)
+                return false;
 
             food.ImageUrl = _blobSerice.GetSignedUrl(fileName);
         }
 
         var categorys = _unitOfWork.ReadCategoryRepository.GetAll().ToList();
-        if (categorys.Count == 0) throw new ArgumentNullException("Category is not found...");
-
+        if (categorys is null || categorys.Count == 0)
+            throw new ArgumentNullException("Categorys Is Not Found");
         foreach (var item in request.CategoryIds)
         {
             var category = categorys.FirstOrDefault(x => item == x?.Id);
-            if (category is null) throw new ArgumentNullException("Category Id Is Not Found...");
+            if (category is null)
+                throw new ArgumentNullException("Category Id Is Not Found");
             category.FoodIds.Add(food.Id);
-
             await _unitOfWork.WriteCategoryRepository.UpdateAsync(category.Id);
             await _unitOfWork.WriteCategoryRepository.SaveChangesAsync();
         }
 
         restaurant.FoodIds.Add(food.Id);
+
         await _unitOfWork.WriteRestaurantRepository.UpdateAsync(restaurant.Id);
         await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
         await _unitOfWork.WriteFoodRepository.AddAsync(food);
