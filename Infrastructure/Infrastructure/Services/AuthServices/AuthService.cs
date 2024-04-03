@@ -26,8 +26,8 @@ public class AuthService : IAuthService
 
     public string LoginUser(LoginRequest request)
     {
-        var users = _unitOfWork.ReadUserRepository.GetAll();
-        if (users is not null)
+        var users = _unitOfWork.ReadUserRepository.GetAll().ToList();
+        if (users.Count == 0)
         {
             var user = users.FirstOrDefault(req => req?.Email == request.Email,null);
             if (user is not null)
@@ -38,8 +38,8 @@ public class AuthService : IAuthService
             }
         }
 
-        var restaurants = _unitOfWork.ReadRestaurantRepository.GetAll();
-        if (restaurants is not null)
+        var restaurants = _unitOfWork.ReadRestaurantRepository.GetAll().ToList();
+        if (restaurants.Count == 0)
         {
             var restaurant = restaurants.FirstOrDefault(req => req?.Email == request.Email,null);
             if (restaurant is not null)
@@ -50,8 +50,8 @@ public class AuthService : IAuthService
             }
         }
 
-        var workers = _unitOfWork.ReadWorkerRepository.GetAll();
-        if (workers is not null)
+        var workers = _unitOfWork.ReadWorkerRepository.GetAll().ToList();
+        if (workers.Count == 0)
         {
             var worker = workers.FirstOrDefault(req => req?.Email == request.Email, null);
             if (worker is not null)
@@ -62,8 +62,8 @@ public class AuthService : IAuthService
             }
         }
 
-        var couriers = _unitOfWork.ReadCourierRepository.GetAll();
-        if (couriers is not null)
+        var couriers = _unitOfWork.ReadCourierRepository.GetAll().ToList();
+        if (couriers.Count == 0)
         {
             var courier = couriers.FirstOrDefault(req => req?.Email == request.Email, null);
             if (courier is not null)
@@ -83,12 +83,14 @@ public class AuthService : IAuthService
 
         if (isValid.IsValid)
         {
+            var users = _unitOfWork.ReadUserRepository.GetAll().ToList();
 
-            var users = _unitOfWork.ReadUserRepository.GetAll();
-
-            var specUser = users.FirstOrDefault(c => c.Email == request.Email);
-            if (specUser is not null)
-                throw new ArgumentException("This email has already exsist!");
+            if (users.Count == 0)
+            {
+                var specUser = users.FirstOrDefault(c => c.Email == request.Email);
+                if (specUser is not null)
+                    throw new ArgumentException("This email has already exsist!");
+            }
 
             _hashService.Create(request.Password, out byte[] passHash, out byte[] passSalt);
 

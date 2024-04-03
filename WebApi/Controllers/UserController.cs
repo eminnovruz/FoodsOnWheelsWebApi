@@ -6,6 +6,7 @@ using Application.Models.DTOs.Restaurant;
 using Application.Models.DTOs.User;
 using Application.Services.IUserServices;
 using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
@@ -13,6 +14,7 @@ using Serilog;
 namespace WebApi.Controllers
 {
     [Route("api/[controller]")]
+    // [Authorize]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -40,6 +42,7 @@ namespace WebApi.Controllers
         }
 
         [HttpGet("getAllCategories")]
+        // [AllowAnonymous]
         public ActionResult<CategoryInfoDto> GetAllCategories()
         {
             try
