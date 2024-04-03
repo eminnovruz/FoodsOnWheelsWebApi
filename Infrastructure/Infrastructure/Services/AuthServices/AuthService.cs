@@ -87,7 +87,7 @@ public class AuthService : IAuthService
 
             if (users.Count == 0)
             {
-                var specUser = users.FirstOrDefault(c => c.Email == request.Email);
+                var specUser = users.FirstOrDefault(c => c?.Email == request.Email);
                 if (specUser is not null)
                     throw new ArgumentException("This email has already exsist!");
             }
@@ -105,7 +105,8 @@ public class AuthService : IAuthService
                 Id = Guid.NewGuid().ToString(),
                 OrderIds = new List<string>(),
                 BankCardsId = new List<string>(),
-                PhoneNumber = request.PhoneNumber
+                PhoneNumber = request.PhoneNumber,
+                SelectBankCardId = ""
             };
 
             var result = await _unitOfWork.WriteUserRepository.AddAsync(newUser);

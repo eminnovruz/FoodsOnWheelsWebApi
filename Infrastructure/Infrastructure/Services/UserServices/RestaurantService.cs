@@ -249,6 +249,40 @@ namespace Infrastructure.Services.UserServices
             return true;
         }
 
+        public async Task<bool> UpdateFood(UpdateFoodRequest request)
+        {
+            var existingFood = await _unitOfWork.ReadFoodRepository.GetAsync(request.Id);
+
+            if (existingFood is null)
+                throw new ArgumentNullException("Food not found...");
+
+            existingFood.Name = request.Name;
+            existingFood.CategoryIds = request.CategoryIds;
+            existingFood.Description = request.Description;
+            existingFood.Price = request.Price;
+
+            if (request.File is not null)
+            {
+                await _blobSerice.DeleteFileAsync(existingFood.Id + "-" + existingFood.Name + ".jpg");
+                var form = request.File;
+                using (var stream = form.OpenReadStream())
+                {
+                    var fileName = existingFood.Id + "-" + existingFood.Name + ".jpg";
+                    var contentType = form.ContentType;
+
+                    var blobResult = await _blobSerice.UploadFileAsync(stream, fileName, contentType);
+                    if (blobResult is false)
+                        throw new BadImageFormatException("Image InValid!");
+
+                    existingFood.ImageUrl = _blobSerice.GetSignedUrl(fileName);
+                }
+            }
+
+            var result = await _unitOfWork.WriteFoodRepository.UpdateAsync(existingFood.Id);
+            await _unitOfWork.WriteFoodRepository.SaveChangesAsync();
+
+            return result;
+        }
 
         public async Task<bool> InLastDecidesSituation(InLastSituationOrderDto orderDto)
         {

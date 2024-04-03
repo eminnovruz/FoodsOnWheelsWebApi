@@ -12,6 +12,7 @@ public interface IRestaurantService
 
     Task<bool> AddFood(AddFoodRequest request);
 
+    Task<bool> UpdateFood(UpdateFoodRequest request);
     Task<bool> InLastDecidesSituation(InLastSituationOrderDto orderDto);
 
     IEnumerable<InfoOrderDto> WaitingOrders(string resturantId); // backgraund 

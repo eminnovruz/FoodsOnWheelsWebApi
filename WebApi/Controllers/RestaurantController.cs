@@ -5,6 +5,7 @@ using Application.Models.DTOs.Restaurant;
 using Application.Models.DTOs.User;
 using Application.Services.IUserServices;
 using Azure.Core;
+using Infrastructure.Services.UserServices;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 
@@ -22,7 +23,7 @@ namespace WebApi.Controllers
         }
 
         [HttpPost("addCategory")]
-        public async Task<ActionResult<bool>> AddCategory(AddCategoryRequest request)
+        public async Task<ActionResult<bool>> AddCategory([FromBody] AddCategoryRequest request)
         {
             try
             {
@@ -50,7 +51,7 @@ namespace WebApi.Controllers
         }
 
         [HttpPost("inLastDecidesSituation")]
-        public async Task<ActionResult<bool>> InLastDecidesSituation(InLastSituationOrderDto orderDto)
+        public async Task<ActionResult<bool>> InLastDecidesSituation([FromBody] InLastSituationOrderDto orderDto)
         {
             try
             {
@@ -64,7 +65,7 @@ namespace WebApi.Controllers
         }
 
         [HttpPut("updateProfile")]
-        public async Task<ActionResult<bool>> UpdateProfile(UpdateRestaurantDto dto)
+        public async Task<ActionResult<bool>> UpdateProfile([FromBody]UpdateRestaurantDto dto)
         {
             try
             {
@@ -78,7 +79,7 @@ namespace WebApi.Controllers
         }
 
         [HttpPut("updateProfilePasssword")]
-        public async Task<ActionResult<bool>> UpdateProfilePasssword(UpdateUserPasswordDto dto)
+        public async Task<ActionResult<bool>> UpdateProfilePasssword([FromBody] UpdateUserPasswordDto dto)
         {
             try
             {
@@ -90,6 +91,22 @@ namespace WebApi.Controllers
                 return BadRequest(exception.Message);
             }
         }
+
+        [HttpPut("updateFood")]
+        public async Task<ActionResult<bool>> UpdateFood([FromForm] UpdateFoodRequest request)
+        {
+            try
+            {
+                var result = await _restaurantService.UpdateFood(request);
+                return Ok(result);
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occurred on [PUT] UpdateFood");
+                return BadRequest(exception.Message);
+            }
+        }
+
 
         [HttpDelete("RemoveProfile")]
         public async Task<ActionResult<bool>> RemoveProfile(string restaurantId)

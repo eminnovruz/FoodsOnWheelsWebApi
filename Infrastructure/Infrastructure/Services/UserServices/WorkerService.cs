@@ -704,7 +704,6 @@ public class WorkerService : IWorkerService
 
         if (request.File is not null)
         {
-
             await _blobSerice.DeleteFileAsync(existingFood.Id + "-" + existingFood.Name + ".jpg");
             var form = request.File;
             using (var stream = form.OpenReadStream())
@@ -719,6 +718,7 @@ public class WorkerService : IWorkerService
                 existingFood.ImageUrl = _blobSerice.GetSignedUrl(fileName);
             }
         }
+        
         var result = await _unitOfWork.WriteFoodRepository.UpdateAsync(existingFood.Id);
         await _unitOfWork.WriteFoodRepository.SaveChangesAsync();
 
@@ -828,7 +828,8 @@ public class WorkerService : IWorkerService
                 Id = Guid.NewGuid().ToString(),
                 BankCardsId = new List<string>(),
                 OrderIds = new List<string>(),
-                PhoneNumber = dto.PhoneNumber
+                PhoneNumber = dto.PhoneNumber,
+                SelectBankCardId = ""
             };
 
             var result = await _unitOfWork.WriteUserRepository.AddAsync(newUser);
