@@ -53,7 +53,8 @@ public class AuthService : IAuthService
                 restaurant.TokenExpireDate = token.ExpireDate;
                 restaurant.RefreshToken = token.RefreshToken;
 
-
+                await _unitOfWork.WriteRestaurantRepository.UpdateAsync(restaurant.Id);
+                await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
                 return token;
             }
         }
@@ -64,7 +65,15 @@ public class AuthService : IAuthService
             var worker = workers.FirstOrDefault(req => req?.Email == request.Email, null);
             if (worker is not null)
                 if (worker is not null)
-                    return GenerateToken(worker, request);
+                {
+                    var token = GenerateToken(worker, request);
+                    worker.TokenExpireDate = token.ExpireDate;
+                    worker.RefreshToken = token.RefreshToken;
+
+                    await _unitOfWork.WriteWorkerRepository.UpdateAsync(worker.Id);
+                    await _unitOfWork.WriteWorkerRepository.SaveChangesAsync();
+                    return token;
+                }
         }
 
         var couriers = _unitOfWork.ReadCourierRepository.GetAll().ToList();
@@ -72,8 +81,16 @@ public class AuthService : IAuthService
         {
             var courier = couriers.FirstOrDefault(req => req?.Email == request.Email, null);
             if (courier is not null)
-                if (courier is not null)
-                    return GenerateToken(courier, request);
+            {
+
+                var token = GenerateToken(courier, request);
+                courier.TokenExpireDate = token.ExpireDate;
+                courier.RefreshToken = token.RefreshToken;
+
+                await _unitOfWork.WriteCourierRepository.UpdateAsync(courier.Id);
+                await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
+                return token;
+            }
         }
 
         throw new ArgumentNullException("You haven't an account!");
