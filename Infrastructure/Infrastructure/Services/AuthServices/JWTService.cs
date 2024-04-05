@@ -27,12 +27,11 @@ public class JWTService : IJWTService
 
 
         var claims = new[]{
-                new Claim(ClaimsIdentity.DefaultNameClaimType, email),
-                new Claim("userId", id),
-                new Claim(ClaimTypes.Role , role)
+            new Claim(ClaimsIdentity.DefaultNameClaimType, email),
+            new Claim("userId", id),
+            new Claim(ClaimTypes.Role , role)
         };
 
-        authTokenDto.ExpireDate = DateTime.Now.AddHours(_config.ExpiresDate);
 
         var token = new JwtSecurityToken(
             issuer: _config.Issuer,
@@ -50,7 +49,7 @@ public class JWTService : IJWTService
         random.GetBytes(numbers);
 
         authTokenDto.RefreshToken = Convert.ToBase64String(numbers);
-        authTokenDto.RefreshExpireDate = authTokenDto.ExpireDate.AddMinutes(10);
+        authTokenDto.ExpireDate = DateTime.Now.AddHours(_config.ExpiresDate).AddMinutes(10);
 
         return authTokenDto;
     }

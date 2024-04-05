@@ -1,6 +1,4 @@
-﻿using Domain.Models.Common;
-
-namespace Domain.Models;
+﻿namespace Domain.Models;
 
 
 public class Courier : AppUser

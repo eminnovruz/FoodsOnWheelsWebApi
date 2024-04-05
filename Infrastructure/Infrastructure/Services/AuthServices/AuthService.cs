@@ -24,18 +24,22 @@ public class AuthService : IAuthService
         _jwtService = jwtService;
     }
 
-    public AuthTokenDto LoginUser(LoginRequest request)
+
+    public async Task<AuthTokenDto> LoginUser(LoginRequest request)
     {
         var users = _unitOfWork.ReadUserRepository.GetAll().ToList();
         if (users.Count != 0)
         {
-            var user = users.FirstOrDefault(req => req?.Email == request.Email,null);
+            var user = users.FirstOrDefault(req => req?.Email == request.Email, null);
             if (user is not null)
             {
-                if (!_hashService.ConfirmPasswordHash(request.Password, user.PassHash, user.PassSalt))
-                    throw new("Wrong password!");
+                var token = GenerateToken(user, request);
+                user.TokenExpireDate = token.ExpireDate;
+                user.RefreshToken = token.RefreshToken;
 
-                return _jwtService.GenerateSecurityToken(user.Id, user.Email , user.Role);
+                await _unitOfWork.WriteUserRepository.UpdateAsync(user.Id);
+                await _unitOfWork.WriteUserRepository.SaveChangesAsync();
+                return token;
             }
         }
 
@@ -45,9 +49,12 @@ public class AuthService : IAuthService
             var restaurant = restaurants.FirstOrDefault(req => req?.Email == request.Email, null);
             if (restaurant is not null)
             {
-                if (!_hashService.ConfirmPasswordHash(request.Password, restaurant.PassHash, restaurant.PassSalt))
-                    throw new("Wrong password!");
-                return _jwtService.GenerateSecurityToken(restaurant.Id, restaurant.Email, "Restaurant");
+                var token = GenerateToken(restaurant, request);
+                restaurant.TokenExpireDate = token.ExpireDate;
+                restaurant.RefreshToken = token.RefreshToken;
+
+
+                return token;
             }
         }
 
@@ -56,11 +63,8 @@ public class AuthService : IAuthService
         {
             var worker = workers.FirstOrDefault(req => req?.Email == request.Email, null);
             if (worker is not null)
-            {
-                if (!_hashService.ConfirmPasswordHash(request.Password, worker.PassHash, worker.PassSalt))
-                    throw new("Wrong password!");
-                return _jwtService.GenerateSecurityToken(worker.Id, worker.Email, "Worker");
-            }
+                if (worker is not null)
+                    return GenerateToken(worker, request);
         }
 
         var couriers = _unitOfWork.ReadCourierRepository.GetAll().ToList();
@@ -68,11 +72,8 @@ public class AuthService : IAuthService
         {
             var courier = couriers.FirstOrDefault(req => req?.Email == request.Email, null);
             if (courier is not null)
-            {
-                if (!_hashService.ConfirmPasswordHash(request.Password, courier.PassHash, courier.PassSalt))
-                    throw new("Wrong password!");
-                return _jwtService.GenerateSecurityToken(courier.Id, courier.Email, "Courier");
-            }
+                if (courier is not null)
+                    return GenerateToken(courier, request);
         }
 
         throw new ArgumentNullException("You haven't an account!");
@@ -108,7 +109,9 @@ public class AuthService : IAuthService
                 BankCardsId = new List<string>(),
                 PhoneNumber = request.PhoneNumber,
                 SelectBankCardId = "",
-                Role = "User"
+                Role = "User",
+                RefreshToken = "",
+                TokenExpireDate = default
             };
 
             var result = await _unitOfWork.WriteUserRepository.AddAsync(newUser);
@@ -119,9 +122,13 @@ public class AuthService : IAuthService
 
     }
 
-
-    public async Task RefreshToken()
+    public AuthTokenDto GenerateToken(AppUser user, LoginRequest request)
     {
-
+        if (!_hashService.ConfirmPasswordHash(request.Password, user.PassHash, user.PassSalt))
+            throw new("Wrong password!");
+        var token = _jwtService.GenerateSecurityToken(user.Id, user.Email, user.Role);
+        user.RefreshToken = token.RefreshToken;
+        user.TokenExpireDate = token.ExpireDate;
+        return token;
     }
 }
