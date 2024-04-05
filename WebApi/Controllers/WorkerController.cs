@@ -7,12 +7,14 @@ using Application.Models.DTOs.User;
 using Application.Models.DTOs.Worker;
 using Application.Services.IUserServices;
 using Domain.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 
 namespace WebApi.Controllers;
 
 [Route("api/[controller]")]
+[Authorize(AuthenticationSchemes = "Bearer", Roles = "Worker")]
 [ApiController]
 public class WorkerController : ControllerBase
 {

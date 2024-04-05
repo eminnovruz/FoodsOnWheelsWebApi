@@ -4,12 +4,14 @@ using Application.Models.DTOs.Order;
 using Application.Models.DTOs.User;
 using Application.Services.IUserServices;
 using Infrastructure.Services.UserServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 
 namespace WebApi.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize(AuthenticationSchemes = "Bearer", Roles = "Courier")]
     [ApiController]
     public class CourierController : ControllerBase
     {

@@ -12,5 +12,6 @@ namespace Domain.Models.Common
         public string Email { get; set; }
         public byte[] PassHash { get; set; }
         public byte[] PassSalt { get; set; }
+        public string Role { get; set; }
     }
 }

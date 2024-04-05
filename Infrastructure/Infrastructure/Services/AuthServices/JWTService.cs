@@ -16,17 +16,19 @@ public class JWTService : IJWTService
         _config = config;
     }
 
-    public string GenerateSecurityToken(string id, string email)
+    public string GenerateSecurityToken(string id, string email, string role)
     {
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.Secret));
+        var signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+
         var claims = new[]
             {
                 new Claim(ClaimsIdentity.DefaultNameClaimType, email),
-                new Claim("userId", id)
+                new Claim("userId", id),
+                new Claim(ClaimTypes.Role , role)
             };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.Secret));
-
-        var signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
             issuer: _config.Issuer,

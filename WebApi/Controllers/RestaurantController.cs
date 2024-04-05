@@ -6,12 +6,14 @@ using Application.Models.DTOs.User;
 using Application.Services.IUserServices;
 using Azure.Core;
 using Infrastructure.Services.UserServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 
 namespace WebApi.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize(AuthenticationSchemes = "Bearer", Roles = "Restaurant")]
     [ApiController]
     public class RestaurantController : ControllerBase
     {

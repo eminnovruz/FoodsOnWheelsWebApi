@@ -65,7 +65,8 @@ public class WorkerService : IWorkerService
                 PassHash = passHash,
                 PassSalt = passSalt,
                 Rating = 0,
-                OrderIds = new List<string>()
+                OrderIds = new List<string>(),
+                Role = "Restaurant"
             };
 
             var form = dto.File;
@@ -273,6 +274,7 @@ public class WorkerService : IWorkerService
                 PhoneNumber = dto.PhoneNumber,
                 ActiveOrderId = string.Empty,
                 Rating = 0,
+                Role = "Courier"
             };
 
             var result = await _unitOfWork.WriteCourierRepository.AddAsync(newCourier);
@@ -520,7 +522,7 @@ public class WorkerService : IWorkerService
                 PhoneNumber = dto.PhoneNumber,
                 PassHash = passHash,
                 PassSalt = passSalt,
-
+                Role = "Worker"
             };
 
             var result = await _unitOfWork.WriteWorkerRepository.AddAsync(newWorker);
@@ -829,7 +831,8 @@ public class WorkerService : IWorkerService
                 BankCardsId = new List<string>(),
                 OrderIds = new List<string>(),
                 PhoneNumber = dto.PhoneNumber,
-                SelectBankCardId = ""
+                SelectBankCardId = "",
+                Role = "User"
             };
 
             var result = await _unitOfWork.WriteUserRepository.AddAsync(newUser);

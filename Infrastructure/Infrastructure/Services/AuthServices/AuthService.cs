@@ -27,26 +27,26 @@ public class AuthService : IAuthService
     public string LoginUser(LoginRequest request)
     {
         var users = _unitOfWork.ReadUserRepository.GetAll().ToList();
-        if (users.Count == 0)
+        if (users.Count != 0)
         {
             var user = users.FirstOrDefault(req => req?.Email == request.Email,null);
             if (user is not null)
             {
                 if (!_hashService.ConfirmPasswordHash(request.Password, user.PassHash, user.PassSalt))
                     throw new("Wrong password!");
-                return _jwtService.GenerateSecurityToken(user.Id, user.Email);
+                return _jwtService.GenerateSecurityToken(user.Id, user.Email , user.Role);
             }
         }
 
         var restaurants = _unitOfWork.ReadRestaurantRepository.GetAll().ToList();
-        if (restaurants.Count == 0)
+        if (restaurants.Count != 0)
         {
-            var restaurant = restaurants.FirstOrDefault(req => req?.Email == request.Email,null);
+            var restaurant = restaurants.FirstOrDefault(req => req?.Email == request.Email, null);
             if (restaurant is not null)
             {
                 if (!_hashService.ConfirmPasswordHash(request.Password, restaurant.PassHash, restaurant.PassSalt))
                     throw new("Wrong password!");
-                return _jwtService.GenerateSecurityToken(restaurant.Id, restaurant.Email);
+                return _jwtService.GenerateSecurityToken(restaurant.Id, restaurant.Email, "Restaurant");
             }
         }
 
@@ -58,7 +58,7 @@ public class AuthService : IAuthService
             {
                 if (!_hashService.ConfirmPasswordHash(request.Password, worker.PassHash, worker.PassSalt))
                     throw new("Wrong password!");
-                return _jwtService.GenerateSecurityToken(worker.Id, worker.Email);
+                return _jwtService.GenerateSecurityToken(worker.Id, worker.Email, "Worker");
             }
         }
 
@@ -70,7 +70,7 @@ public class AuthService : IAuthService
             {
                 if (!_hashService.ConfirmPasswordHash(request.Password, courier.PassHash, courier.PassSalt))
                     throw new("Wrong password!");
-                return _jwtService.GenerateSecurityToken(courier.Id, courier.Email);
+                return _jwtService.GenerateSecurityToken(courier.Id, courier.Email, "Courier");
             }
         }
 
@@ -106,7 +106,8 @@ public class AuthService : IAuthService
                 OrderIds = new List<string>(),
                 BankCardsId = new List<string>(),
                 PhoneNumber = request.PhoneNumber,
-                SelectBankCardId = ""
+                SelectBankCardId = "",
+                Role = "User"
             };
 
             var result = await _unitOfWork.WriteUserRepository.AddAsync(newUser);
