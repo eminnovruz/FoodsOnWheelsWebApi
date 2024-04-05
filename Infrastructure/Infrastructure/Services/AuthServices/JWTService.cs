@@ -33,7 +33,7 @@ public class JWTService : IJWTService
         var token = new JwtSecurityToken(
             issuer: _config.Issuer,
             audience: _config.Audience,
-            expires: DateTime.UtcNow.AddMinutes(_config.ExpiresInMonths),
+            expires: DateTime.UtcNow.AddMonths(_config.ExpiresInMonths),
             signingCredentials: signingCredentials,
             claims: claims
             );
