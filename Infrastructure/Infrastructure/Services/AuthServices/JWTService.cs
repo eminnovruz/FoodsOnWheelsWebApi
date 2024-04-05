@@ -18,7 +18,7 @@ public class JWTService : IJWTService
         _config = config;
     }
 
-    public string GenerateSecurityToken(string id, string email, string role)
+    public AuthTokenDto GenerateSecurityToken(string id, string email, string role)
     {
 
         var authTokenDto = new AuthTokenDto();
@@ -32,11 +32,12 @@ public class JWTService : IJWTService
                 new Claim(ClaimTypes.Role , role)
         };
 
+        authTokenDto.ExpireDate = DateTime.Now.AddHours(_config.ExpiresDate);
 
         var token = new JwtSecurityToken(
             issuer: _config.Issuer,
             audience: _config.Audience,
-            expires: DateTime.Now.AddMonths(_config.ExpiresInMonths),
+            expires: DateTime.Now.AddHours(_config.ExpiresDate),
             notBefore : DateTime.Now,
             claims: claims,
             signingCredentials: signingCredentials
@@ -47,9 +48,11 @@ public class JWTService : IJWTService
         byte[] numbers = new byte[32];
         using RandomNumberGenerator random = RandomNumberGenerator.Create();
         random.GetBytes(numbers);
-        authTokenDto.RefreshToken = Convert.ToBase64String(numbers);
 
-        return authTokenDto.AccessToken;
+        authTokenDto.RefreshToken = Convert.ToBase64String(numbers);
+        authTokenDto.RefreshExpireDate = authTokenDto.ExpireDate.AddMinutes(10);
+
+        return authTokenDto;
     }
 
 

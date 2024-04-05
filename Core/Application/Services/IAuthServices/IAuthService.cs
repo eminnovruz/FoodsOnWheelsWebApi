@@ -5,6 +5,6 @@ namespace Application.Services.IAuthServices;
 
 public interface IAuthService
 {
-    string LoginUser(LoginRequest request);
+    AuthTokenDto LoginUser(LoginRequest request);
     Task<bool> RegisterUser(AddUserDto request);
 }

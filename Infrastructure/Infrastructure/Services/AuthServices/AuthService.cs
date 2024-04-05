@@ -24,7 +24,7 @@ public class AuthService : IAuthService
         _jwtService = jwtService;
     }
 
-    public string LoginUser(LoginRequest request)
+    public AuthTokenDto LoginUser(LoginRequest request)
     {
         var users = _unitOfWork.ReadUserRepository.GetAll().ToList();
         if (users.Count != 0)
@@ -34,6 +34,7 @@ public class AuthService : IAuthService
             {
                 if (!_hashService.ConfirmPasswordHash(request.Password, user.PassHash, user.PassSalt))
                     throw new("Wrong password!");
+
                 return _jwtService.GenerateSecurityToken(user.Id, user.Email , user.Role);
             }
         }
@@ -115,6 +116,12 @@ public class AuthService : IAuthService
             return result;
         }
         throw new ArgumentException("No Valid");
+
+    }
+
+
+    public async Task RefreshToken()
+    {
 
     }
 }
