@@ -18,7 +18,7 @@ public class JWTService : IJWTService
         _config = config;
     }
 
-    public AuthTokenDto GenerateSecurityToken(string id, string email, string role)
+    public string GenerateSecurityToken(string id, string email, string role)
     {
 
         var authTokenDto = new AuthTokenDto();
@@ -49,7 +49,7 @@ public class JWTService : IJWTService
         random.GetBytes(numbers);
         authTokenDto.RefreshToken = Convert.ToBase64String(numbers);
 
-        return authTokenDto;
+        return authTokenDto.AccessToken;
     }
 
 

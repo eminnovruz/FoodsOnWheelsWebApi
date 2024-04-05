@@ -5,5 +5,5 @@ namespace Application.Services.IAuthServices;
 
 public interface IJWTService
 {
-    AuthTokenDto GenerateSecurityToken(string id, string email, string role);
+    string GenerateSecurityToken(string id, string email, string role);
 }

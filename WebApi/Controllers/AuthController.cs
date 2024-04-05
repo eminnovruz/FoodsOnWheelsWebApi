@@ -22,7 +22,7 @@ namespace WebApi.Controllers
         }
 
         [HttpPost("login")]
-        public ActionResult<AuthTokenDto> Login([FromBody] LoginRequest request)
+        public ActionResult Login([FromBody] LoginRequest request)
         {
             try
             {

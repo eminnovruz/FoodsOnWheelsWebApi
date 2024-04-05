@@ -24,7 +24,7 @@ public class AuthService : IAuthService
         _jwtService = jwtService;
     }
 
-    public AuthTokenDto LoginUser(LoginRequest request)
+    public string LoginUser(LoginRequest request)
     {
         var users = _unitOfWork.ReadUserRepository.GetAll().ToList();
         if (users.Count != 0)
