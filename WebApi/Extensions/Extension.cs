@@ -108,6 +108,7 @@ public static class Extension
                 ValidAudience = jwtConfig.Audience,
                 ValidIssuer = jwtConfig.Issuer,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfig.Secret)),
+                ClockSkew = TimeSpan.Zero
             };
         });
 
