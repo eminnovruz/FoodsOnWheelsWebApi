@@ -6,6 +6,7 @@ using Application.Services.IAuthServices;
 using Domain.Models;
 using FluentValidation;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 
 namespace Infrastructure.Services.AuthServices;
 
@@ -33,7 +34,7 @@ public class AuthService : IAuthService
             var user = users.FirstOrDefault(req => req?.Email == request.Email, null);
             if (user is not null)
             {
-                var token = GenerateToken(user, request);
+                var token = GenerateToken(user, request.Password);
                 user.TokenExpireDate = token.ExpireDate;
                 user.RefreshToken = token.RefreshToken;
 
@@ -49,7 +50,7 @@ public class AuthService : IAuthService
             var restaurant = restaurants.FirstOrDefault(req => req?.Email == request.Email, null);
             if (restaurant is not null)
             {
-                var token = GenerateToken(restaurant, request);
+                var token = GenerateToken(restaurant, request.Password);
                 restaurant.TokenExpireDate = token.ExpireDate;
                 restaurant.RefreshToken = token.RefreshToken;
 
@@ -66,7 +67,7 @@ public class AuthService : IAuthService
             if (worker is not null)
                 if (worker is not null)
                 {
-                    var token = GenerateToken(worker, request);
+                    var token = GenerateToken(worker, request.Password);
                     worker.TokenExpireDate = token.ExpireDate;
                     worker.RefreshToken = token.RefreshToken;
 
@@ -83,7 +84,7 @@ public class AuthService : IAuthService
             if (courier is not null)
             {
 
-                var token = GenerateToken(courier, request);
+                var token = GenerateToken(courier, request.Password);
                 courier.TokenExpireDate = token.ExpireDate;
                 courier.RefreshToken = token.RefreshToken;
 
@@ -131,6 +132,9 @@ public class AuthService : IAuthService
                 TokenExpireDate = default
             };
 
+            // var token = GenerateToken(newUser, request.Password);
+
+
             var result = await _unitOfWork.WriteUserRepository.AddAsync(newUser);
             await _unitOfWork.WriteUserRepository.SaveChangesAsync();
             return result;
@@ -139,9 +143,9 @@ public class AuthService : IAuthService
 
     }
 
-    public AuthTokenDto GenerateToken(AppUser user, LoginRequest request)
+    public AuthTokenDto GenerateToken(AppUser user, string password)
     {
-        if (!_hashService.ConfirmPasswordHash(request.Password, user.PassHash, user.PassSalt))
+        if (!_hashService.ConfirmPasswordHash(password, user.PassHash, user.PassSalt))
             throw new("Wrong password!");
         var token = _jwtService.GenerateSecurityToken(user.Id, user.Email, user.Role);
         user.RefreshToken = token.RefreshToken;

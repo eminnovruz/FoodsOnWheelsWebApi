@@ -22,11 +22,11 @@ namespace WebApi.Controllers
         }
 
         [HttpPost("login")]
-        public ActionResult Login([FromBody] LoginRequest request)
+        public async Task<ActionResult> Login([FromBody] LoginRequest request)
         {
             try
             {
-                var token =  _authService.LoginUser(request);
+                var token = await _authService.LoginUser(request);
                 return Ok(token);
             }
             catch (Exception ex)
@@ -35,6 +35,23 @@ namespace WebApi.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+
+        //[HttpPost("loginUser")]
+        //public ActionResult<AuthTokenDto> LoginUser(LoginRequest request)
+        //{
+        //    try
+        //    {
+        //        var token
+        //    }
+
+        //    catch (Exception ex)
+        //    {
+        //        Log.Error(ex.Message);
+        //        return BadRequest(ex.Message);
+        //    }
+
+        //}
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] AddUserDto request)
