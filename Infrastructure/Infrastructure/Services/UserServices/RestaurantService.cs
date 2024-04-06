@@ -505,12 +505,9 @@ namespace Infrastructure.Services.UserServices
             if (restaurant is null)
                 throw new ArgumentNullException("Wrong Restaurant");
 
-            var categorys = _unitOfWork.ReadCategoryRepository.GetAll().ToList();
-            if (categorys is null || categorys.Count == 0)
-                throw new ArgumentNullException("Categorys Is Not Found");
             foreach (var item in food.CategoryIds)
             {
-                var category = categorys.FirstOrDefault(x => item == x?.Id);
+                var category = await _unitOfWork.ReadCategoryRepository.GetAsync(item);
                 if (category is null)
                     throw new ArgumentNullException("Category Id Is Not Found");
                 category.FoodIds.Remove(food.Id);

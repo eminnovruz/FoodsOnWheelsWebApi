@@ -249,14 +249,9 @@ public class WorkerService : IWorkerService
 
         if (isValid.IsValid)
         {
-
-            var couriers = _unitOfWork.ReadCourierRepository.GetAll().ToList();
-            if (couriers.Count != 0)
-            {
-                var specCouriers = couriers.FirstOrDefault(c => c?.Email == dto.Email);
-                if (specCouriers is not null)
-                    throw new ArgumentException("This email has already exsist!");
-            }
+            var specCouriers = await _unitOfWork.ReadCourierRepository.GetAsync(c => c.Email == dto.Email);
+            if (specCouriers is null)
+                throw new ArgumentException("This email has already exsist!");
 
             _hashService.Create(dto.Password, out byte[] passHash, out byte[] passSalt);
 
@@ -281,6 +276,7 @@ public class WorkerService : IWorkerService
             await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
             return result;
         }
+
         else
             throw new ArgumentException("No Valid");
     }
@@ -503,13 +499,10 @@ public class WorkerService : IWorkerService
 
         if (isValid.IsValid)
         {
-            var worker = _unitOfWork.ReadWorkerRepository.GetAll().ToList();
-            if (worker.Count != 0)
-            {
-                var specCouriers = worker.FirstOrDefault(c => c?.Email == dto.Email);
-                if (specCouriers is not null)
-                    throw new ArgumentException("This email has already exsist!");
-            }
+
+            var specCouriers = await _unitOfWork.ReadWorkerRepository.GetAsync(c => c.Email == dto.Email);
+            if (specCouriers is not null)
+                throw new ArgumentException("This email has already exsist!");
             _hashService.Create(dto.Password, out byte[] passHash, out byte[] passSalt);
 
             Worker newWorker = new Worker()
@@ -742,7 +735,7 @@ public class WorkerService : IWorkerService
             throw new ArgumentNullException("Categories Is Not Found...");
         foreach (var item in food.CategoryIds)
         {
-            var category = categorys.FirstOrDefault(x => item == x?.Id);
+            var category = await _unitOfWork.ReadCategoryRepository.GetAsync(item);
             if (category is null)
                 throw new ArgumentNullException("Category Id Is Not Found...");
             category.FoodIds.Remove(food.Id);
@@ -813,8 +806,8 @@ public class WorkerService : IWorkerService
         {
             var users = _unitOfWork.ReadUserRepository.GetAll();
 
-            var specUser = users.FirstOrDefault(c => c?.Email == dto.Email);
-            if (specUser is not null)
+            var specUser = await _unitOfWork.ReadUserRepository.GetAsync(c => c.Email == dto.Email);
+                if (specUser is not null)
                 throw new("This email has already exsist!");
 
             _hashService.Create(dto.Password, out byte[] passHash, out byte[] passSalt);
