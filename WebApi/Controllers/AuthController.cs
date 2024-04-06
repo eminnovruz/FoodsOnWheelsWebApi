@@ -37,24 +37,8 @@ namespace WebApi.Controllers
         }
 
 
-        //[HttpPost("loginUser")]
-        //public ActionResult<AuthTokenDto> LoginUser(LoginRequest request)
-        //{
-        //    try
-        //    {
-        //        var token
-        //    }
-
-        //    catch (Exception ex)
-        //    {
-        //        Log.Error(ex.Message);
-        //        return BadRequest(ex.Message);
-        //    }
-
-        //}
-
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] AddUserDto request)
+        public async Task<ActionResult> Register([FromBody] AddUserDto request)
         {
             try
             {
@@ -63,7 +47,7 @@ namespace WebApi.Controllers
                     Log.Information($"{request.Email} registered.");
                     return Ok("Successfully Registered!");
                 }
-                throw new Exception("Something get wrong!");
+                throw new ArgumentException("Something get wrong!");
             }
             catch (Exception ex)
             {
@@ -71,5 +55,22 @@ namespace WebApi.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+
+        [HttpPost("refreshToken")]
+        public async Task<ActionResult<AuthTokenDto>> RefreshToken([FromBody]RefreshTokenDto request)
+        {
+            try
+            {
+                var token = await _authService.RefreshToken(request);
+                return Ok(token);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex.Message);
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }

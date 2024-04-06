@@ -3,6 +3,7 @@ using Application.Models.DTOs.Auth;
 using Application.Models.DTOs.User;
 using Application.Repositories;
 using Application.Services.IAuthServices;
+using Azure.Core;
 using Domain.Models;
 using FluentValidation;
 using System.Diagnostics.CodeAnalysis;
@@ -28,72 +29,55 @@ public class AuthService : IAuthService
 
     public async Task<AuthTokenDto> LoginUser(LoginRequest request)
     {
-        var users = _unitOfWork.ReadUserRepository.GetAll().ToList();
-        if (users.Count != 0)
+
+        var user = await _unitOfWork.ReadUserRepository.GetAsync(req => req.Email == request.Email);
+        if (user is not null)
         {
-            var user = users.FirstOrDefault(req => req?.Email == request.Email, null);
-            if (user is not null)
-            {
-                var token = GenerateToken(user, request.Password);
-                user.TokenExpireDate = token.ExpireDate;
-                user.RefreshToken = token.RefreshToken;
+            if (!_hashService.ConfirmPasswordHash(request.Password, user.PassHash, user.PassSalt))
+                throw new("Wrong password!");
+            var token = GenerateToken(user);
 
-                await _unitOfWork.WriteUserRepository.UpdateAsync(user.Id);
-                await _unitOfWork.WriteUserRepository.SaveChangesAsync();
-                return token;
-            }
-        }
+            await _unitOfWork.WriteUserRepository.UpdateAsync(user.Id);
+            await _unitOfWork.WriteUserRepository.SaveChangesAsync();
+            return token;
+        }        
 
-        var restaurants = _unitOfWork.ReadRestaurantRepository.GetAll().ToList();
-        if (restaurants.Count != 0)
+        
+        var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(req => req.Email == request.Email);
+        if (restaurant is not null)
         {
-            var restaurant = restaurants.FirstOrDefault(req => req?.Email == request.Email, null);
-            if (restaurant is not null)
-            {
-                var token = GenerateToken(restaurant, request.Password);
-                restaurant.TokenExpireDate = token.ExpireDate;
-                restaurant.RefreshToken = token.RefreshToken;
+            if (!_hashService.ConfirmPasswordHash(request.Password, restaurant.PassHash, restaurant.PassSalt))
+                throw new("Wrong password!");
+            var token = GenerateToken(restaurant);
 
-                await _unitOfWork.WriteRestaurantRepository.UpdateAsync(restaurant.Id);
-                await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
-                return token;
-            }
+            await _unitOfWork.WriteRestaurantRepository.UpdateAsync(restaurant.Id);
+            await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
+            return token;
         }
-
-        var workers = _unitOfWork.ReadWorkerRepository.GetAll().ToList();
-        if (workers.Count == 0)
+        
+        var worker = await _unitOfWork.ReadWorkerRepository.GetAsync(req => req.Email == request.Email);
+        if (worker is not null)
         {
-            var worker = workers.FirstOrDefault(req => req?.Email == request.Email, null);
-            if (worker is not null)
-                if (worker is not null)
-                {
-                    var token = GenerateToken(worker, request.Password);
-                    worker.TokenExpireDate = token.ExpireDate;
-                    worker.RefreshToken = token.RefreshToken;
+            if (!_hashService.ConfirmPasswordHash(request.Password, worker.PassHash, worker.PassSalt))
+                throw new("Wrong password!");
+            var token = GenerateToken(worker);
 
-                    await _unitOfWork.WriteWorkerRepository.UpdateAsync(worker.Id);
-                    await _unitOfWork.WriteWorkerRepository.SaveChangesAsync();
-                    return token;
-                }
+            await _unitOfWork.WriteWorkerRepository.UpdateAsync(worker.Id);
+            await _unitOfWork.WriteWorkerRepository.SaveChangesAsync();
+            return token;
         }
-
-        var couriers = _unitOfWork.ReadCourierRepository.GetAll().ToList();
-        if (couriers.Count == 0)
+       
+        var courier =await _unitOfWork.ReadCourierRepository.GetAsync(req => req.Email == request.Email);
+        if (courier is not null)
         {
-            var courier = couriers.FirstOrDefault(req => req?.Email == request.Email, null);
-            if (courier is not null)
-            {
+            if (!_hashService.ConfirmPasswordHash(request.Password, courier.PassHash, courier.PassSalt))
+                throw new("Wrong password!");
+            var token = GenerateToken(courier);
 
-                var token = GenerateToken(courier, request.Password);
-                courier.TokenExpireDate = token.ExpireDate;
-                courier.RefreshToken = token.RefreshToken;
-
-                await _unitOfWork.WriteCourierRepository.UpdateAsync(courier.Id);
-                await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
-                return token;
-            }
+            await _unitOfWork.WriteCourierRepository.UpdateAsync(courier.Id);
+            await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
+            return token;
         }
-
         throw new ArgumentNullException("You haven't an account!");
     }
 
@@ -143,13 +127,55 @@ public class AuthService : IAuthService
 
     }
 
-    public AuthTokenDto GenerateToken(AppUser user, string password)
+    public AuthTokenDto GenerateToken(AppUser user)
     {
-        if (!_hashService.ConfirmPasswordHash(password, user.PassHash, user.PassSalt))
-            throw new("Wrong password!");
         var token = _jwtService.GenerateSecurityToken(user.Id, user.Email, user.Role);
         user.RefreshToken = token.RefreshToken;
         user.TokenExpireDate = token.ExpireDate;
         return token;
+    }
+
+    public async Task<AuthTokenDto> RefreshToken(RefreshTokenDto request)
+    {
+        if (request.ExpireDate >= DateTime.Now)
+        {
+            var user = await _unitOfWork.ReadUserRepository.GetAsync(req => req.RefreshToken == request.RefreshToken);
+            if (user is not null)
+            {
+                var token = GenerateToken(user);
+                await _unitOfWork.WriteUserRepository.UpdateAsync(user.Id);
+                await _unitOfWork.WriteUserRepository.SaveChangesAsync();
+                return token;
+            }
+
+            var restaurant = await _unitOfWork.ReadRestaurantRepository.GetAsync(req => req.RefreshToken == request.RefreshToken);
+            if (restaurant is not null)
+            {
+                var token = GenerateToken(restaurant);
+                await _unitOfWork.WriteRestaurantRepository.UpdateAsync(restaurant.Id);
+                await _unitOfWork.WriteRestaurantRepository.SaveChangesAsync();
+                return token;
+            }
+
+            var worker = await _unitOfWork.ReadWorkerRepository.GetAsync(req => req.RefreshToken == request.RefreshToken);
+            if (worker is not null)
+            {
+                var token = GenerateToken(worker);
+                await _unitOfWork.WriteWorkerRepository.UpdateAsync(worker.Id);
+                await _unitOfWork.WriteWorkerRepository.SaveChangesAsync();
+                return token;
+            }
+
+            var courier = await _unitOfWork.ReadCourierRepository.GetAsync(req => req.RefreshToken == request.RefreshToken);
+            if (courier is not null)
+            {
+                var token = GenerateToken(courier);
+                await _unitOfWork.WriteCourierRepository.UpdateAsync(courier.Id);
+                await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
+                return token;
+            }
+        }
+
+        throw new ArgumentException();
     }
 }
