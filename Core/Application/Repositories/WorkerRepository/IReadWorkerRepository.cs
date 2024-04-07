@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Application.Repositories.WorkerRepository
 {
-    public interface IReadWorkerRepository : IReadBankCardRepository<Worker>
+    public interface IReadWorkerRepository : IReadRepository<Worker>
     {
     }
 }

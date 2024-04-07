@@ -3,7 +3,7 @@ using Domain.Models;
 
 namespace Application.Repositories.CourierRepository;
 
-public interface IReadCourierRepository : IReadBankCardRepository<Courier>
+public interface IReadCourierRepository : IReadRepository<Courier>
 {
 
 

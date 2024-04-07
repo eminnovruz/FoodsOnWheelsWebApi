@@ -8,8 +8,9 @@ using System.Threading.Tasks;
 
 namespace Application.Repositories.BankCardRepository
 {
-    public interface IReadBankCardRepository : IReadBankCardRepository<BankCard>
+    public interface IReadBankCardRepository : IReadRepository<BankCard>
     { 
+
 
     }
 }

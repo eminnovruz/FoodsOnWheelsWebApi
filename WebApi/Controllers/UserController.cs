@@ -14,7 +14,7 @@ using Serilog;
 namespace WebApi.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize(AuthenticationSchemes = "Bearer", Roles ="User")]
+    //[Authorize(AuthenticationSchemes = "Bearer", Roles ="User")]
     [ApiController]
     public class UserController : ControllerBase
     {

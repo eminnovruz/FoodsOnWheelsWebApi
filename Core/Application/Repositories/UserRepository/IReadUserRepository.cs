@@ -3,6 +3,6 @@ using Domain.Models;
 
 namespace Application.Repositories.UserRepository;
 
-public interface IReadUserRepository : IReadBankCardRepository<User>
+public interface IReadUserRepository : IReadRepository<User>
 {
 }
