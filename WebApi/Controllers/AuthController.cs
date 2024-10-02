@@ -13,12 +13,11 @@ namespace WebApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-        private readonly IUnitOfWork _unitOfWork;
 
-        public AuthController(IAuthService authService, IUnitOfWork unitOfWork)
+
+        public AuthController(IAuthService authService)
         {
             _authService = authService;
-            _unitOfWork = unitOfWork;
         }
 
         [HttpPost("login")]
