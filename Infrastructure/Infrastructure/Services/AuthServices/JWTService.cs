@@ -36,7 +36,7 @@ public class JWTService : IJWTService
         var token = new JwtSecurityToken(
             issuer: _config.Issuer,
             audience: _config.Audience,
-            expires: DateTime.Now.AddHours(_config.ExpiresDate),
+            expires: DateTime.Now.AddDays(_config.ExpiresDate),
             notBefore : DateTime.Now,
             claims: claims,
             signingCredentials: signingCredentials
