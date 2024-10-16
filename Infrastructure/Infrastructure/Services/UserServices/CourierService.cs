@@ -259,7 +259,7 @@ public class CourierService : ICourierService
         {
             var existingCourier = await _unitOfWork.ReadCourierRepository.GetAsync(dto.Id);
             if (existingCourier is null)
-                throw new ArgumentNullException("Courier not found");
+                throw new ArgumentNullException("Courier not fonud");
 
             existingCourier.Name = dto.Name;
             existingCourier.Surname = dto.Surname;
@@ -310,16 +310,14 @@ public class CourierService : ICourierService
     {
         var courier = await _unitOfWork.ReadCourierRepository.GetAsync(courierId);
         if (courier is null)
-            throw new ArgumentNullException();
+            throw new ArgumentNullException("Courier not found");
 
         var average = new List<float>();
         foreach (var item in courier.CourierCommentIds)
         {
             var comment = await _unitOfWork.ReadCourierCommentRepository.GetAsync(item);
             if (comment is not null)
-            {
                 average.Add(comment.Rate);
-            }
         }
 
         if (average.Count == 0)
@@ -330,7 +328,6 @@ public class CourierService : ICourierService
 
         var result = await _unitOfWork.WriteCourierRepository.UpdateAsync(courier.Id);
         await _unitOfWork.WriteCourierRepository.SaveChangesAsync();
-
         return result;
     }
 }

@@ -895,7 +895,7 @@ public class WorkerService : IWorkerService
     {
         var user = await _unitOfWork.ReadUserRepository.GetAsync(userId);
         if (user is null)
-            throw new ArgumentNullException("User not found...");
+            throw new ArgumentNullException("User not found");
 
         var bankCard = _unitOfWork.ReadBankCardRepository.GetWhere(x => x.UserId == userId);
         foreach (var item in bankCard)
@@ -917,7 +917,7 @@ public class WorkerService : IWorkerService
     {
         var user = await _unitOfWork.ReadUserRepository.GetAsync(id);
         if (user is null)
-            throw new ArgumentNullException("User not found...");
+            throw new ArgumentNullException("User not found");
 
         var userDto = new GetUserProfileInfoDto
         {

@@ -138,7 +138,7 @@ namespace Infrastructure.Services.UserServices
         {
             var resturant = await _unitOfWork.ReadRestaurantRepository.GetAsync(restaurantId);
             if (resturant is null)
-                throw new ArgumentNullException("wrong Resturant");
+                throw new ArgumentNullException("Wrong Resturant");
 
             foreach (var item in resturant.CommentIds)
                 await _unitOfWork.WriteRestaurantCommentRepository.RemoveAsync(item);
@@ -254,7 +254,7 @@ namespace Infrastructure.Services.UserServices
             var existingFood = await _unitOfWork.ReadFoodRepository.GetAsync(request.Id);
 
             if (existingFood is null)
-                throw new ArgumentNullException("Food not found...");
+                throw new ArgumentNullException("Food not found");
 
             existingFood.Name = request.Name;
             existingFood.CategoryIds = request.CategoryIds;

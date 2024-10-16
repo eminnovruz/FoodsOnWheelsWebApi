@@ -7,7 +7,7 @@ namespace Application.Services.IAuthServices;
 public interface IAuthService
 {
     Task<AuthTokenDto> LoginUser(LoginRequest request);
-    Task<bool> RegisterUser(AddUserDto request);
+    Task<AuthTokenDto> RegisterUser(AddUserDto request);
     AuthTokenDto GenerateToken(AppUser user);
     Task<AuthTokenDto> RefreshToken(RefreshTokenDto request);
 }

@@ -21,11 +21,12 @@ namespace WebApi.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult> Login([FromBody] LoginRequest request)
+        public async Task<ActionResult<AuthTokenDto>> Login([FromBody] LoginRequest request)
         {
             try
             {
                 var token = await _authService.LoginUser(request);
+                Log.Information($"{request.Email} LogIn.");
                 return Ok(token);
             }
             catch (Exception ex)
@@ -37,14 +38,15 @@ namespace WebApi.Controllers
 
 
         [HttpPost("register")]
-        public async Task<ActionResult> Register([FromBody] AddUserDto request)
+        public async Task<ActionResult<AuthTokenDto>> Register([FromBody] AddUserDto request)
         {
             try
             {
-                if (await _authService.RegisterUser(request))
+                var token = await _authService.RegisterUser(request);
+                if (token is not null)
                 {
                     Log.Information($"{request.Email} registered.");
-                    return Ok("Successfully Registered!");
+                    return Ok(token);
                 }
                 throw new ArgumentException("Something get wrong!");
             }

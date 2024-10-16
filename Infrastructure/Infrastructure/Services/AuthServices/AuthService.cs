@@ -81,7 +81,7 @@ public class AuthService : IAuthService
         throw new ArgumentNullException("You haven't an account!");
     }
 
-    public async Task<bool> RegisterUser(AddUserDto request)
+    public async Task<AuthTokenDto> RegisterUser(AddUserDto request)
     {
         var isValid = _addAppUserValidator.Validate(request);
 
@@ -116,12 +116,14 @@ public class AuthService : IAuthService
                 TokenExpireDate = default
             };
 
-            // var token = GenerateToken(newUser, request.Password);
 
 
             var result = await _unitOfWork.WriteUserRepository.AddAsync(newUser);
             await _unitOfWork.WriteUserRepository.SaveChangesAsync();
-            return result;
+            var token = GenerateToken(newUser);
+
+            if (result)
+               return token;
         }
         throw new ArgumentException("No Valid");
 
