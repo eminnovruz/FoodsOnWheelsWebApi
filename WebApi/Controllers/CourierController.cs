@@ -22,73 +22,12 @@ namespace WebApi.Controllers
             _courierService = courierService;
         }
 
-        [HttpGet("getProfileInfo")]
-        public async Task<ActionResult<GetProfileInfoDto>> GetProfileInfo(string courierId)
-        {
-            try
-            {
-                var user = await _courierService.GetProfileInfo(courierId);
-
-                if (user is null)
-                    return BadRequest($"Cannot find user - {courierId}. Maybe deleted or missing.");
-
-                return Ok(user);
-            }
-            catch (Exception exception)
-            {
-                Log.Error("Error occured on [GET] ViewCourierProfile");
-                return BadRequest(exception.Message);
-            }
-        }
 
 
-        [HttpPut("updateProfile")]
-        public async Task<ActionResult<bool>> UpdateProfile(UpdateCourierDto dto)
-        {
-            try
-            {
-                return Ok(await _courierService.UpdateProfile(dto));
-            }
-            catch (Exception exception)
-            {
-                Log.Error("Error occured on [PUT] UpdateProfile");
-                return BadRequest(exception.Message);
-            }
-        }
-
-
-        [HttpPut("updateProfilePasssword")]
-        public async Task<ActionResult<bool>> UpdateProfilePasssword(UpdateCourierPasswordDto dto)
-        {
-            try
-            {
-                return Ok(await _courierService.UpdateProfilePasssword(dto));
-            }
-            catch (Exception exception)
-            {
-                Log.Error("Error occured on [PUT] UpdateProfilePasssword");
-                return BadRequest(exception.Message);
-            }
-        }
-
-
-        [HttpDelete("removeProfile")]
-        public async Task<ActionResult<bool>> RemoveProfile(string courierId)
-        {
-            try
-            {
-                return Ok(await _courierService.RemoveProfile(courierId));
-            }
-            catch (Exception exception)
-            {
-                Log.Error("Error occured on [POST] RemoveProfile");
-                return BadRequest(exception.Message);
-            }
-        }
-
+        #region GET
 
         [HttpGet("GetOrderHistory")]
-        public async Task<ActionResult<IEnumerable<InfoOrderDto>>> GetOrderHistory(string courierId)
+        public async Task<ActionResult<IEnumerable<InfoOrderDto>>> GetOrderHistory([FromBody] string courierId)
         {
             try
             {
@@ -120,7 +59,7 @@ namespace WebApi.Controllers
 
 
         [HttpGet("getActiveOrderInfo")]
-        public async Task<ActionResult<InfoOrderDto>> GetActiveOrderInfo(string OrderId)
+        public async Task<ActionResult<InfoOrderDto>> GetActiveOrderInfo([FromBody] string OrderId)
         {
             try
             {
@@ -135,7 +74,7 @@ namespace WebApi.Controllers
 
 
         [HttpGet("getAllComments")]
-        public async Task<ActionResult<IEnumerable<GetCommentDto>>> GetAllComments(string CourierId)
+        public async Task<ActionResult<IEnumerable<GetCommentDto>>> GetAllComments([FromBody] string CourierId)
         {
             try
             {
@@ -150,7 +89,7 @@ namespace WebApi.Controllers
 
 
         [HttpGet("getPastOrderInfoById")]
-        public async Task<ActionResult<InfoOrderDto>> GetPastOrderInfoById(string PastOrderId)
+        public async Task<ActionResult<InfoOrderDto>> GetPastOrderInfoById([FromBody] string PastOrderId)
         {
             try
             {
@@ -164,8 +103,100 @@ namespace WebApi.Controllers
         }
 
 
+        [HttpGet("getProfileInfo")]
+        public async Task<ActionResult<GetProfileInfoDto>> GetProfileInfo([FromBody] string courierId)
+        {
+            try
+            {
+                var user = await _courierService.GetProfileInfo(courierId);
+
+                if (user is null)
+                    return BadRequest($"Cannot find user - {courierId}. Maybe deleted or missing.");
+
+                return Ok(user);
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [GET] ViewCourierProfile");
+                return BadRequest(exception.Message);
+            }
+        }
+
+        #endregion
+
+
+        #region UPDATE
+
+        [HttpPut("updateProfile")]
+        public async Task<ActionResult<bool>> UpdateProfile([FromBody] UpdateCourierDto dto)
+        {
+            try
+            {
+                return Ok(await _courierService.UpdateProfile(dto));
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [PUT] UpdateProfile");
+                return BadRequest(exception.Message);
+            }
+        }
+
+
+        [HttpPut("updateProfilePasssword")]
+        public async Task<ActionResult<bool>> UpdateProfilePasssword([FromBody] UpdateCourierPasswordDto dto)
+        {
+            try
+            {
+                return Ok(await _courierService.UpdateProfilePasssword(dto));
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [PUT] UpdateProfilePasssword");
+                return BadRequest(exception.Message);
+            }
+        }
+
+        #endregion
+
+
+        #region REMOVE
+
+        [HttpDelete("removeProfile")]
+        public async Task<ActionResult<bool>> RemoveProfile([FromBody] string courierId)
+        {
+            try
+            {
+                return Ok(await _courierService.RemoveProfile(courierId));
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [POST] RemoveProfile");
+                return BadRequest(exception.Message);
+            }
+        }
+
+
+        [HttpPost("rejectOrder")]
+        public async Task<ActionResult<bool>> RejectOrder([FromBody] RejectOrderDto orderDto)
+        {
+            try
+            {
+                return Ok(await _courierService.RejectOrder(orderDto));
+            }
+            catch (Exception exception)
+            {
+                Log.Error("Error occured on [POST] RejectOrder");
+                return BadRequest(exception.Message);
+            }
+        }
+
+        #endregion
+
+
+        #region ADD
+
         [HttpPost("acceptOrder")]
-        public async Task<ActionResult<bool>> AcceptOrder(AcceptOrderFromCourierDto request)
+        public async Task<ActionResult<bool>> AcceptOrder([FromBody] AcceptOrderFromCourierDto request)
         {
             try
             {
@@ -179,20 +210,7 @@ namespace WebApi.Controllers
         }
 
 
-        [HttpPost("rejectOrder")]
-        public async Task<ActionResult<bool>> RejectOrder(RejectOrderDto orderDto)
-        {
-            try
-            {
-                return Ok(await _courierService.RejectOrder(orderDto));
-            }
-            catch (Exception exception)
-            {
-                Log.Error("Error occured on [POST] RejectOrder");
-                return BadRequest(exception.Message);
-            }
-        }
-
+        #endregion
 
     }
 }

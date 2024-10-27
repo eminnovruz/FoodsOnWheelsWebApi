@@ -21,8 +21,11 @@ namespace WebApi.Controllers
 
         public RestaurantController(IRestaurantService restaurantService)
         {
-            this._restaurantService = restaurantService;
+            _restaurantService = restaurantService;
         }
+
+
+        #region ADD
 
         [HttpPost("addCategory")]
         public async Task<ActionResult<bool>> AddCategory([FromBody] AddCategoryRequest request)
@@ -38,6 +41,7 @@ namespace WebApi.Controllers
             }
         }
 
+
         [HttpPost("addFood")]
         public async Task<ActionResult<bool>> AddFood([FromForm] AddFoodRequest request)
         {
@@ -51,6 +55,7 @@ namespace WebApi.Controllers
                 return BadRequest(exception.Message);
             }
         }
+
 
         [HttpPost("inLastDecidesSituation")]
         public async Task<ActionResult<bool>> InLastDecidesSituation([FromBody] InLastSituationOrderDto orderDto)
@@ -66,6 +71,11 @@ namespace WebApi.Controllers
             }
         }
 
+        #endregion
+
+
+        #region UPDATE
+
         [HttpPut("updateProfile")]
         public async Task<ActionResult<bool>> UpdateProfile([FromBody]UpdateRestaurantDto dto)
         {
@@ -80,6 +90,7 @@ namespace WebApi.Controllers
             }
         }
 
+
         [HttpPut("updateProfilePasssword")]
         public async Task<ActionResult<bool>> UpdateProfilePasssword([FromBody] UpdateUserPasswordDto dto)
         {
@@ -93,6 +104,7 @@ namespace WebApi.Controllers
                 return BadRequest(exception.Message);
             }
         }
+
 
         [HttpPut("updateFood")]
         public async Task<ActionResult<bool>> UpdateFood([FromForm] UpdateFoodRequest request)
@@ -110,20 +122,24 @@ namespace WebApi.Controllers
         }
 
 
-        [HttpDelete("RemoveProfile")]
-        public async Task<ActionResult<bool>> RemoveProfile(string restaurantId)
+        [HttpPost("updateStatusOrder")]
+        public async Task<ActionResult<bool>> UpdateStatusOrder(UpdateOrderStatusDto statusDto)
         {
             try
             {
-                return Ok(await _restaurantService.RemoveProfile(restaurantId));
+                return Ok(await _restaurantService.UpdateStatusOrder(statusDto));
             }
             catch (Exception exception)
             {
-                Log.Error($"Error occured on [DELETE] RemoveProfile");
+                Log.Error($"Error occured on [POST] UpdateStatusOrder : {exception.Message}");
                 return BadRequest(exception.Message);
             }
         }
 
+        #endregion
+
+
+        #region GET 
 
         [HttpGet("getRestaurantInfo")]
         public async Task<ActionResult<RestaurantInfoDto>> GetRestaurantInfo([FromQuery] string Id)
@@ -138,6 +154,7 @@ namespace WebApi.Controllers
                 return BadRequest(exception.Message);
             }
         }
+
 
         [HttpGet("getActiveOrders")]
         public ActionResult<List<InfoOrderDto>> GetActiveOrders([FromQuery] string Id)
@@ -155,7 +172,7 @@ namespace WebApi.Controllers
 
 
         [HttpGet("getAllOrders")]
-        public async Task<ActionResult<IEnumerable<InfoOrderDto>>> GetAllOrders(string resturantId)
+        public async Task<ActionResult<IEnumerable<InfoOrderDto>>> GetAllOrders([FromQuery] string resturantId)
         {
             try
             {
@@ -168,8 +185,9 @@ namespace WebApi.Controllers
             }
         }
 
+
         [HttpGet("getOrderHistory")]
-        public ActionResult<List<InfoOrderDto>> GetOrderHistory(string Id)
+        public ActionResult<List<InfoOrderDto>> GetOrderHistory([FromQuery] string Id)
         {
             try
             {
@@ -182,8 +200,9 @@ namespace WebApi.Controllers
             }
         }
 
+
         [HttpGet("getPastOrderInfoById")]
-        public ActionResult<List<InfoOrderDto>> GetPastOrderInfoById(string Id)
+        public ActionResult<List<InfoOrderDto>> GetPastOrderInfoById([FromBody] string Id)
         {
             try
             {
@@ -196,8 +215,9 @@ namespace WebApi.Controllers
             }
         }
 
+
         [HttpGet("waitingOrders")]
-        public ActionResult<IEnumerable<InfoOrderDto>> WaitingOrders(string resturantId)
+        public ActionResult<IEnumerable<InfoOrderDto>> WaitingOrders([FromBody] string resturantId)
         {
             try
             {
@@ -210,19 +230,26 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpPost("updateStatusOrder")]
-        public async Task<ActionResult<bool>> UpdateStatusOrder(UpdateOrderStatusDto statusDto)
+
+        #endregion
+
+
+        #region REMOVE
+
+        [HttpDelete("RemoveProfile")]
+        public async Task<ActionResult<bool>> RemoveProfile(string restaurantId)
         {
             try
             {
-                return Ok(await _restaurantService.UpdateStatusOrder(statusDto));
+                return Ok(await _restaurantService.RemoveProfile(restaurantId));
             }
             catch (Exception exception)
             {
-                Log.Error($"Error occured on [POST] UpdateStatusOrder : {exception.Message}");
+                Log.Error($"Error occured on [DELETE] RemoveProfile");
                 return BadRequest(exception.Message);
             }
         }
+
 
         [HttpDelete("removeFood")]
         public async Task<ActionResult<bool>> RemoveFood(string Id)
@@ -237,5 +264,7 @@ namespace WebApi.Controllers
                 return BadRequest(exception.Message);
             }
         }
+
+        #endregion
     }
 }
